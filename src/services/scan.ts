@@ -1,12 +1,12 @@
 import * as fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 
 interface ScannerOption {
   extension: string[];
 }
-const scanFile = async (
+export const scanFile = async (
   filePath: string,
-  option: ScannerOption = { extension: ['mp3'] },
+  option: ScannerOption = { extension: ['.mp3'] },
 ): Promise<string[]> => {
   const scanQueue = [filePath];
   const result = [];
