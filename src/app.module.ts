@@ -9,6 +9,7 @@ import { Artist } from './database/entites/artist';
 import { Album } from './database/entites/album';
 import { MusicModule } from './music/music.module';
 import { ArtistModule } from './artist/artist.module';
+import { AlbumModule } from './album/album.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ArtistModule } from './artist/artist.module';
     }),
     MusicModule,
     ArtistModule,
+    AlbumModule,
   ],
   controllers: [AppController, ScanController],
   providers: [AppService],
