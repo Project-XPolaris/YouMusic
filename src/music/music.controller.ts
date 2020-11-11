@@ -1,14 +1,13 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Put,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { MusicService } from './music.service';
-import { CreateMusicDto } from './dto/create-music.dto';
 import { UpdateMusicDto } from './dto/update-music.dto';
 
 @Controller('music')
@@ -16,11 +15,14 @@ export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
   @Get()
-  async findAll() {
-    const [list, count] = await this.musicService.findAll();
+  async findAll(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+    const [list, count] = await this.musicService.findAll({ page, pageSize });
     return {
       count,
-      data: list,
+      data: list.map((music) => ({
+        ...music,
+        cover: `/covers/${music.album.id}.png`,
+      })),
     };
   }
 

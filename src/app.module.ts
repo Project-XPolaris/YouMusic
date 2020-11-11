@@ -10,9 +10,13 @@ import { Album } from './database/entites/album';
 import { MusicModule } from './music/music.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
-
+import { ServeStaticModule } from '@nestjs/serve-static';
+import * as path from 'path';
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: path.join(__dirname, '../', 'static'),
+    }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
       database: 'ym_db.sqlite',

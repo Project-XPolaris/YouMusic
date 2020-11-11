@@ -1,7 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { scanFile } from './scan';
 import * as mm from 'music-metadata';
-import {uniq} from 'lodash'
+import { uniq } from 'lodash';
+
 import {
   addArtistsToAlbum,
   addArtistsToMusic,
@@ -11,6 +12,9 @@ import {
   getOrCreateMusic,
 } from './music';
 import { Artist } from '../database/entites/artist';
+import * as path from 'path';
+import * as fs from 'fs';
+import { ApplicationConfig } from '../config';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -20,14 +24,13 @@ export interface Task {
   id: string;
   status;
 }
-function timeout(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 class TaskPool {
   tasks: Array<Task> = [];
   private async process(targetPath: string) {
     const result = await scanFile(targetPath);
+
+    // prepare cover directory
+    await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
     // read music tag
 
     for (const musicFilePath of result) {
@@ -53,6 +56,17 @@ class TaskPool {
       await addArtistsToMusic(music, ...artists);
       await addArtistsToAlbum(album, ...artists);
       await addMusicToAlbum(album, music);
+
+      // save cover
+
+      const pics = musicID3.common.picture;
+      if (pics.length > 0) {
+        const cover = pics[0];
+        await fs.promises.writeFile(
+          path.join(ApplicationConfig.coverDir, `${album.id}.jpg`),
+          cover.data,
+        );
+      }
     }
     return result;
   }

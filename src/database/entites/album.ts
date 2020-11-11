@@ -20,10 +20,6 @@ export class Album {
   @JoinTable()
   artist: Artist[];
 
-  @ManyToMany(() => Music)
-  @JoinTable()
-  music: Music[];
-
   @OneToMany(() => Music, (music) => music.album)
-  album: Album[];
+  music: Music[];
 }

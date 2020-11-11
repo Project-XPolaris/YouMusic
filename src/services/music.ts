@@ -62,6 +62,8 @@ export const addArtistsToAlbum = async (album: Album, ...artists: Artist[]) => {
 };
 
 export const addMusicToAlbum = async (album: Album, ...music: Music[]) => {
-  album.music = music;
-  await getRepository(Album).save(album);
+  for (const saveMusic of music) {
+    saveMusic.album = album;
+    await getRepository(Music).save(saveMusic);
+  }
 };

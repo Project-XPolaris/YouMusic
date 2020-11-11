@@ -8,7 +8,6 @@ describe('AlbumService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [AlbumService],
     }).compile();
-
     service = module.get<AlbumService>(AlbumService);
   });
 
