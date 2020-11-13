@@ -21,7 +21,10 @@ export class MusicController {
       count,
       data: list.map((music) => ({
         ...music,
-        cover: `/covers/${music.album.id}.png`,
+        album: {
+          ...music.album,
+          cover: `/covers/${music.album.id}.jpg`,
+        },
       })),
     };
   }

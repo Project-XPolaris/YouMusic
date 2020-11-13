@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ArtistService } from './artist.service';
-import { CreateArtistDto } from './dto/create-artist.dto';
-import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Controller('artist')
 export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
   @Get()
-  async findAll() {
-    return await this.artistService.findAll();
+  async findAll(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+    const [data, count] = await this.artistService.findAll({ page, pageSize });
+    return {
+      count,
+      data,
+    };
   }
 
   @Get(':id')
