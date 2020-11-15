@@ -11,6 +11,7 @@ import { MusicModule } from './music/music.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { FileController } from './file/file.controller';
 import * as path from 'path';
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import * as path from 'path';
     ArtistModule,
     AlbumModule,
   ],
-  controllers: [AppController, ScanController],
+  controllers: [AppController, ScanController, FileController],
   providers: [AppService],
 })
 export class AppModule {}

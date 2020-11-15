@@ -35,7 +35,10 @@ class TaskPool {
 
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
-      const album = await getOrCreateAlbum(musicID3.common.album);
+      let album = undefined;
+      if (musicID3.common.album) {
+        album = await getOrCreateAlbum(musicID3.common.album);
+      }
       let rawArtists = [];
       if (musicID3.common.artist) {
         rawArtists.push(musicID3.common.artist);
@@ -54,18 +57,19 @@ class TaskPool {
         musicFilePath,
       );
       await addArtistsToMusic(music, ...artists);
-      await addArtistsToAlbum(album, ...artists);
-      await addMusicToAlbum(album, music);
+      if (album) {
+        await addArtistsToAlbum(album, ...artists);
+        await addMusicToAlbum(album, music);
+        // save cover
 
-      // save cover
-
-      const pics = musicID3.common.picture;
-      if (pics.length > 0) {
-        const cover = pics[0];
-        await fs.promises.writeFile(
-          path.join(ApplicationConfig.coverDir, `${album.id}.jpg`),
-          cover.data,
-        );
+        const pics = musicID3.common.picture;
+        if (pics.length > 0) {
+          const cover = pics[0];
+          await fs.promises.writeFile(
+            path.join(ApplicationConfig.coverDir, `${album.id}.jpg`),
+            cover.data,
+          );
+        }
       }
     }
     return result;

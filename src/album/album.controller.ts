@@ -5,7 +5,7 @@ import { AlbumService } from './album.service';
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
   @Get()
-  async findAll(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
+  async findAll(@Query('page') page = 1, @Query('pageSize') pageSize = 10) {
     const [list, count] = await this.albumService.findAll({ page, pageSize });
     return {
       count,
