@@ -17,6 +17,11 @@ export class AlbumService {
 
   async findOne(id: number) {
     const albumRepository = getRepository(Album);
-    return albumRepository.findOne(id);
+    const queryBuilder = albumRepository.createQueryBuilder('album');
+    queryBuilder
+      .whereInIds([id])
+      .leftJoinAndSelect('album.music', 'music')
+      .leftJoinAndSelect('album.artist', 'artist');
+    return queryBuilder.getOne();
   }
 }

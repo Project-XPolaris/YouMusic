@@ -18,6 +18,10 @@ export class AlbumController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.albumService.findOne(+id);
+    const album = await this.albumService.findOne(+id);
+    return {
+      ...album,
+      cover: `/covers/${album.id}.jpg`,
+    };
   }
 }
