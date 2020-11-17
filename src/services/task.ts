@@ -10,11 +10,13 @@ import {
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
+  saveAlbumCover, saveArtist,
 } from './music';
 import { Artist } from '../database/entites/artist';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ApplicationConfig } from '../config';
+import { Album } from '../database/entites/album';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -35,7 +37,7 @@ class TaskPool {
 
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
-      let album = undefined;
+      let album: Album = undefined;
       if (musicID3.common.album) {
         album = await getOrCreateAlbum(musicID3.common.album);
       }
@@ -65,10 +67,20 @@ class TaskPool {
         const pics = musicID3.common.picture;
         if (pics.length > 0) {
           const cover = pics[0];
+          const coverFilename = `${uuidv4()}.jpg`;
           await fs.promises.writeFile(
-            path.join(ApplicationConfig.coverDir, `${album.id}.jpg`),
+            path.join(ApplicationConfig.coverDir, coverFilename),
             cover.data,
           );
+          await saveAlbumCover(album.id, coverFilename);
+
+          // add cover as avatar whether artist avatar is null
+          for (const artist of artists) {
+            if (artist.avatar === undefined || artist.avatar === null) {
+              artist.avatar = coverFilename;
+              await saveArtist(artist);
+            }
+          }
         }
       }
     }

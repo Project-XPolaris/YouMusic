@@ -15,15 +15,25 @@ export class MusicController {
   constructor(private readonly musicService: MusicService) {}
 
   @Get()
-  async findAll(@Query('page') page = 1, @Query('pageSize') pageSize = 20) {
-    const [list, count] = await this.musicService.findAll({ page, pageSize });
+  async findAll(
+    @Query('page') page = 1,
+    @Query('pageSize') pageSize = 20,
+    @Query('artist') artistId = 0,
+    @Query('album') albumId = 0,
+  ) {
+    const [list, count] = await this.musicService.findAll({
+      page,
+      pageSize,
+      artistId,
+      albumId,
+    });
     return {
       count,
       data: list.map((music) => ({
         ...music,
         album: {
           ...music.album,
-          cover: `/covers/${music.album.id}.jpg`,
+          cover: `/covers/${music.album.cover}`,
         },
       })),
     };

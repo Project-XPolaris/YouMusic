@@ -67,3 +67,18 @@ export const addMusicToAlbum = async (album: Album, ...music: Music[]) => {
     await getRepository(Music).save(saveMusic);
   }
 };
+
+export const saveAlbumCover = async (albumId: number, coverPath: string) => {
+  await getRepository(Album)
+    .createQueryBuilder('album')
+    .update()
+    .set({
+      cover: coverPath,
+    })
+    .andWhereInIds([albumId])
+    .execute();
+};
+
+export const saveArtist = async (artist: Artist) => {
+  await getRepository(Artist).save(artist);
+};

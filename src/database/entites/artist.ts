@@ -1,4 +1,12 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  getRepository,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Album } from './album';
 import { Music } from './music';
 
@@ -8,10 +16,17 @@ export class Artist {
   id: number;
   @Column()
   name: string;
-
+  @Column({ nullable: true })
+  avatar: string;
   @ManyToMany(() => Album, (album) => album.artist)
-  Albums: Album[];
+  albums: Album[];
 
   @ManyToMany(() => Music, (music) => music.artist)
-  Music: Album[];
+  music: Album[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

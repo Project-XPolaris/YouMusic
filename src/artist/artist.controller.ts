@@ -9,12 +9,25 @@ export class ArtistController {
     const [data, count] = await this.artistService.findAll({ page, pageSize });
     return {
       count,
-      data,
+      data: data.map((artist) => {
+        return {
+          ...artist,
+          avatar:
+            artist.avatar !== undefined
+              ? `/covers/${artist.avatar}`
+              : undefined,
+        };
+      }),
     };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return await this.artistService.findOne(+id);
+    const artist = await this.artistService.findOne(+id);
+    return {
+      ...artist,
+      avatar:
+        artist.avatar !== undefined ? `/covers/${artist.avatar}` : undefined,
+    };
   }
 }
