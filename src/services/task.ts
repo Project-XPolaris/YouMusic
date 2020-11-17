@@ -10,7 +10,8 @@ import {
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
-  saveAlbumCover, saveArtist,
+  saveAlbumCover,
+  saveArtist,
 } from './music';
 import { Artist } from '../database/entites/artist';
 import * as path from 'path';
@@ -54,10 +55,11 @@ class TaskPool {
         const artist = await getOrCreateArtist(rawArtist);
         artists.push(artist);
       }
-      const music = await getOrCreateMusic(
-        musicID3.common.title,
-        musicFilePath,
-      );
+      let title = path.basename(musicFilePath).split('.').shift();
+      if (musicID3.common.title) {
+        title = musicID3.common.title;
+      }
+      const music = await getOrCreateMusic(title, musicFilePath);
       await addArtistsToMusic(music, ...artists);
       if (album) {
         await addArtistsToAlbum(album, ...artists);
@@ -65,7 +67,7 @@ class TaskPool {
         // save cover
 
         const pics = musicID3.common.picture;
-        if (pics.length > 0) {
+        if (pics && pics.length > 0) {
           const cover = pics[0];
           const coverFilename = `${uuidv4()}.jpg`;
           await fs.promises.writeFile(
