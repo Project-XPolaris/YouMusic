@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MediaLibrary } from './database/entites/source';
 import { ScanController } from './scan/scan.controller';
 import { Music } from './database/entites/music';
 import { Artist } from './database/entites/artist';
@@ -12,7 +11,9 @@ import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { FileController } from './file/file.controller';
+import { LibraryModule } from './library/library.module';
 import * as path from 'path';
+import { MediaLibrary } from './database/entites/library';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -28,6 +29,7 @@ import * as path from 'path';
     MusicModule,
     ArtistModule,
     AlbumModule,
+    LibraryModule,
   ],
   controllers: [AppController, ScanController, FileController],
   providers: [AppService],

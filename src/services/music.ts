@@ -2,6 +2,7 @@ import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { Artist } from '../database/entites/artist';
 import { Music } from '../database/entites/music';
+import { MediaLibrary } from '../database/entites/library';
 
 export const getOrCreateAlbum = async (name: string) => {
   let album = await getRepository(Album)
@@ -34,11 +35,15 @@ export const getOrCreateArtist = async (name: string) => {
 export const getOrCreateMusic = async (
   title: string,
   musicFilePath: string,
+  library: MediaLibrary,
 ) => {
   let music = await getRepository(Music)
     .createQueryBuilder('music')
     .where('music.path = :path', {
       path: musicFilePath,
+    })
+    .andWhere('music.libraryId = :libraryId', {
+      libraryId: library.id,
     })
     .getOne();
   if (music) {
@@ -47,6 +52,7 @@ export const getOrCreateMusic = async (
   music = new Music();
   music.title = title;
   music.path = musicFilePath;
+  music.library = library;
   await getRepository(Music).save(music);
   return music;
 };

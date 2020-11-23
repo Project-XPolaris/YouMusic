@@ -18,19 +18,27 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ApplicationConfig } from '../config';
 import { Album } from '../database/entites/album';
+import { getRepository } from 'typeorm';
+import { MediaLibrary } from '../database/entites/library';
+import { ServiceError } from '../error';
 
 export enum TaskStatus {
   Running = 'Running',
   Done = 'Done',
 }
 export interface Task {
-  id: string;
-  status;
+  id: number;
+  status: TaskStatus;
 }
+export const TaskErrors = {
+  OnlyOneTask: 'OnlyOneTask',
+  LibraryNotFound: 'LibraryNotFound',
+};
+
 class TaskPool {
   tasks: Array<Task> = [];
-  private async process(targetPath: string) {
-    const result = await scanFile(targetPath);
+  private async process(library: MediaLibrary) {
+    const result = await scanFile(library.path);
 
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
@@ -59,7 +67,7 @@ class TaskPool {
       if (musicID3.common.title) {
         title = musicID3.common.title;
       }
-      const music = await getOrCreateMusic(title, musicFilePath);
+      const music = await getOrCreateMusic(title, musicFilePath, library);
       await addArtistsToMusic(music, ...artists);
       if (album) {
         await addArtistsToAlbum(album, ...artists);
@@ -88,16 +96,36 @@ class TaskPool {
     }
     return result;
   }
-  newTask(targetPath): Task {
-    const taskId = uuidv4();
-    const task = {
-      id: taskId,
-      status: TaskStatus.Running,
-    };
-    this.tasks.push();
-    this.process(targetPath).then(() => {
+  async newTask(libraryId: number): Promise<Task> {
+    const library = await getRepository(MediaLibrary).findOne(libraryId);
+    if (library === undefined) {
+      // no library found
+      throw new ServiceError(
+        `library id = ${libraryId} not found`,
+        TaskErrors.LibraryNotFound,
+      );
+    }
+    let task = this.tasks.find((it) => it.id === library.id);
+    if (task) {
+      // only one scanner can run on library
+      if (task.status === TaskStatus.Running) {
+        // only one scanner can run on library
+        throw new ServiceError(
+          'library scanner running',
+          TaskErrors.OnlyOneTask,
+        );
+      }
+      task.status = TaskStatus.Running;
+    } else {
+      task = {
+        id: library.id,
+        status: TaskStatus.Running,
+      };
+      this.tasks.push();
+    }
+    this.process(library).then(() => {
       this.tasks.map((it) => {
-        if (it.id === taskId) {
+        if (it.id === library.id) {
           return {
             ...it,
             status: TaskStatus.Done,

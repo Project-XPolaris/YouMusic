@@ -7,7 +7,7 @@ import { NewTaskDto } from './new-task.dto';
 export class ScanController {
   @Post('new')
   async startScan(@Body() newTaskDto: NewTaskDto) {
-    const task = TaskPoolInstance.newTask(newTaskDto.libraryPath);
-    return task;
+    // const task = TaskPoolInstance.newTask(newTaskDto.libraryPath);
+    // return task;
   }
 }

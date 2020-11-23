@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Artist } from './artist';
 import { Album } from './album';
+import { MediaLibrary } from './library';
 
 @Entity()
 export class Music {
@@ -26,6 +27,9 @@ export class Music {
 
   @ManyToOne(() => Album, (album) => album.music)
   album: Album;
+
+  @ManyToOne(() => MediaLibrary, (library) => library.music)
+  library: MediaLibrary;
 
   @CreateDateColumn()
   createdAt: Date;
