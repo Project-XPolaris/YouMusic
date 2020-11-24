@@ -10,12 +10,13 @@ export class ArtistController {
     return {
       count,
       data: data.map((artist) => {
+        if (artist.avatar == null) {
+          artist.avatar = undefined;
+        } else {
+          artist.avatar = `/covers/${artist.avatar}`;
+        }
         return {
           ...artist,
-          avatar:
-            artist.avatar !== undefined
-              ? `/covers/${artist.avatar}`
-              : undefined,
         };
       }),
     };

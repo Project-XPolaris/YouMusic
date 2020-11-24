@@ -29,13 +29,17 @@ export class MusicController {
     });
     return {
       count,
-      data: list.map((music) => ({
-        ...music,
-        album: {
-          ...music.album,
-          cover: `/covers/${music.album.cover}`,
-        },
-      })),
+      data: list.map((music) => {
+        if (music.album === null) {
+          music.album = undefined;
+        }
+        if (music.album?.cover) {
+          music.album.cover = `/covers/${music.album?.cover}`;
+        }
+        return {
+          ...music,
+        };
+      }),
     };
   }
 

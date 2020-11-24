@@ -17,10 +17,16 @@ export class AlbumController {
     });
     return {
       count,
-      data: list.map((album) => ({
-        ...album,
-        cover: `/covers/${album.cover}`,
-      })),
+      data: list.map((album) => {
+        if (album.cover === null) {
+          album.cover = undefined;
+        } else {
+          album.cover = `/covers/${album.cover}`;
+        }
+        return {
+          ...album,
+        };
+      }),
     };
   }
 
