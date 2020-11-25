@@ -33,6 +33,21 @@ export class AlbumController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const album = await this.albumService.findOne(+id);
+    if (album.cover === null) {
+      album.cover = undefined;
+    }else{
+      album.cover = `/covers/${album.cover}`
+    }
+    album.artist = album.artist.map((artist) => {
+      if (artist.avatar == null) {
+        artist.avatar = undefined;
+      } else {
+        artist.avatar = `/covers/${artist.avatar}`;
+      }
+      return {
+        ...artist,
+      };
+    });
     return {
       ...album,
       cover: `/covers/${album.cover}`,
