@@ -50,7 +50,6 @@ export class AlbumController {
     });
     return {
       ...album,
-      cover: `/covers/${album.cover}`,
     };
   }
 }
