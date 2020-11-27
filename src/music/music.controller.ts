@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { MusicService } from './music.service';
 import { UpdateMusicDto } from './dto/update-music.dto';
+import { BaseMusicTemplate } from '../template/music';
 
 @Controller('music')
 export class MusicController {
@@ -29,17 +30,7 @@ export class MusicController {
     });
     return {
       count,
-      data: list.map((music) => {
-        if (music.album === null) {
-          music.album = undefined;
-        }
-        if (music.album?.cover) {
-          music.album.cover = `/covers/${music.album?.cover}`;
-        }
-        return {
-          ...music,
-        };
-      }),
+      data: list.map((music) => new BaseMusicTemplate(music)),
     };
   }
 

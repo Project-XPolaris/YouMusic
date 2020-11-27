@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ArtistService } from './artist.service';
+import { BaseArtistTemplate } from '../template/artist';
 
 @Controller('artist')
 export class ArtistController {
@@ -9,26 +10,13 @@ export class ArtistController {
     const [data, count] = await this.artistService.findAll({ page, pageSize });
     return {
       count,
-      data: data.map((artist) => {
-        if (artist.avatar == null) {
-          artist.avatar = undefined;
-        } else {
-          artist.avatar = `/covers/${artist.avatar}`;
-        }
-        return {
-          ...artist,
-        };
-      }),
+      data: data.map((artist) => new BaseArtistTemplate(artist)),
     };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const artist = await this.artistService.findOne(+id);
-    return {
-      ...artist,
-      avatar:
-        artist.avatar !== undefined ? `/covers/${artist.avatar}` : undefined,
-    };
+    return new BaseArtistTemplate(artist);
   }
 }

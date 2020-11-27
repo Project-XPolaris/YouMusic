@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Param, Res, } from '@nestjs/common';
+import { Controller, Get, Header, Param, Res } from '@nestjs/common';
 import * as fs from 'fs';
 import { getRepository } from 'typeorm';
 import { Music } from '../database/entites/music';

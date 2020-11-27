@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AlbumService } from './album.service';
+import { BaseAlbumTemplate } from '../template/album';
 
 @Controller('album')
 export class AlbumController {
@@ -17,39 +18,13 @@ export class AlbumController {
     });
     return {
       count,
-      data: list.map((album) => {
-        if (album.cover === null) {
-          album.cover = undefined;
-        } else {
-          album.cover = `/covers/${album.cover}`;
-        }
-        return {
-          ...album,
-        };
-      }),
+      data: list.map((album) => new BaseAlbumTemplate(album)),
     };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const album = await this.albumService.findOne(+id);
-    if (album.cover === null) {
-      album.cover = undefined;
-    }else{
-      album.cover = `/covers/${album.cover}`
-    }
-    album.artist = album.artist.map((artist) => {
-      if (artist.avatar == null) {
-        artist.avatar = undefined;
-      } else {
-        artist.avatar = `/covers/${artist.avatar}`;
-      }
-      return {
-        ...artist,
-      };
-    });
-    return {
-      ...album,
-    };
+    return new BaseAlbumTemplate(album);
   }
 }

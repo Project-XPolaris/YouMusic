@@ -24,7 +24,8 @@ export class AlbumService {
     queryBuilder
       .whereInIds([id])
       .leftJoinAndSelect('album.music', 'music')
-      .leftJoinAndSelect('album.artist', 'artist');
+      .leftJoinAndSelect('album.artist', 'artist')
+      .leftJoinAndSelect('music.artist', 'musicArtist');
     return queryBuilder.getOne();
   }
 }
