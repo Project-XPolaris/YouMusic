@@ -9,6 +9,7 @@ import { filterByPage } from '../database/utils/page.filter';
 export type MusicQueryFilter = {
   artistId: number;
   albumId: number;
+  ids: number[] | string[];
 } & PageFilter;
 @Injectable()
 export class MusicService {
@@ -25,6 +26,10 @@ export class MusicService {
       queryBuilder = queryBuilder.where('album.id = :id', {
         id: filter.albumId,
       });
+    }
+    if (filter.ids.length > 0 && filter.ids[0] !== '') {
+      console.log(filter.ids);
+      queryBuilder.where('music.id IN (:...ids)', { ids: filter.ids });
     }
     // with album
     return queryBuilder

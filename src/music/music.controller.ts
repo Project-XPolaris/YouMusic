@@ -21,12 +21,14 @@ export class MusicController {
     @Query('pageSize') pageSize = 20,
     @Query('artist') artistId = 0,
     @Query('album') albumId = 0,
+    @Query('ids') ids = '',
   ) {
     const [list, count] = await this.musicService.findAll({
       page,
       pageSize,
       artistId,
       albumId,
+      ids: ids.split(','),
     });
     return {
       count,

@@ -9,7 +9,9 @@ export class FileController {
   @Header('Content-Type', 'audio/mpeg')
   async audioHandler(@Param('id') id: string, @Res() res: ServerResponse) {
     const music = await getRepository(Music).findOne(id);
+    const stat = fs.statSync(music.path);
     const stream = fs.createReadStream(music.path);
+    res.setHeader('Content-Length', stat.size);
     stream.pipe(res);
   }
 }
