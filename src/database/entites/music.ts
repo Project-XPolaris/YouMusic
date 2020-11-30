@@ -21,6 +21,9 @@ export class Music {
   @Column()
   title: string;
 
+  @Column()
+  duration: number;
+
   @ManyToMany(() => Artist)
   @JoinTable()
   artist: Artist[];
@@ -30,7 +33,6 @@ export class Music {
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;
-
   @CreateDateColumn()
   createdAt: Date;
 

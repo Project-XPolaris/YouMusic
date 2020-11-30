@@ -57,6 +57,7 @@ class TaskPool {
       if (musicID3.common.artists) {
         rawArtists.push(...musicID3.common.artists);
       }
+
       rawArtists = uniq(rawArtists);
       const artists: Array<Artist> = [];
       for (const rawArtist of rawArtists) {
@@ -67,7 +68,16 @@ class TaskPool {
       if (musicID3.common.title) {
         title = musicID3.common.title;
       }
-      const music = await getOrCreateMusic(title, musicFilePath, library);
+      let duration = 0;
+      if (musicID3.format.duration) {
+        duration = musicID3.format.duration;
+      }
+      const music = await getOrCreateMusic(
+        title,
+        musicFilePath,
+        library,
+        duration,
+      );
       await addArtistsToMusic(music, ...artists);
       if (album) {
         await addArtistsToAlbum(album, ...artists);

@@ -36,6 +36,7 @@ export const getOrCreateMusic = async (
   title: string,
   musicFilePath: string,
   library: MediaLibrary,
+  duration: number,
 ) => {
   let music = await getRepository(Music)
     .createQueryBuilder('music')
@@ -53,6 +54,7 @@ export const getOrCreateMusic = async (
   music.title = title;
   music.path = musicFilePath;
   music.library = library;
+  music.duration = duration;
   await getRepository(Music).save(music);
   return music;
 };

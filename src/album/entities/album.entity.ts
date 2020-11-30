@@ -1,1 +1,3 @@
-export class Album {}
+export class Album {
+
+}

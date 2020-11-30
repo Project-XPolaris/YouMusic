@@ -8,6 +8,7 @@ export class BaseMusicTemplate {
   title: string;
   createdAt: string;
   updatedAt: string;
+  duration: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
   constructor(music: Music) {
@@ -15,6 +16,7 @@ export class BaseMusicTemplate {
     this.title = music.title;
     this.createdAt = formatDate(music.createdAt);
     this.updatedAt = formatDate(music.updatedAt);
+    this.duration = music.duration;
     if (music.album) {
       this.album = new BaseAlbumTemplate(music.album);
     }
