@@ -1,0 +1,8 @@
+version: "3.3"
+services:
+  youmusic-service:
+    container_name: youmusic-server-instance
+    build:
+        context: .
+    ports:
+      - "4000:3000"
