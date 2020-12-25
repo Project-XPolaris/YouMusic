@@ -3,7 +3,10 @@ import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { filterByPage } from '../database/utils/page.filter';
 import { PageFilter } from '../database/utils/type.filter';
-export type AlbumQueryFilter = { artistId: number } & PageFilter;
+export type AlbumQueryFilter = {
+  artistId: number,
+  order: { [key: string]: 'ASC' | 'DESC' }
+} & PageFilter;
 @Injectable()
 export class AlbumService {
   async findAll(filter: AlbumQueryFilter) {
@@ -13,6 +16,11 @@ export class AlbumService {
     if (filter.artistId > 0) {
       queryBuilder.where('artist.id = :id', { id: filter.artistId });
     }
+    const order = {};
+    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+      order[`album.${fieldName}`] = filter.order[fieldName];
+    });
+    queryBuilder.orderBy(order);
     return queryBuilder
       .leftJoinAndSelect('album.artist', 'artist')
       .getManyAndCount();

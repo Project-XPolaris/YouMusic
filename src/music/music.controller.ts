@@ -10,6 +10,7 @@ import {
 import { MusicService } from './music.service';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
+import { getOrderFromQueryString } from '../utils/query';
 
 @Controller('music')
 export class MusicController {
@@ -22,6 +23,7 @@ export class MusicController {
     @Query('artist') artistId = 0,
     @Query('album') albumId = 0,
     @Query('ids') ids = '',
+    @Query('order') order = '',
   ) {
     const [list, count] = await this.musicService.findAll({
       page,
@@ -29,6 +31,7 @@ export class MusicController {
       artistId,
       albumId,
       ids: ids.split(','),
+      order: getOrderFromQueryString(order, {}),
     });
     return {
       count,

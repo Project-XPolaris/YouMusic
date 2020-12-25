@@ -14,6 +14,7 @@ import { FileController } from './file/file.controller';
 import { LibraryModule } from './library/library.module';
 import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
+import { SearchController } from './search/search.controller';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -31,7 +32,7 @@ import { MediaLibrary } from './database/entites/library';
     AlbumModule,
     LibraryModule,
   ],
-  controllers: [AppController, ScanController, FileController],
+  controllers: [AppController, ScanController, FileController, SearchController],
   providers: [AppService],
 })
 export class AppModule {}
