@@ -1,0 +1,15 @@
+[Unit]
+Description=YouMusic core service
+
+
+[Service]
+StartLimitInterval=5
+StartLimitBurst=10
+ExecStart=npm run start
+WorkingDirectory=YMWorkDir
+Restart=always
+RestartSec=120
+EnvironmentFile=-/etc/sysconfig/YouMusicCoreService
+
+[Install]
+WantedBy=multi-user.target
