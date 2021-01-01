@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { BaseAlbumTemplate } from '../template/album';
+import { getOrderFromQueryString } from '../utils/query';
 
 @Controller('album')
 export class AlbumController {
@@ -10,11 +11,13 @@ export class AlbumController {
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 10,
     @Query('artist') artistId = 0,
+    @Query('order') order = '',
   ) {
     const [list, count] = await this.albumService.findAll({
       page,
       pageSize,
       artistId,
+      order: getOrderFromQueryString(order, {}),
     });
     return {
       count,

@@ -10,6 +10,7 @@ export type MusicQueryFilter = {
   artistId: number;
   albumId: number;
   ids: number[] | string[];
+  order: { [key: string]: 'ASC' | 'DESC' };
 } & PageFilter;
 @Injectable()
 export class MusicService {
@@ -31,6 +32,11 @@ export class MusicService {
       console.log(filter.ids);
       queryBuilder.where('music.id IN (:...ids)', { ids: filter.ids });
     }
+    const order = {};
+    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+      order[`music.${fieldName}`] = filter.order[fieldName];
+    });
+    queryBuilder.orderBy(order);
     // with album
     return queryBuilder
       .leftJoinAndSelect('music.album', 'album')
