@@ -14,6 +14,7 @@ import { LibraryService } from './library.service';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import { TaskErrors, TaskPoolInstance } from '../services/task';
 import { errorHandler, ServiceError } from '../error';
+import * as path from 'path';
 
 @Controller('library')
 export class LibraryController {
@@ -29,7 +30,10 @@ export class LibraryController {
     const [data, count] = await this.libraryService.findAll({ page, pageSize });
     return {
       count,
-      data,
+      data: data.map((it) => ({
+        ...it,
+        name: path.basename(it.path),
+      })),
     };
   }
 

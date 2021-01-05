@@ -15,6 +15,8 @@ import { LibraryModule } from './library/library.module';
 import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
 import { SearchController } from './search/search.controller';
+import { ConfigModule } from '@nestjs/config/dist/config.module';
+import { ExploreController } from './explore/explore.controller';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -27,12 +29,19 @@ import { SearchController } from './search/search.controller';
       entities: [MediaLibrary, Music, Artist, Album],
       synchronize: true,
     }),
+    ConfigModule.forRoot(),
     MusicModule,
     ArtistModule,
     AlbumModule,
     LibraryModule,
   ],
-  controllers: [AppController, ScanController, FileController, SearchController],
+  controllers: [
+    AppController,
+    ScanController,
+    FileController,
+    SearchController,
+    ExploreController,
+  ],
   providers: [AppService],
 })
 export class AppModule {}
