@@ -10,6 +10,8 @@ export class ExploreController {
   async getFileList(@Query('path') readPath = os.homedir()) {
     const files: Dirent[] = await readdir(readPath, { withFileTypes: true });
     return {
+      path: readPath,
+      sep: path.sep,
       files: files.map((diren) => ({
         name: diren.name,
         path: path.join(readPath, diren.name),

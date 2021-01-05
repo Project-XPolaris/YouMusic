@@ -14,7 +14,6 @@ import { FileController } from './file/file.controller';
 import { LibraryModule } from './library/library.module';
 import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
-import { SearchController } from './search/search.controller';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ExploreController } from './explore/explore.controller';
 @Module({
@@ -39,7 +38,6 @@ import { ExploreController } from './explore/explore.controller';
     AppController,
     ScanController,
     FileController,
-    SearchController,
     ExploreController,
   ],
   providers: [AppService],
