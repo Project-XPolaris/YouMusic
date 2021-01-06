@@ -52,7 +52,6 @@ export class MusicService {
   update(id: number, updateMusicDto: UpdateMusicDto) {}
 
   async remove(id: number) {
-    const musicRepository = getRepository(Music);
-    return await musicRepository.delete(id);
+    return await Music.deleteMusic(id);
   }
 }

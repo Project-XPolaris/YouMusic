@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  getRepository,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -38,4 +39,14 @@ export class Music {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  static deleteMusic = async (id: string | number) => {
+    const repository = await getRepository(Music);
+    const music = await repository.findOne(id,{ relations:[ 'album' ] });
+    if (music === undefined) {
+      return;
+    }
+    repository.delete(music.id);
+    await Album.recycle(music.album.id);
+  };
 }

@@ -85,7 +85,7 @@ class TaskPool {
         // save cover
 
         const pics = musicID3.common.picture;
-        if (pics && pics.length > 0) {
+        if (pics && pics.length > 0 && album.cover === null) {
           const cover = pics[0];
           const coverFilename = `${uuidv4()}.jpg`;
           await fs.promises.writeFile(

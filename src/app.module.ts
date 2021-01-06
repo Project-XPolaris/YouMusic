@@ -16,6 +16,7 @@ import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ExploreController } from './explore/explore.controller';
+import { SearchController } from './search/search.controller';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -39,6 +40,7 @@ import { ExploreController } from './explore/explore.controller';
     ScanController,
     FileController,
     ExploreController,
+    SearchController,
   ],
   providers: [AppService],
 })

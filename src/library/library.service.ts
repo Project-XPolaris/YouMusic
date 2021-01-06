@@ -32,6 +32,6 @@ export class LibraryService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} library`;
+    return MediaLibrary.deleteById(id);
   }
 }

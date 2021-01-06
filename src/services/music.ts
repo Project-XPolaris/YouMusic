@@ -90,3 +90,5 @@ export const saveAlbumCover = async (albumId: number, coverPath: string) => {
 export const saveArtist = async (artist: Artist) => {
   await getRepository(Artist).save(artist);
 };
+
+
