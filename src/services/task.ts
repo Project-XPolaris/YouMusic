@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { scanFile } from './scan';
+import { scanFile, syncLibrary } from './scan';
 import * as mm from 'music-metadata';
 import { uniq } from 'lodash';
 
@@ -38,8 +38,8 @@ export const TaskErrors = {
 class TaskPool {
   tasks: Array<Task> = [];
   private async process(library: MediaLibrary) {
+    await syncLibrary(library);
     const result = await scanFile(library.path);
-
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
     // read music tag

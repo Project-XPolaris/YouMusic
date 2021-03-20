@@ -7,7 +7,7 @@ import * as os from 'os';
 @Controller('explore')
 export class ExploreController {
   @Get('/read')
-  async getFileList(@Query('path') readPath = os.homedir()) {
+  async getFileList(@Query('path') readPath = '/') {
     const files: Dirent[] = await readdir(readPath, { withFileTypes: true });
     return {
       path: readPath,

@@ -1,5 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { MediaLibrary } from '../database/entites/library';
+import { getRepository } from 'typeorm';
+import { Music } from '../database/entites/music';
 
 interface ScannerOption {
   extension: string[];
@@ -29,4 +32,20 @@ export const scanFile = async (
     }
   }
   return result;
+};
+export const syncLibrary = async (library: MediaLibrary) => {
+  const libraryRepo = await getRepository(MediaLibrary);
+  const syncLibrary = await libraryRepo.findOne(library.id, {
+    relations: ['music'],
+  });
+  if (syncLibrary === undefined) {
+    return;
+  }
+  for (const music of syncLibrary.music) {
+    try {
+      await fs.promises.stat(music.path);
+    } catch (e) {
+      Music.deleteMusic(music.id);
+    }
+  }
 };
