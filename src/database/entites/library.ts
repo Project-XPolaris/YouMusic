@@ -7,9 +7,13 @@ import {
   UpdateDateColumn,
   OneToMany,
   getRepository,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Album } from './album';
 import { Music } from './music';
+import { Library } from '../../library/entities/library.entity';
+import { User } from './user';
 
 @Entity()
 export class MediaLibrary {
@@ -26,6 +30,13 @@ export class MediaLibrary {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => Album, (album) => album.music)
+  album: Album;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
 
   async delete() {
     for (const libraryMusic of this.music) {

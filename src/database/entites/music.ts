@@ -12,6 +12,7 @@ import {
 import { Artist } from './artist';
 import { Album } from './album';
 import { MediaLibrary } from './library';
+import { User } from './user';
 
 @Entity()
 export class Music {
@@ -34,6 +35,11 @@ export class Music {
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -42,7 +48,7 @@ export class Music {
 
   static deleteMusic = async (id: string | number) => {
     const repository = await getRepository(Music);
-    const music = await repository.findOne(id,{ relations:[ 'album' ] });
+    const music = await repository.findOne(id, { relations: ['album'] });
     if (music === undefined) {
       return;
     }

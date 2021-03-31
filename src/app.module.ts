@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,6 +17,10 @@ import { MediaLibrary } from './database/entites/library';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ExploreController } from './explore/explore.controller';
 import { SearchController } from './search/search.controller';
+import configuration from './config/configuration';
+import { AuthMiddleware } from './auth.middleware';
+import { User } from './database/entites/user';
+
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -26,10 +30,12 @@ import { SearchController } from './search/search.controller';
       type: 'sqlite',
       database: 'ym_db.sqlite',
       logging: true,
-      entities: [MediaLibrary, Music, Artist, Album],
+      entities: [MediaLibrary, Music, Artist, Album, User],
       synchronize: true,
     }),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      load: [configuration],
+    }),
     MusicModule,
     ArtistModule,
     AlbumModule,
@@ -44,4 +50,8 @@ import { SearchController } from './search/search.controller';
   ],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer.apply(AuthMiddleware).forRoutes('*');
+  }
+}

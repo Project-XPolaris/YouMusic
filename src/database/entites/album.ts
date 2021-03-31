@@ -15,6 +15,7 @@ import * as path from 'path';
 import { ApplicationConfig } from '../../config';
 
 import * as fs from 'fs';
+import { User } from './user';
 
 @Entity()
 export class Album {
@@ -32,6 +33,10 @@ export class Album {
 
   @OneToMany(() => Music, (music) => music.album)
   music: Music[];
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -560,17 +560,17 @@
     tslib "2.0.3"
     uuid "8.3.1"
 
-"@nestjs/config@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.npm.taobao.org/@nestjs/config/download/@nestjs/config-0.6.1.tgz#26e4bfd4b2f9d3a6b6bed6445a2a1e766abdf1c6"
-  integrity sha1-JuS/1LL506a2vtZEWioedmq98cY=
+"@nestjs/config@^0.6.3":
+  version "0.6.3"
+  resolved "https://registry.npm.taobao.org/@nestjs/config/download/@nestjs/config-0.6.3.tgz#ab0c0dccf79696509ced463a888567219c2e5b7d"
+  integrity sha1-qwwNzPeWllCc7UY6iIVnIZwuW30=
   dependencies:
     dotenv "8.2.0"
     dotenv-expand "5.1.0"
     lodash.get "4.4.2"
     lodash.has "4.5.2"
     lodash.set "4.3.2"
-    uuid "8.3.1"
+    uuid "8.3.2"
 
 "@nestjs/core@^7.5.1":
   version "7.5.1"
@@ -842,6 +842,11 @@
     jest-diff "^26.0.0"
     pretty-format "^26.0.0"
 
+"@types/js-yaml@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.npm.taobao.org/@types/js-yaml/download/@types/js-yaml-4.0.0.tgz?cache=0&sync_timestamp=1613379617096&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fjs-yaml%2Fdownload%2F%40types%2Fjs-yaml-4.0.0.tgz#d1a11688112091f2c711674df3a65ea2f47b5dfb"
+  integrity sha1-0aEWiBEgkfLHEWdN86ZeovR7Xfs=
+
 "@types/json-schema@*", "@types/json-schema@^7.0.3", "@types/json-schema@^7.0.4", "@types/json-schema@^7.0.5", "@types/json-schema@^7.0.6":
   version "7.0.6"
   resolved "https://registry.npm.taobao.org/@types/json-schema/download/@types/json-schema-7.0.6.tgz#f4c7ec43e81b319a9815115031709f26987891f0"
@@ -976,6 +981,11 @@
   version "8.3.0"
   resolved "https://registry.npm.taobao.org/@types/uuid/download/@types/uuid-8.3.0.tgz?cache=0&sync_timestamp=1598397134262&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fuuid%2Fdownload%2F%40types%2Fuuid-8.3.0.tgz#215c231dff736d5ba92410e6d602050cce7e273f"
   integrity sha1-IVwjHf9zbVupJBDm1gIFDM5+Jz8=
+
+"@types/validator@^13.1.3":
+  version "13.1.3"
+  resolved "https://registry.npm.taobao.org/@types/validator/download/@types/validator-13.1.3.tgz?cache=0&sync_timestamp=1613385037570&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fvalidator%2Fdownload%2F%40types%2Fvalidator-13.1.3.tgz#366b394aa3fbeed2392bf0a20ded606fa4a3d35e"
+  integrity sha1-Nms5SqP77tI5K/CiDe1gb6Sj014=
 
 "@types/webpack-sources@*":
   version "2.0.0"
@@ -1413,6 +1423,11 @@ argparse@^1.0.7:
   dependencies:
     sprintf-js "~1.0.2"
 
+argparse@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.npm.taobao.org/argparse/download/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
+  integrity sha1-JG9Q88p4oyQPbJl+ipvR6sSeSzg=
+
 arr-diff@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npm.taobao.org/arr-diff/download/arr-diff-4.0.0.tgz#d6461074febfec71e7e15235761a329a5dc7c520"
@@ -1494,6 +1509,13 @@ axios@0.21.0:
   version "0.21.0"
   resolved "https://registry.npm.taobao.org/axios/download/axios-0.21.0.tgz?cache=0&sync_timestamp=1603468716105&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Faxios%2Fdownload%2Faxios-0.21.0.tgz#26df088803a2350dff2c27f96fef99fe49442aca"
   integrity sha1-Jt8IiAOiNQ3/LCf5b++Z/klEKso=
+  dependencies:
+    follow-redirects "^1.10.0"
+
+axios@^0.21.1:
+  version "0.21.1"
+  resolved "https://registry.npm.taobao.org/axios/download/axios-0.21.1.tgz?cache=0&sync_timestamp=1608609215811&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Faxios%2Fdownload%2Faxios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
+  integrity sha1-IlY0gZYvTWvemnbVFu8OXTwJsrg=
   dependencies:
     follow-redirects "^1.10.0"
 
@@ -1851,6 +1873,15 @@ class-utils@^0.3.5:
     define-property "^0.2.5"
     isobject "^3.0.0"
     static-extend "^0.1.1"
+
+class-validator@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.npm.taobao.org/class-validator/download/class-validator-0.13.1.tgz#381b2001ee6b9e05afd133671fbdf760da7dec67"
+  integrity sha1-OBsgAe5rngWv0TNnH733YNp97Gc=
+  dependencies:
+    "@types/validator" "^13.1.3"
+    libphonenumber-js "^1.9.7"
+    validator "^13.5.2"
 
 cli-cursor@^3.1.0:
   version "3.1.0"
@@ -4006,6 +4037,13 @@ js-yaml@^3.13.1, js-yaml@^3.14.0:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+js-yaml@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npm.taobao.org/js-yaml/download/js-yaml-4.0.0.tgz?cache=0&sync_timestamp=1609680108107&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjs-yaml%2Fdownload%2Fjs-yaml-4.0.0.tgz#f426bc0ff4b4051926cd588c71113183409a121f"
+  integrity sha1-9Ca8D/S0BRkmzViMcRExg0CaEh8=
+  dependencies:
+    argparse "^2.0.1"
+
 jsbn@~0.1.0:
   version "0.1.1"
   resolved "https://registry.npm.taobao.org/jsbn/download/jsbn-0.1.1.tgz?cache=0&sync_timestamp=1589682745609&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjsbn%2Fdownload%2Fjsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
@@ -4165,6 +4203,11 @@ levn@~0.3.0:
   dependencies:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
+
+libphonenumber-js@^1.9.7:
+  version "1.9.14"
+  resolved "https://registry.npm.taobao.org/libphonenumber-js/download/libphonenumber-js-1.9.14.tgz#c5fd28c4c4e5139fa3459e113c1f5015a52aeb42"
+  integrity sha1-xf0oxMTlE5+jRZ4RPB9QFaUq60I=
 
 lines-and-columns@^1.1.6:
   version "1.1.6"
@@ -6448,6 +6491,11 @@ uuid@8.3.1, uuid@^8.3.0, uuid@^8.3.1:
   resolved "https://registry.npm.taobao.org/uuid/download/uuid-8.3.1.tgz?cache=0&sync_timestamp=1601826526166&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fuuid%2Fdownload%2Fuuid-8.3.1.tgz#2ba2e6ca000da60fce5a196954ab241131e05a31"
   integrity sha1-K6LmygANpg/OWhlpVKskETHgWjE=
 
+uuid@8.3.2:
+  version "8.3.2"
+  resolved "https://registry.npm.taobao.org/uuid/download/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha1-gNW1ztJxu5r2xEXyGhoExgbO++I=
+
 uuid@^3.3.2:
   version "3.4.0"
   resolved "https://registry.npm.taobao.org/uuid/download/uuid-3.4.0.tgz?cache=0&sync_timestamp=1601826526166&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fuuid%2Fdownload%2Fuuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
@@ -6474,6 +6522,11 @@ validate-npm-package-license@^3.0.1:
   dependencies:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
+
+validator@^13.5.2:
+  version "13.5.2"
+  resolved "https://registry.npm.taobao.org/validator/download/validator-13.5.2.tgz?cache=0&sync_timestamp=1607602731504&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fvalidator%2Fdownload%2Fvalidator-13.5.2.tgz#c97ae63ed4224999fb6f42c91eaca9567fe69a46"
+  integrity sha1-yXrmPtQiSZn7b0LJHqypVn/mmkY=
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"

@@ -21,6 +21,7 @@ import { Album } from '../database/entites/album';
 import { getRepository } from 'typeorm';
 import { MediaLibrary } from '../database/entites/library';
 import { ServiceError } from '../error';
+import { User } from '../database/entites/user';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -37,18 +38,19 @@ export const TaskErrors = {
 
 class TaskPool {
   tasks: Array<Task> = [];
-  private async process(library: MediaLibrary) {
+  private async process(library: MediaLibrary, uid: string) {
     await syncLibrary(library);
     const result = await scanFile(library.path);
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
+    // get owner
+    const user = await getRepository(User).findOne({ uid });
     // read music tag
-
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
       let album: Album = undefined;
       if (musicID3.common.album) {
-        album = await getOrCreateAlbum(musicID3.common.album);
+        album = await getOrCreateAlbum(musicID3.common.album, user);
       }
       let rawArtists = [];
       if (musicID3.common.artist) {
@@ -61,7 +63,7 @@ class TaskPool {
       rawArtists = uniq(rawArtists);
       const artists: Array<Artist> = [];
       for (const rawArtist of rawArtists) {
-        const artist = await getOrCreateArtist(rawArtist);
+        const artist = await getOrCreateArtist(rawArtist,user);
         artists.push(artist);
       }
       let title = path.basename(musicFilePath).split('.').shift();
@@ -77,6 +79,7 @@ class TaskPool {
         musicFilePath,
         library,
         duration,
+        user,
       );
       await addArtistsToMusic(music, ...artists);
       if (album) {
@@ -106,7 +109,7 @@ class TaskPool {
     }
     return result;
   }
-  async newTask(libraryId: number): Promise<Task> {
+  async newTask(libraryId: number, uid: string): Promise<Task> {
     const library = await getRepository(MediaLibrary).findOne(libraryId);
     if (library === undefined) {
       // no library found
@@ -133,7 +136,7 @@ class TaskPool {
       };
       this.tasks.push();
     }
-    this.process(library).then(() => {
+    this.process(library, uid).then(() => {
       this.tasks.map((it) => {
         if (it.id === library.id) {
           return {

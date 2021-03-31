@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Query, Req } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { BaseAlbumTemplate } from '../template/album';
 import { getOrderFromQueryString } from '../utils/query';
@@ -12,12 +12,14 @@ export class AlbumController {
     @Query('pageSize') pageSize = 10,
     @Query('artist') artistId = 0,
     @Query('order') order = '',
+    @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
       page,
       pageSize,
       artistId,
       order: getOrderFromQueryString(order, {}),
+      uid: req.uid,
     });
     return {
       count,
@@ -26,8 +28,14 @@ export class AlbumController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const album = await this.albumService.findOne(+id);
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    const album = await this.albumService.findOne(+id, req.uid);
+    if (album === undefined) {
+      throw new BadRequestException('Invalid album');
+    }
     return new BaseAlbumTemplate(album);
   }
 }

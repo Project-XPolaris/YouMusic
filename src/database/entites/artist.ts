@@ -2,13 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  getRepository,
+  getRepository, JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Album } from './album';
 import { Music } from './music';
+import { User } from './user';
 
 @Entity()
 export class Artist {
@@ -22,7 +23,11 @@ export class Artist {
   albums: Album[];
 
   @ManyToMany(() => Music, (music) => music.artist)
-  music: Album[];
+  music: Music[];
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  users: User[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -3,10 +3,14 @@ import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { filterByPage } from '../database/utils/page.filter';
 import { PageFilter } from '../database/utils/type.filter';
+import { publicUid } from '../vars';
+
 export type AlbumQueryFilter = {
-  artistId: number,
-  order: { [key: string]: 'ASC' | 'DESC' }
+  artistId: number;
+  order: { [key: string]: 'ASC' | 'DESC' };
+  uid: string;
 } & PageFilter;
+
 @Injectable()
 export class AlbumService {
   async findAll(filter: AlbumQueryFilter) {
@@ -20,20 +24,25 @@ export class AlbumService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`album.${fieldName}`] = filter.order[fieldName];
     });
+    queryBuilder = queryBuilder
+      .leftJoin('album.users', 'users')
+      .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
     queryBuilder.orderBy(order);
     return queryBuilder
       .leftJoinAndSelect('album.artist', 'artist')
       .getManyAndCount();
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, uid: string) {
     const albumRepository = getRepository(Album);
     const queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder
-      .whereInIds([id])
+      .leftJoin('album.users', 'users')
       .leftJoinAndSelect('album.music', 'music')
       .leftJoinAndSelect('album.artist', 'artist')
-      .leftJoinAndSelect('music.artist', 'musicArtist');
+      .leftJoinAndSelect('music.artist', 'musicArtist')
+      .where('album.id = :id', { id })
+      .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] });
     return queryBuilder.getOne();
   }
 }

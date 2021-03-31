@@ -6,6 +6,8 @@ import {
   Param,
   Delete,
   Query,
+  Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { MusicService } from './music.service';
 import { UpdateMusicDto } from './dto/update-music.dto';
@@ -24,6 +26,7 @@ export class MusicController {
     @Query('album') albumId = 0,
     @Query('ids') ids = '',
     @Query('order') order = '',
+    @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
       page,
@@ -32,6 +35,7 @@ export class MusicController {
       albumId,
       ids: ids.split(','),
       order: getOrderFromQueryString(order, {}),
+      uid: req.uid,
     });
     return {
       count,
@@ -40,13 +44,15 @@ export class MusicController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.musicService.findOne(+id);
-  }
-
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateMusicDto: UpdateMusicDto) {
-    return this.musicService.update(+id, updateMusicDto);
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    const music = await this.musicService.findOne(+id, req.uid);
+    if (music === undefined) {
+      throw new BadRequestException('Invalid music');
+    }
+    return music;
   }
 
   @Delete(':id')
