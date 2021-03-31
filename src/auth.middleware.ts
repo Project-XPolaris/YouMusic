@@ -1,17 +1,26 @@
-import { HttpService, Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction } from 'express';
 import { User } from './database/entites/user';
+import { ConfigService } from '@nestjs/config';
+import { AuthService } from './auth/auth.service';
 
-@Injectable()
+@Injectable({})
 export class AuthMiddleware implements NestMiddleware {
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+  ) {}
   private auth() {
     return async (req, res, next) => {
-      const rawAuth = req.headers['Authorization'];
+      const rawAuth = req.headers.authorization;
       if (rawAuth === undefined) {
         req.uid = '-1';
       } else {
         const tokenString = rawAuth.replace('Bearer ', '');
-        req.uid = '-1';
+        const { uid } = await this.authService.check(tokenString);
+        if (uid) {
+          req.uid = uid;
+        }
       }
       await this.save(req.uid);
       next();

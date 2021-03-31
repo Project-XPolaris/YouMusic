@@ -4,7 +4,7 @@ export interface UserAuthResult {
   username: string;
   uid: string;
 }
-class YouPlusClient {
+export class YouPlusClient {
   private readonly apiUrl: string;
   constructor(apiUrl: string) {
     this.apiUrl = apiUrl;

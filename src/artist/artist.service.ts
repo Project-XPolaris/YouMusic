@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateArtistDto } from './dto/create-artist.dto';
-import { UpdateArtistDto } from './dto/update-artist.dto';
 import { getRepository } from 'typeorm';
-import { Music } from '../database/entites/music';
 import { Artist } from '../database/entites/artist';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
