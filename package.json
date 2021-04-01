@@ -41,6 +41,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
+    "spotify-web-api-node": "^5.0.2",
     "sqlite3": "^5.0.0",
     "typeorm": "^0.2.29",
     "umi-request": "^1.3.5",

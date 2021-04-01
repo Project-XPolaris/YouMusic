@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  HttpModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,6 +25,10 @@ import configuration from './config/configuration';
 import { AuthMiddleware } from './auth.middleware';
 import { User } from './database/entites/user';
 import { AuthModule } from './auth/auth.module';
+import { MusicBrainService } from './mb/MusicBrain.service';
+import { SearchController } from './search/search.controller';
+import { SpotifyService } from './spotify/spotify.service';
+import { SpotifyController } from './search/search_spotify.controller';
 
 @Module({
   imports: [
@@ -36,6 +45,7 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    HttpModule,
     MusicModule,
     ArtistModule,
     AlbumModule,
@@ -47,8 +57,10 @@ import { AuthModule } from './auth/auth.module';
     ScanController,
     FileController,
     ExploreController,
+    SearchController,
+    SpotifyController,
   ],
-  providers: [AppService],
+  providers: [AppService, MusicBrainService, SpotifyService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

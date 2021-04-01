@@ -5788,6 +5788,13 @@ split-string@^3.0.1, split-string@^3.0.2:
   dependencies:
     extend-shallow "^3.0.0"
 
+spotify-web-api-node@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.npm.taobao.org/spotify-web-api-node/download/spotify-web-api-node-5.0.2.tgz#683669b3ccc046a5a357300f151df93a2b3539fe"
+  integrity sha1-aDZps8zARqWjVzAPFR35Ois1Of4=
+  dependencies:
+    superagent "^6.1.0"
+
 sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.npm.taobao.org/sprintf-js/download/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
@@ -5982,7 +5989,7 @@ strtok3@^6.0.3, strtok3@^6.0.4:
     "@types/debug" "^4.1.5"
     peek-readable "^3.1.0"
 
-superagent@6.1.0:
+superagent@6.1.0, superagent@^6.1.0:
   version "6.1.0"
   resolved "https://registry.npm.taobao.org/superagent/download/superagent-6.1.0.tgz#09f08807bc41108ef164cfb4be293cebd480f4a6"
   integrity sha1-CfCIB7xBEI7xZM+0vik869SA9KY=
