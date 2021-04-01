@@ -6,7 +6,7 @@ import { YouPlusClient } from '../youplus/client';
 export class AuthService {
   client: YouPlusClient;
   constructor(private configService: ConfigService) {
-    const authUrl = configService.get('authUrl');
+    const authUrl = configService.get('youplus');
     this.client = new YouPlusClient(authUrl);
   }
   async check(token: string): Promise<{ uid: string } | undefined> {

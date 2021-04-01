@@ -29,6 +29,7 @@ import { MusicBrainService } from './mb/MusicBrain.service';
 import { SearchController } from './search/search.controller';
 import { SpotifyService } from './spotify/spotify.service';
 import { SpotifyController } from './search/search_spotify.controller';
+import { InfoController } from './info/info.controller';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { SpotifyController } from './search/search_spotify.controller';
     ExploreController,
     SearchController,
     SpotifyController,
+    InfoController,
   ],
   providers: [AppService, MusicBrainService, SpotifyService],
 })
