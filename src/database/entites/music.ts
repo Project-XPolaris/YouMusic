@@ -53,6 +53,8 @@ export class Music {
       return;
     }
     repository.delete(music.id);
-    await Album.recycle(music.album.id);
+    if (music?.album?.id) {
+      await Album.recycle(music.album.id);
+    }
   };
 }

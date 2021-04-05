@@ -19,21 +19,24 @@ export type MusicQueryFilter = {
 export class MusicService {
   async findAll(filter: MusicQueryFilter) {
     const musicRepository = getRepository(Music);
-    let queryBuilder = musicRepository.createQueryBuilder('music');
+    let queryBuilder = musicRepository
+      .createQueryBuilder('music')
+      .leftJoinAndSelect('music.album', 'album')
+      .leftJoinAndSelect('music.artist', 'artist');
     queryBuilder = filterByPage<Music>(filter, queryBuilder);
     if (filter.artistId > 0) {
-      queryBuilder = queryBuilder.where('artist.id = :id', {
+      queryBuilder.andWhere('artist.id = :id', {
         id: filter.artistId,
       });
     }
     if (filter.albumId > 0) {
-      queryBuilder = queryBuilder.where('album.id = :id', {
+      queryBuilder.andWhere('album.id = :id', {
         id: filter.albumId,
       });
     }
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
       console.log(filter.ids);
-      queryBuilder.where('music.id IN (:...ids)', { ids: filter.ids });
+      queryBuilder.andWhere('music.id IN (:...ids)', { ids: filter.ids });
     }
     queryBuilder = queryBuilder
       .leftJoinAndSelect(
@@ -42,17 +45,14 @@ export class MusicService {
         'music.libraryId = library.id',
       )
       .leftJoin('library.users', 'users')
-      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+      .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`music.${fieldName}`] = filter.order[fieldName];
     });
     queryBuilder.orderBy(order);
     // with album
-    return queryBuilder
-      .leftJoinAndSelect('music.album', 'album')
-      .leftJoinAndSelect('music.artist', 'artist')
-      .getManyAndCount();
+    return queryBuilder.getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {

@@ -9,7 +9,7 @@ interface ScannerOption {
 }
 export const scanFile = async (
   filePath: string,
-  option: ScannerOption = { extension: ['.mp3'] },
+  option: ScannerOption = { extension: ['.mp3','.wav'] },
 ): Promise<string[]> => {
   const scanQueue = [filePath];
   const result = [];

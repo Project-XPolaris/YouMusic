@@ -22,6 +22,7 @@ import { getRepository } from 'typeorm';
 import { MediaLibrary } from '../database/entites/library';
 import { ServiceError } from '../error';
 import { User } from '../database/entites/user';
+import sharp = require('sharp');
 
 export enum TaskStatus {
   Running = 'Running',
@@ -63,7 +64,7 @@ class TaskPool {
       rawArtists = uniq(rawArtists);
       const artists: Array<Artist> = [];
       for (const rawArtist of rawArtists) {
-        const artist = await getOrCreateArtist(rawArtist,user);
+        const artist = await getOrCreateArtist(rawArtist, user);
         artists.push(artist);
       }
       let title = path.basename(musicFilePath).split('.').shift();
@@ -91,16 +92,21 @@ class TaskPool {
         if (pics && pics.length > 0 && album.cover === null) {
           const cover = pics[0];
           const coverFilename = `${uuidv4()}.jpg`;
-          await fs.promises.writeFile(
-            path.join(ApplicationConfig.coverDir, coverFilename),
-            cover.data,
-          );
+          await sharp(cover.data)
+            .resize({ width: 512 })
+            .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
           await saveAlbumCover(album.id, coverFilename);
 
           // add cover as avatar whether artist avatar is null
           for (const artist of artists) {
             if (artist.avatar === undefined || artist.avatar === null) {
-              artist.avatar = coverFilename;
+              const artistAvatarFilename = `${uuidv4()}.jpg`;
+              await sharp(cover.data)
+                .resize({ width: 512 })
+                .toFile(
+                  path.join(ApplicationConfig.coverDir, artistAvatarFilename),
+                );
+              artist.avatar = artistAvatarFilename;
               await saveArtist(artist);
             }
           }
