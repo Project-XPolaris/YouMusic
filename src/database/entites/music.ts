@@ -26,7 +26,9 @@ export class Music {
   @Column()
   duration: number;
 
-  @ManyToMany(() => Artist)
+  @ManyToMany(() => Artist, (artist) => artist.music,{
+    cascade: true,
+  })
   @JoinTable()
   artist: Artist[];
 
@@ -52,7 +54,7 @@ export class Music {
     if (music === undefined) {
       return;
     }
-    repository.delete(music.id);
+    await repository.delete(music.id);
     if (music?.album?.id) {
       await Album.recycle(music.album.id);
     }

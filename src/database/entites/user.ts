@@ -11,6 +11,7 @@ import {
 import { MediaLibrary } from './library';
 import { Album } from './album';
 import { Music } from './music';
+import { Artist } from './artist';
 
 @Entity()
 export class User {
@@ -33,6 +34,9 @@ export class User {
 
   @ManyToMany(() => Music)
   music: Music[];
+
+  @ManyToMany(() => Artist)
+  artist: Artist[];
 
   async createOrGet() {
     const repo = await getRepository(User);

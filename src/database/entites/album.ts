@@ -27,7 +27,9 @@ export class Album {
   @Column({ nullable: true })
   cover: string;
 
-  @ManyToMany(() => Artist)
+  @ManyToMany(() => Artist, (artist) => artist.albums,{
+    cascade: true,
+  })
   @JoinTable()
   artist: Artist[];
 

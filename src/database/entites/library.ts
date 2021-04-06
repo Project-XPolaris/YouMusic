@@ -43,7 +43,7 @@ export class MediaLibrary {
       await Music.deleteMusic(libraryMusic.id);
     }
     const repo = await getRepository(MediaLibrary);
-    repo.delete(this.id);
+    await repo.delete(this.id);
   }
   static async deleteById(id: number | string): Promise<boolean> {
     const repo = await getRepository(MediaLibrary);
@@ -51,6 +51,6 @@ export class MediaLibrary {
     if (library === undefined) {
       return false;
     }
-    library.delete();
+    await library.delete();
   }
 }

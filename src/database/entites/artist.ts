@@ -2,7 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  getRepository, JoinTable,
+  getConnection,
+  getManager,
+  getRepository,
+  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,7 +13,10 @@ import {
 import { Album } from './album';
 import { Music } from './music';
 import { User } from './user';
-
+import { uniq } from 'lodash';
+import * as fs from 'fs';
+import * as path from 'path';
+import { ApplicationConfig } from '../../config';
 @Entity()
 export class Artist {
   @PrimaryGeneratedColumn()
@@ -25,7 +31,7 @@ export class Artist {
   @ManyToMany(() => Music, (music) => music.artist)
   music: Music[];
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, (user) => user.artist)
   @JoinTable()
   users: User[];
 
@@ -34,4 +40,23 @@ export class Artist {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  static async recycleEmptyMusicArtist() {
+    const artists = await getRepository(Artist).find({
+      relations: ['music', 'albums'],
+    });
+    for (const artist of artists) {
+      if (artist.albums.length === 0 && artist.music.length === 0) {
+        await artist.recycle();
+      }
+    }
+  }
+  async recycle() {
+    if (this.avatar && this.avatar.length > 0) {
+      await fs.promises.unlink(
+        path.join(ApplicationConfig.coverDir, this.avatar),
+      );
+    }
+    await getRepository(Artist).delete(this.id);
+  }
 }

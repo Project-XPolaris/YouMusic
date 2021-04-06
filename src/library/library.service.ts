@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLibraryDto } from './dto/create-library.dto';
-import { UpdateLibraryDto } from './dto/update-library.dto';
 import { getRepository } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
-import { Music } from '../database/entites/music';
 import { filterByPage } from '../database/utils/page.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { User } from '../database/entites/user';
 import { publicUid } from '../vars';
+import { Artist } from '../database/entites/artist';
 
 export type LibraryQueryFilter = PageFilter;
 
@@ -42,8 +41,9 @@ export class LibraryService {
     return await libraryRepository.findOne(id);
   }
 
-  remove(id: number) {
-    return MediaLibrary.deleteById(id);
+  async remove(id: number) {
+    await MediaLibrary.deleteById(id);
+    await Artist.recycleEmptyMusicArtist();
   }
 
   async checkAccessible(libraryId: number, uid: string) {
@@ -52,7 +52,7 @@ export class LibraryService {
       .createQueryBuilder('library')
       .leftJoin('library.users', 'users')
       .where('library.id = :id', { id: libraryId })
-      .where('users.uid in (:...uids)',{ uids: [uid, publicUid] })
+      .where('users.uid in (:...uids)', { uids: [uid, publicUid] })
       .getCount();
     return count > 0;
   }

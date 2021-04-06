@@ -1,9 +1,10 @@
-import { getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { Artist } from '../database/entites/artist';
 import { Music } from '../database/entites/music';
 import { MediaLibrary } from '../database/entites/library';
 import { User } from '../database/entites/user';
+import { uniq } from 'lodash';
 
 export const getOrCreateAlbum = async (name: string, user: User) => {
   let album = await getRepository(Album)
