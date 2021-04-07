@@ -1,8 +1,5 @@
 import { Artist } from '../database/entites/artist';
-import { ApplicationConfig } from '../config';
-import dayjs from 'dayjs';
 import { formatDate } from '../utils/time';
-
 export class BaseArtistTemplate {
   id: number;
   name: string;

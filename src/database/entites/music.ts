@@ -13,6 +13,10 @@ import { Artist } from './artist';
 import { Album } from './album';
 import { MediaLibrary } from './library';
 import { User } from './user';
+import { Genre } from './genre';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Entity()
 export class Music {
@@ -22,11 +26,12 @@ export class Music {
   path: string;
   @Column()
   title: string;
-
+  @Column({ nullable: true })
+  year: number;
   @Column()
   duration: number;
 
-  @ManyToMany(() => Artist, (artist) => artist.music,{
+  @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,
   })
   @JoinTable()
@@ -41,6 +46,12 @@ export class Music {
   @ManyToMany(() => User)
   @JoinTable()
   users: User[];
+
+  @ManyToMany(() => Genre, (genre) => genre.music, {
+    cascade: true,
+  })
+  @JoinTable()
+  genre: Genre[];
 
   @CreateDateColumn()
   createdAt: Date;

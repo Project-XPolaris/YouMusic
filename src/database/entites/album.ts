@@ -16,6 +16,7 @@ import { ApplicationConfig } from '../../config';
 
 import * as fs from 'fs';
 import { User } from './user';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class Album {
@@ -27,7 +28,7 @@ export class Album {
   @Column({ nullable: true })
   cover: string;
 
-  @ManyToMany(() => Artist, (artist) => artist.albums,{
+  @ManyToMany(() => Artist, (artist) => artist.albums, {
     cascade: true,
   })
   @JoinTable()
@@ -66,5 +67,17 @@ export class Album {
         await fs.unlinkSync(path.join(ApplicationConfig.coverDir, this.cover));
       }
     }
+  }
+  async duplicateCover(): Promise<string> {
+    const ext = path.extname(this.cover);
+    const newFilename = `${uuidv4()}${ext}`;
+    const file = await fs.promises.readFile(
+      path.join(ApplicationConfig.coverDir, this.cover),
+    );
+    await fs.promises.writeFile(
+      path.join(ApplicationConfig.coverDir, newFilename),
+      file,
+    );
+    return newFilename;
   }
 }

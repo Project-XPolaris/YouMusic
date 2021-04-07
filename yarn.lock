@@ -3374,7 +3374,7 @@ iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@^0.4.4:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
-iconv-lite@^0.6.2:
+iconv-lite@0.6.2, iconv-lite@^0.6.2:
   version "0.6.2"
   resolved "https://registry.npm.taobao.org/iconv-lite/download/iconv-lite-0.6.2.tgz#ce13d1875b0c3a674bd6a04b7f76b01b1b6ded01"
   integrity sha1-zhPRh1sMOmdL1qBLf3awGxtt7QE=
@@ -4806,6 +4806,13 @@ node-gyp@3.x:
     semver "~5.3.0"
     tar "^2.0.0"
     which "1"
+
+node-id3@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.npm.taobao.org/node-id3/download/node-id3-0.2.2.tgz#4267d35cc994140d457d79ce7949308f57414e8f"
+  integrity sha1-QmfTXMmUFA1FfXnOeUkwj1dBTo8=
+  dependencies:
+    iconv-lite "0.6.2"
 
 node-int64@^0.4.0:
   version "0.4.0"

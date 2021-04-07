@@ -9,6 +9,7 @@ export class BaseMusicTemplate {
   createdAt: string;
   updatedAt: string;
   duration: number;
+  year?: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
   constructor(music: Music) {
@@ -24,6 +25,9 @@ export class BaseMusicTemplate {
       this.artist = music.artist.map(
         (artist) => new BaseArtistTemplate(artist),
       );
+    }
+    if (music.year) {
+      this.year = music.year;
     }
   }
 }

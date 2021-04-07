@@ -7,7 +7,6 @@ import {
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ScanController } from './scan/scan.controller';
 import { Music } from './database/entites/music';
 import { Artist } from './database/entites/artist';
 import { Album } from './database/entites/album';
@@ -30,6 +29,8 @@ import { SearchController } from './search/search.controller';
 import { SpotifyService } from './spotify/spotify.service';
 import { SpotifyController } from './search/search_spotify.controller';
 import { InfoController } from './info/info.controller';
+import { TaskModule } from './task/task.module';
+import { Genre } from './database/entites/genre';
 
 @Module({
   imports: [
@@ -40,13 +41,14 @@ import { InfoController } from './info/info.controller';
       type: 'sqlite',
       database: 'ym_db.sqlite',
       logging: true,
-      entities: [MediaLibrary, Music, Artist, Album, User],
+      entities: [MediaLibrary, Music, Artist, Album, User, Genre],
       synchronize: true,
     }),
     ConfigModule.forRoot({
       load: [configuration],
     }),
     HttpModule,
+    TaskModule,
     MusicModule,
     ArtistModule,
     AlbumModule,
@@ -55,7 +57,6 @@ import { InfoController } from './info/info.controller';
   ],
   controllers: [
     AppController,
-    ScanController,
     FileController,
     ExploreController,
     SearchController,

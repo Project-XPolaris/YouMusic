@@ -1,23 +1,17 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 import { LibraryService } from './library.service';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import * as path from 'path';
-import { TaskErrors, TaskPoolInstance } from '../services/task';
+import { TaskErrors } from '../services/task';
 import { errorHandler } from '../error';
+import { TaskService } from '../task/task.service';
 
 @Controller('library')
 export class LibraryController {
-  constructor(private readonly libraryService: LibraryService) {}
+  constructor(
+    private readonly libraryService: LibraryService,
+    private readonly taskService: TaskService,
+  ) {}
 
   @Post()
   async create(
@@ -86,7 +80,7 @@ export class LibraryController {
       };
     }
     try {
-      await TaskPoolInstance.newTask(id, req.uid);
+      await this.taskService.newTask(id, req.uid);
     } catch (e) {
       errorHandler(e, {
         [TaskErrors.LibraryNotFound]: HttpStatus.NOT_FOUND,

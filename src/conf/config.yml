@@ -1,0 +1,5 @@
+auth:
+  enable: false
+  url: "http://localhost:8999/user/auth"
+youplus:
+  url: "http://localhost:8999"

@@ -12,7 +12,7 @@ export class MusicBrainService {
     return await mbApi.search('release', query);
   }
   async getRelease(id: string) {
-    return await mbApi.getRelease(id, ['recordings', 'artists','isrcs']);
+    return await mbApi.getRelease(id, ['recordings', 'artists']);
   }
   async getReleaseArt(release) {
     const url = `http://coverartarchive.org/release/${release}`;

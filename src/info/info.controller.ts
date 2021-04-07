@@ -8,7 +8,8 @@ export class InfoController {
   async getInfo() {
     return {
       name: 'YouMusic Service',
-      authUrl: this.configService.get('authUrl'),
+      authEnable:this.configService.get('auth.enable'),
+      authUrl: this.configService.get('auth.url'),
     };
   }
 }

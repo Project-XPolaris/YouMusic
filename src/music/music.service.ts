@@ -6,6 +6,11 @@ import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
 import { publicUid } from '../vars';
 import { MediaLibrary } from '../database/entites/library';
+import * as fs from 'fs';
+import { Tags, update as updateId3, Promise as id3Promise } from 'node-id3';
+import { Artist } from '../database/entites/artist';
+import { getOrCreateArtist } from '../services/music';
+import { User } from '../database/entites/user';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -83,5 +88,39 @@ export class MusicService {
       .where('music.id = :id', { id })
       .getCount();
     return count > 0;
+  }
+  async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
+    const repo = await getRepository(Music);
+    const music = await repo.findOne(id, { relations: ['album'] });
+    if (music === undefined || music === null) {
+      throw new Error('music not exist');
+    }
+    const user = await getRepository(User).findOne({ uid });
+    const tags: { [key: string]: string } = {};
+    if (dto.title) {
+      tags['title'] = dto.title;
+      music.title = dto.title;
+    }
+    const artists: Artist[] = [];
+    if (dto.artist) {
+      for (const artistName of dto.artist) {
+        const artist = await getOrCreateArtist(artistName, user);
+        if (
+          (artist.avatar === null || artist.avatar.length === 0) &&
+          music.album.cover
+        ) {
+          // get copy of album
+          artist.avatar = await music.album.duplicateCover();
+          await getRepository(Artist).save(artist);
+        }
+        artists.push(artist);
+      }
+      music.artist = artists;
+      tags['artist'] = dto.artist.join('/');
+    }
+    const file = await fs.promises.readFile(music.path);
+    const buf = await id3Promise.update(tags, file);
+    fs.promises.writeFile(music.path, buf);
+    await getRepository(Music).save(music);
   }
 }

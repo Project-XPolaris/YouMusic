@@ -13,6 +13,7 @@ import { MusicService } from './music.service';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
+import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 
 @Controller('music')
 export class MusicController {
@@ -58,5 +59,13 @@ export class MusicController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.musicService.remove(+id);
+  }
+  @Patch(':id/file')
+  async updateMusicFile(
+    @Param('id') id: number,
+    @Req() req: Request & { uid: string },
+    @Body() dto: UpdateMusicDto,
+  ) {
+    return await this.musicService.updateMusicFile(id, req.uid, dto);
   }
 }
