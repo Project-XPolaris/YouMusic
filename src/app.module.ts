@@ -27,10 +27,11 @@ import { AuthModule } from './auth/auth.module';
 import { MusicBrainService } from './mb/MusicBrain.service';
 import { SearchController } from './search/search.controller';
 import { SpotifyService } from './spotify/spotify.service';
-import { SpotifyController } from './search/search_spotify.controller';
 import { InfoController } from './info/info.controller';
 import { TaskModule } from './task/task.module';
 import { Genre } from './database/entites/genre';
+import { SpotifyController } from './spotify/spotify.controller';
+import { SpotifyAuth } from './database/entites/spotify';
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import { Genre } from './database/entites/genre';
       type: 'sqlite',
       database: 'ym_db.sqlite',
       logging: true,
-      entities: [MediaLibrary, Music, Artist, Album, User, Genre],
+      entities: [MediaLibrary, Music, Artist, Album, User, Genre, SpotifyAuth],
       synchronize: true,
     }),
     ConfigModule.forRoot({

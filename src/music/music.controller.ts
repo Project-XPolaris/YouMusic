@@ -8,12 +8,17 @@ import {
   Query,
   Req,
   BadRequestException,
+  Post,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { MusicService } from './music.service';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 
 @Controller('music')
 export class MusicController {
@@ -66,6 +71,22 @@ export class MusicController {
     @Req() req: Request & { uid: string },
     @Body() dto: UpdateMusicDto,
   ) {
-    return await this.musicService.updateMusicFile(id, req.uid, dto);
+    await this.musicService.updateMusicFile(id, req.uid, dto);
+    return {
+      success: true,
+    };
+  }
+
+  @Post(':id/cover')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateMusicCover(
+    @Param('id') id: number,
+    @Req() req: Request & { uid: string },
+    @UploadedFile() file: any,
+  ) {
+    await this.musicService.updateMusicCover(id, file);
+    return {
+      success: true,
+    };
   }
 }

@@ -13,10 +13,11 @@ import { Artist } from './artist';
 import { Music } from './music';
 import * as path from 'path';
 import { ApplicationConfig } from '../../config';
-
 import * as fs from 'fs';
 import { User } from './user';
 import { v4 as uuidv4 } from 'uuid';
+import { Buffer } from 'buffer';
+import sharp = require('sharp');
 
 @Entity()
 export class Album {
@@ -27,12 +28,6 @@ export class Album {
 
   @Column({ nullable: true })
   cover: string;
-
-  @ManyToMany(() => Artist, (artist) => artist.albums, {
-    cascade: true,
-  })
-  @JoinTable()
-  artist: Artist[];
 
   @OneToMany(() => Music, (music) => music.album)
   music: Music[];
@@ -47,6 +42,10 @@ export class Album {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  /**
+   * recycle album if music is empty
+   * @param id album id
+   */
   static async recycle(id: string | number) {
     const repository = await getRepository(Album);
     const album = await repository.findOne(id, { relations: ['music'] });
@@ -79,5 +78,12 @@ export class Album {
       file,
     );
     return newFilename;
+  }
+  async setCover(fileBuffer: Buffer) {
+    const coverFilename = `${uuidv4()}.jpg`;
+    await sharp(fileBuffer)
+      .resize({ width: 512 })
+      .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
+    this.cover = coverFilename;
   }
 }

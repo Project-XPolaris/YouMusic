@@ -7,7 +7,6 @@ import { User } from '../database/entites/user';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
-  addArtistsToAlbum,
   addMusicToAlbum,
   getOrCreateAlbum,
   getOrCreateArtist,
@@ -84,22 +83,22 @@ export class TaskService {
           genres.push(genre);
         }
       }
-      const music = await getOrCreateMusic(
+      const music = await getOrCreateMusic({
         title,
         musicFilePath,
         library,
         duration,
         user,
-        musicID3.common.year,
-      );
+        year: musicID3.common.year,
+        track: musicID3.common.track.no,
+        disc: musicID3.common.disk.no,
+      });
       music.artist = artists;
       music.genre = genres;
       await getRepository(Music).save(music);
       if (album) {
-        await addArtistsToAlbum(album, ...artists);
         await addMusicToAlbum(album, music);
         // save cover
-
         const pics = musicID3.common.picture;
         if (pics && pics.length > 0 && album.cover === null) {
           const cover = pics[0];

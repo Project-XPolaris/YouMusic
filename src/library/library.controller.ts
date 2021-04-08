@@ -2,9 +2,8 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Req } fr
 import { LibraryService } from './library.service';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import * as path from 'path';
-import { TaskErrors } from '../services/task';
 import { errorHandler } from '../error';
-import { TaskService } from '../task/task.service';
+import { TaskErrors, TaskService } from '../task/task.service';
 
 @Controller('library')
 export class LibraryController {

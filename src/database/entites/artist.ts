@@ -25,8 +25,6 @@ export class Artist {
   name: string;
   @Column({ nullable: true })
   avatar: string;
-  @ManyToMany(() => Album, (album) => album.artist)
-  albums: Album[];
 
   @ManyToMany(() => Music, (music) => music.artist)
   music: Music[];
@@ -46,7 +44,7 @@ export class Artist {
       relations: ['music', 'albums'],
     });
     for (const artist of artists) {
-      if (artist.albums.length === 0 && artist.music.length === 0) {
+      if (artist.music.length === 0) {
         await artist.recycle();
       }
     }

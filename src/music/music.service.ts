@@ -7,10 +7,18 @@ import { filterByPage } from '../database/utils/page.filter';
 import { publicUid } from '../vars';
 import { MediaLibrary } from '../database/entites/library';
 import * as fs from 'fs';
-import { Tags, update as updateId3, Promise as id3Promise } from 'node-id3';
+import { Promise as id3Promise } from 'node-id3';
 import { Artist } from '../database/entites/artist';
-import { getOrCreateArtist } from '../services/music';
+import {
+  getOrCreateAlbum,
+  getOrCreateArtist,
+  saveMusicCoverFile,
+} from '../services/music';
 import { User } from '../database/entites/user';
+import { Album } from '../database/entites/album';
+import * as mm from 'music-metadata';
+import * as path from 'path';
+import { Genre } from '../database/entites/genre';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -96,7 +104,7 @@ export class MusicService {
       throw new Error('music not exist');
     }
     const user = await getRepository(User).findOne({ uid });
-    const tags: { [key: string]: string } = {};
+    const tags: { [key: string]: string | number } = {};
     if (dto.title) {
       tags['title'] = dto.title;
       music.title = dto.title;
@@ -116,11 +124,84 @@ export class MusicService {
         artists.push(artist);
       }
       music.artist = artists;
-      tags['artist'] = dto.artist.join('/');
+      tags['artist'] = dto.artist.join(';');
+    }
+    let prevAlbumId = -1;
+    if (dto.album) {
+      if (music.album) {
+        prevAlbumId = music.album.id;
+      }
+      music.album = await getOrCreateAlbum(dto.album, user);
+      // generate cover
+      if (music.album.cover === null || music.album.cover.length === 0) {
+        const meta = await mm.parseFile(music.path);
+        music.album.cover = await saveMusicCoverFile(meta);
+        await getRepository(Album).save(music.album);
+      }
+      tags['album'] = dto.album;
+    }
+    if (dto.year) {
+      tags['year'] = dto.year;
+      music.year = dto.year;
+    }
+
+    if (dto.track) {
+      tags['trackNumber'] = dto.track;
+      music.track = dto.track;
+    }
+
+    if (dto.genre) {
+      const genres: Genre[] = [];
+      for (const genreName of dto.genre) {
+        const genre = await Genre.createOrGet(genreName, user);
+        genres.push(genre);
+      }
+      music.genre = genres;
+      tags['genre'] = dto.genre.join(';');
+    }
+
+    if (dto.disc) {
+      tags['partOfSet'] = dto.disc;
     }
     const file = await fs.promises.readFile(music.path);
     const buf = await id3Promise.update(tags, file);
-    fs.promises.writeFile(music.path, buf);
+    await fs.promises.writeFile(music.path, buf);
     await getRepository(Music).save(music);
+    // recycle old album
+    if (prevAlbumId !== -1) {
+      await Album.recycle(prevAlbumId);
+    }
+  }
+  async updateMusicCover(id: number, coverfile: any) {
+    const music = await getRepository(Music).findOne(id, {
+      relations: ['album'],
+    });
+    if (music === undefined || music === null) {
+      throw new Error('music not exist');
+    }
+    const mime = path.extname(coverfile.originalname).replace('.', '');
+    const tags = {
+      image: {
+        mime,
+        type: {
+          id: 3,
+          name: 'front cover',
+        },
+        description: 'cover',
+        imageBuffer: coverfile.buffer,
+      },
+    };
+    const file = await fs.promises.readFile(music.path);
+    const buf = await id3Promise.update(tags, file);
+    await fs.promises.writeFile(music.path, buf);
+
+    if (
+      music.album &&
+      (music.album.cover === undefined || music.album.cover === null)
+    ) {
+      // save album cover
+      await music.album.setCover(coverfile.buffer);
+      await getRepository(Album).save(music.album);
+    }
   }
 }

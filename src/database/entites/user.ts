@@ -3,8 +3,8 @@ import {
   CreateDateColumn,
   Entity,
   getRepository,
-  JoinTable,
   ManyToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,6 +13,7 @@ import { Album } from './album';
 import { Music } from './music';
 import { Artist } from './artist';
 import { Genre } from './genre';
+import { SpotifyAuth } from './spotify';
 
 @Entity()
 export class User {
@@ -20,7 +21,6 @@ export class User {
   id: number;
   @Column()
   uid: string;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -42,6 +42,8 @@ export class User {
   @ManyToMany(() => Genre, (genre) => genre.users)
   genre: Genre[];
 
+  @OneToOne(() => SpotifyAuth, (auth) => auth.user,{nullable:true})
+  spotifyAuth: SpotifyAuth;
   async createOrGet() {
     const repo = await getRepository(User);
     const count = await repo.count({ uid: this.uid });

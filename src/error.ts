@@ -1,4 +1,3 @@
-import { TaskErrors } from './services/task';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class ServiceError extends Error {
@@ -14,7 +13,7 @@ export const errorHandler = (
 ) => {
   if ('errorType' in e) {
     let handler = converter[e.errorType];
-    if (typeof handler === 'number'){
+    if (typeof handler === 'number') {
       throw new HttpException(
         {
           success: false,

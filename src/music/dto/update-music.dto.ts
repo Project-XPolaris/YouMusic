@@ -4,4 +4,9 @@ import { CreateMusicDto } from './create-music.dto';
 export class UpdateMusicDto extends PartialType(CreateMusicDto) {
   title?: string;
   artist?: string[];
+  album?: string;
+  year?: number;
+  track?: number;
+  genre?: string[];
+  disc?: number;
 }

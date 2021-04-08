@@ -14,9 +14,6 @@ import { Album } from './album';
 import { MediaLibrary } from './library';
 import { User } from './user';
 import { Genre } from './genre';
-import { v4 as uuidv4 } from 'uuid';
-import * as path from 'path';
-import * as fs from 'fs';
 
 @Entity()
 export class Music {
@@ -28,8 +25,12 @@ export class Music {
   title: string;
   @Column({ nullable: true })
   year: number;
+  @Column({ nullable: true })
+  track: number;
   @Column()
   duration: number;
+  @Column({ nullable: true })
+  disc: number;
 
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,

@@ -19,11 +19,6 @@ export class BaseAlbumTemplate {
     }
     this.createdAt = formatDate(album.createdAt);
     this.updatedAt = formatDate(album.updatedAt);
-    if (album.artist) {
-      this.artist = album.artist.map(
-        (artist) => new BaseArtistTemplate(artist),
-      );
-    }
     if (album.music) {
       this.music = album.music.map((music) => new BaseMusicTemplate(music));
     }

@@ -27,10 +27,11 @@ export class AlbumService {
     queryBuilder = queryBuilder
       .leftJoin('album.users', 'users')
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+    queryBuilder = queryBuilder
+      .leftJoinAndSelect('album.music', 'music')
+      .leftJoinAndSelect('music.artist', 'artist');
     queryBuilder.orderBy(order);
-    return queryBuilder
-      .leftJoinAndSelect('album.artist', 'artist')
-      .getManyAndCount();
+    return queryBuilder.getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {
@@ -39,7 +40,6 @@ export class AlbumService {
     queryBuilder
       .leftJoin('album.users', 'users')
       .leftJoinAndSelect('album.music', 'music')
-      .leftJoinAndSelect('album.artist', 'artist')
       .leftJoinAndSelect('music.artist', 'musicArtist')
       .where('album.id = :id', { id })
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] });
