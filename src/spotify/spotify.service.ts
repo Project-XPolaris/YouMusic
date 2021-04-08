@@ -21,18 +21,22 @@ export class SpotifyService {
   ) {}
   async refreshToken(code: string, uid: string) {
     try {
-      const form = new FormData();
-      form.append(
-        'redirect_url',
-        'http://localhost:3000/spotify/login/callback',
-      );
-      form.append('grant_type', 'authorization_code');
-      form.append('code', code);
       const response = await this.http
-        .post<SpotifyTokenResult>(
-          'https://accounts.spotify.com/api/token',
-          form,
-        )
+        .request<SpotifyTokenResult>({
+          url: 'https://accounts.spotify.com/api/token',
+          method: 'post',
+          params: {
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: 'http://localhost:3070/spotify/login/callback',
+          },
+          // 'headers' are custom headers to be sent
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization:
+              'Basic MjEwZjNkNDFjMGFmNGFlZmI4MTE1YjU3NTI0YTIxNTU6MzJmMjM4Y2EwZDE3NDk0NWI4YWJkZWRkODU2YTUxNDg=',
+          },
+        })
         .toPromise();
       let authRec = await getRepository(SpotifyAuth).findOne({ uid });
       if (authRec === undefined) {

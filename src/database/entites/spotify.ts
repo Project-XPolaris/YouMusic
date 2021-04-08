@@ -26,12 +26,12 @@ export class SpotifyAuth {
   exp: number;
   @Column()
   accessToken: string;
-  @Column()
+  @Column({ nullable: true })
   scope: string;
   @Column()
   refresh_token: string;
 
-  @OneToOne(() => User, (user) => user.spotifyAuth,{nullable:true})
+  @OneToOne(() => User, (user) => user.spotifyAuth, { nullable: true })
   user: User;
 
   @CreateDateColumn()
