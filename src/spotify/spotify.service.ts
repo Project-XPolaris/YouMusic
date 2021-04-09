@@ -2,8 +2,8 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getRepository } from 'typeorm';
 import { SpotifyAuth } from '../database/entites/spotify';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const FormData = require('form-data');
+import dayjs = require('dayjs');
+import { stringToBase64 } from '../utils/string';
 
 export interface SpotifyTokenResult {
   access_token: string;
@@ -33,8 +33,11 @@ export class SpotifyService {
           // 'headers' are custom headers to be sent
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization:
-              'Basic MjEwZjNkNDFjMGFmNGFlZmI4MTE1YjU3NTI0YTIxNTU6MzJmMjM4Y2EwZDE3NDk0NWI4YWJkZWRkODU2YTUxNDg=',
+            Authorization: `Basic ${stringToBase64(
+              `${this.configService.get(
+                'spotify.clientId',
+              )}:${this.configService.get('spotify.secret')}`,
+            )}`,
           },
         })
         .toPromise();
@@ -52,8 +55,57 @@ export class SpotifyService {
       console.log(e);
     }
   }
-  async search(q: string, type: string) {
-    const token = this.configService.get('spotify_token');
+  async renewAccessToken(refreshToken: string, uid: string) {
+    try {
+      const response = await this.http
+        .request<SpotifyTokenResult>({
+          url: 'https://accounts.spotify.com/api/token',
+          method: 'post',
+          params: {
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+          },
+          // 'headers' are custom headers to be sent
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: `Basic ${stringToBase64(
+              `${this.configService.get(
+                'spotify.clientId',
+              )}:${this.configService.get('spotify.secret')}`,
+            )}`,
+          },
+        })
+        .toPromise();
+      let authRec = await getRepository(SpotifyAuth).findOne({ uid });
+      if (authRec === undefined) {
+        authRec = new SpotifyAuth();
+      }
+      authRec.uid = uid;
+      authRec.refresh_token = response.data.refresh_token;
+      authRec.scope = response.data.scope;
+      authRec.accessToken = response.data.access_token;
+      authRec.exp = response.data.expires_in;
+      await getRepository(SpotifyAuth).save(authRec);
+      return response.data.access_token;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  async getUserAccessToken(uid: string) {
+    const auth = await getRepository(SpotifyAuth).findOne({ uid });
+    if (auth === undefined) {
+      throw new Error('user not login');
+    }
+    const isExpire = dayjs(auth.updatedAt)
+      .add(auth.exp, 'seconds')
+      .isBefore(dayjs());
+    if (isExpire) {
+      return await this.renewAccessToken(auth.refresh_token, uid);
+    }
+    return auth.accessToken;
+  }
+  async search(q: string, type: string, uid: string) {
+    const auth = await this.getUserAccessToken(uid);
     const response = await this.http
       .get('https://api.spotify.com/v1/search', {
         params: {
@@ -61,11 +113,10 @@ export class SpotifyService {
           type,
         },
         headers: {
-          authorization: `Bearer ${token}`,
+          authorization: `Bearer ${auth}`,
         },
       })
       .toPromise();
-    console.log(response.data);
     return response.data;
   }
 }

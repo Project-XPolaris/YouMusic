@@ -3,3 +3,6 @@ auth:
   url: "http://localhost:8999/user/auth"
 youplus:
   url: "http://localhost:8999"
+spotify:
+  clientId: "210f3d41c0af4aefb8115b57524a2155"
+  secret: "32f238ca0d174945b8abdedd856a5148"

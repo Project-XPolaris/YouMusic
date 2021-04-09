@@ -32,6 +32,7 @@ import { TaskModule } from './task/task.module';
 import { Genre } from './database/entites/genre';
 import { SpotifyController } from './spotify/spotify.controller';
 import { SpotifyAuth } from './database/entites/spotify';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { SpotifyAuth } from './database/entites/spotify';
     AlbumModule,
     LibraryModule,
     AuthModule,
+    AccountModule,
   ],
   controllers: [
     AppController,
