@@ -1,9 +1,10 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { getRepository } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { SpotifyAuth } from '../database/entites/spotify';
 import dayjs = require('dayjs');
 import { stringToBase64 } from '../utils/string';
+import { NotificationService } from '../notification/notification.service';
 
 export interface SpotifyTokenResult {
   access_token: string;
@@ -103,6 +104,15 @@ export class SpotifyService {
       return await this.renewAccessToken(auth.refresh_token, uid);
     }
     return auth.accessToken;
+  }
+  async unlink(uid: string): Promise<void> {
+    await getConnection()
+      .createQueryBuilder()
+      .delete()
+      .from(SpotifyAuth)
+      .where('uid = :uid', { uid })
+      .execute();
+    return;
   }
   async search(q: string, type: string, uid: string) {
     const auth = await this.getUserAccessToken(uid);

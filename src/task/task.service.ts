@@ -96,37 +96,41 @@ export class TaskService {
       music.artist = artists;
       music.genre = genres;
       await getRepository(Music).save(music);
-      if (album) {
-        await addMusicToAlbum(album, music);
-        // save cover
-        const pics = musicID3.common.picture;
-        if (pics && pics.length > 0 && album.cover === null) {
-          const cover = pics[0];
-          const coverFilename = `${uuidv4()}.jpg`;
-          await sharp(cover.data)
-            .resize({ width: 512 })
-            .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
-          await saveAlbumCover(album.id, coverFilename);
+      await addMusicToAlbum(album, music);
+      // refresh album artist
+      await album.refreshArtist();
+      // save cover
+      const pics = musicID3.common.picture;
+      if (pics && pics.length > 0 && album.cover === null) {
+        const cover = pics[0];
+        const coverFilename = `${uuidv4()}.jpg`;
+        await sharp(cover.data)
+          .resize({ width: 512 })
+          .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
+        await saveAlbumCover(album.id, coverFilename);
 
-          // add cover as avatar whether artist avatar is null
-          for (const artist of artists) {
-            if (artist.avatar === undefined || artist.avatar === null) {
-              const artistAvatarFilename = `${uuidv4()}.jpg`;
-              await sharp(cover.data)
-                .resize({ width: 512 })
-                .toFile(
-                  path.join(ApplicationConfig.coverDir, artistAvatarFilename),
-                );
-              artist.avatar = artistAvatarFilename;
-              await saveArtist(artist);
-            }
+        // add cover as avatar whether artist avatar is null
+        for (const artist of artists) {
+          if (artist.avatar === undefined || artist.avatar === null) {
+            const artistAvatarFilename = `${uuidv4()}.jpg`;
+            await sharp(cover.data)
+              .resize({ width: 512 })
+              .toFile(
+                path.join(ApplicationConfig.coverDir, artistAvatarFilename),
+              );
+            artist.avatar = artistAvatarFilename;
+            await saveArtist(artist);
           }
         }
       }
     }
     return result;
   }
-  async newTask(libraryId: number, uid: string): Promise<Task> {
+  async newTask(
+    libraryId: number,
+    uid: string,
+    { onComplete }: { onComplete?: (library: MediaLibrary) => void },
+  ): Promise<Task> {
     const library = await getRepository(MediaLibrary).findOne(libraryId);
     if (library === undefined) {
       // no library found
@@ -164,6 +168,9 @@ export class TaskService {
           }
           return it;
         });
+        if (onComplete) {
+          onComplete(library);
+        }
       })
       .catch(() => {
         this.tasks = this.tasks.map((it) => {

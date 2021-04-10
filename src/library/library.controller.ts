@@ -1,15 +1,27 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { LibraryService } from './library.service';
 import { CreateLibraryDto } from './dto/create-library.dto';
 import * as path from 'path';
 import { errorHandler } from '../error';
 import { TaskErrors, TaskService } from '../task/task.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Controller('library')
 export class LibraryController {
   constructor(
     private readonly libraryService: LibraryService,
     private readonly taskService: TaskService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   @Post()
@@ -69,7 +81,7 @@ export class LibraryController {
   @Post(':id/scan')
   async scanLibrary(
     @Param('id') id: number,
-    @Req() req: Request & { uid: string },
+    @Req() req: Request & { uid: string; nid: string },
   ) {
     const isAccessible = await this.libraryService.checkAccessible(id, req.uid);
     if (!isAccessible) {
@@ -79,7 +91,11 @@ export class LibraryController {
       };
     }
     try {
-      await this.taskService.newTask(id, req.uid);
+      await this.taskService.newTask(id, req.uid, {
+        onComplete: (library) => {
+          this.notificationService.scanCompleteEvent(req.nid, library);
+        },
+      });
     } catch (e) {
       errorHandler(e, {
         [TaskErrors.LibraryNotFound]: HttpStatus.NOT_FOUND,

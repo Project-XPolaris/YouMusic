@@ -19,7 +19,6 @@ import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-
 @Controller('music')
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
@@ -37,7 +36,7 @@ export class MusicController {
     const [list, count] = await this.musicService.findAll({
       page,
       pageSize,
-      artistId,
+      artistId: Number(artistId),
       albumId,
       ids: ids.split(','),
       order: getOrderFromQueryString(order, {}),

@@ -1,4 +1,11 @@
-import { BadRequestException, Controller, Get, Param, Query, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { BaseAlbumTemplate } from '../template/album';
 import { getOrderFromQueryString } from '../utils/query';
@@ -15,8 +22,8 @@ export class AlbumController {
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
-      page,
-      pageSize,
+      page: Number(page),
+      pageSize: Number(pageSize),
       artistId,
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,

@@ -33,6 +33,9 @@ export class Artist {
   @JoinTable()
   users: User[];
 
+  @ManyToMany(() => Album, (album) => album.artist)
+  album: Album[];
+
   @CreateDateColumn()
   createdAt: Date;
 

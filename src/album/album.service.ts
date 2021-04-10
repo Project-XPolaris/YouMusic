@@ -4,6 +4,7 @@ import { Album } from '../database/entites/album';
 import { filterByPage } from '../database/utils/page.filter';
 import { PageFilter } from '../database/utils/type.filter';
 import { publicUid } from '../vars';
+import { Music } from '../database/entites/music';
 
 export type AlbumQueryFilter = {
   artistId: number;
@@ -27,11 +28,9 @@ export class AlbumService {
     queryBuilder = queryBuilder
       .leftJoin('album.users', 'users')
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
-    queryBuilder = queryBuilder
-      .leftJoinAndSelect('album.music', 'music')
-      .leftJoinAndSelect('music.artist', 'artist');
+    queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
     queryBuilder.orderBy(order);
-    return queryBuilder.getManyAndCount();
+    return await queryBuilder.getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {
@@ -40,6 +39,7 @@ export class AlbumService {
     queryBuilder
       .leftJoin('album.users', 'users')
       .leftJoinAndSelect('album.music', 'music')
+      .leftJoinAndSelect('album.artist', 'artist')
       .leftJoinAndSelect('music.artist', 'musicArtist')
       .where('album.id = :id', { id })
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] });

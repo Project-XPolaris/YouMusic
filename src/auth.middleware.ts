@@ -12,6 +12,7 @@ export class AuthMiddleware implements NestMiddleware {
   ) {}
   private auth() {
     return async (req, res, next) => {
+      req.nid = req.headers.notification;
       if (this.configService.get('auth.enable')) {
         const rawAuth = req.headers.authorization;
         if (rawAuth === undefined) {

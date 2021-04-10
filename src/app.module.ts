@@ -33,6 +33,7 @@ import { Genre } from './database/entites/genre';
 import { SpotifyController } from './spotify/spotify.controller';
 import { SpotifyAuth } from './database/entites/spotify';
 import { AccountModule } from './account/account.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AccountModule } from './account/account.module';
       load: [configuration],
     }),
     HttpModule,
+    NotificationModule,
     TaskModule,
     MusicModule,
     ArtistModule,
@@ -66,7 +68,11 @@ import { AccountModule } from './account/account.module';
     SpotifyController,
     InfoController,
   ],
-  providers: [AppService, MusicBrainService, SpotifyService],
+  providers: [
+    AppService,
+    MusicBrainService,
+    SpotifyService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
