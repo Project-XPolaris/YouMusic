@@ -57,40 +57,36 @@ export class SpotifyService {
     }
   }
   async renewAccessToken(refreshToken: string, uid: string) {
-    try {
-      const response = await this.http
-        .request<SpotifyTokenResult>({
-          url: 'https://accounts.spotify.com/api/token',
-          method: 'post',
-          params: {
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken,
-          },
-          // 'headers' are custom headers to be sent
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Basic ${stringToBase64(
-              `${this.configService.get(
-                'spotify.clientId',
-              )}:${this.configService.get('spotify.secret')}`,
-            )}`,
-          },
-        })
-        .toPromise();
-      let authRec = await getRepository(SpotifyAuth).findOne({ uid });
-      if (authRec === undefined) {
-        authRec = new SpotifyAuth();
-      }
-      authRec.uid = uid;
-      authRec.refresh_token = response.data.refresh_token;
-      authRec.scope = response.data.scope;
-      authRec.accessToken = response.data.access_token;
-      authRec.exp = response.data.expires_in;
-      await getRepository(SpotifyAuth).save(authRec);
-      return response.data.access_token;
-    } catch (e) {
-      console.log(e);
+    const response = await this.http
+      .request<SpotifyTokenResult>({
+        url: 'https://accounts.spotify.com/api/token',
+        method: 'post',
+        params: {
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+        },
+        // 'headers' are custom headers to be sent
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${stringToBase64(
+            `${this.configService.get(
+              'spotify.clientId',
+            )}:${this.configService.get('spotify.secret')}`,
+          )}`,
+        },
+      })
+      .toPromise();
+    let authRec = await getRepository(SpotifyAuth).findOne({ uid });
+    if (authRec === undefined) {
+      authRec = new SpotifyAuth();
     }
+    authRec.uid = uid;
+    authRec.refresh_token = response.data.refresh_token;
+    authRec.scope = response.data.scope;
+    authRec.accessToken = response.data.access_token;
+    authRec.exp = response.data.expires_in;
+    await getRepository(SpotifyAuth).save(authRec);
+    return response.data.access_token;
   }
   async getUserAccessToken(uid: string) {
     const auth = await getRepository(SpotifyAuth).findOne({ uid });
@@ -100,9 +96,12 @@ export class SpotifyService {
     const isExpire = dayjs(auth.updatedAt)
       .add(auth.exp, 'seconds')
       .isBefore(dayjs());
-    if (isExpire) {
+    try {
       return await this.renewAccessToken(auth.refresh_token, uid);
+    } catch (e) {
+      console.log(e);
     }
+
     return auth.accessToken;
   }
   async unlink(uid: string): Promise<void> {

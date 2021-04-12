@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { getRepository } from 'typeorm';
 import { Music } from 'src/database/entites/music';
@@ -9,16 +9,16 @@ import { MediaLibrary } from '../database/entites/library';
 import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
 import { Artist } from '../database/entites/artist';
-import {
-  getOrCreateAlbum,
-  getOrCreateArtist,
-  saveMusicCoverFile,
-} from '../services/music';
+import { getOrCreateAlbum, getOrCreateArtist, saveMusicCoverFile } from '../services/music';
 import { User } from '../database/entites/user';
 import { Album } from '../database/entites/album';
 import * as mm from 'music-metadata';
 import * as path from 'path';
+import * as Path from 'path';
 import { Genre } from '../database/entites/genre';
+import { ApplicationConfig } from '../config';
+import { v4 } from 'uuid';
+import * as db from 'mime-db';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -30,6 +30,7 @@ export type MusicQueryFilter = {
 
 @Injectable()
 export class MusicService {
+  constructor(private httpService: HttpService) {}
   async findAll(filter: MusicQueryFilter) {
     const musicRepository = getRepository(Music);
     let queryBuilder = musicRepository.createQueryBuilder('music');
@@ -205,5 +206,42 @@ export class MusicService {
       await music.album.setCover(coverfile.buffer);
       await getRepository(Album).save(music.album);
     }
+  }
+  async setMusicCoverFromUrl(musicId: number, url: string) {
+    const response = await this.httpService
+      .request({
+        url,
+        method: 'GET',
+        responseType: 'arraybuffer',
+      })
+      .toPromise();
+    const imageBuf = Buffer.from(response.data, 'binary');
+    const mime = db[response.headers['content-type']].extensions[0];
+    const music = await getRepository(Music).findOne(musicId, {
+      relations: ['album'],
+    });
+    if (!music.album.cover) {
+      const saveFilename = `${v4()}.${
+        db[response.headers['content-type']].extensions[0]
+      }`;
+      const savePath = Path.join(ApplicationConfig.coverDir, saveFilename);
+      await fs.promises.writeFile(savePath, imageBuf);
+      music.album.cover = saveFilename;
+      await getRepository(Album).save(music.album);
+    }
+    const tags = {
+      image: {
+        mime,
+        type: {
+          id: 3,
+          name: 'front cover',
+        },
+        description: 'cover',
+        imageBuffer: imageBuf,
+      },
+    };
+    const file = await fs.promises.readFile(music.path);
+    const buf = await id3Promise.update(tags, file);
+    await fs.promises.writeFile(music.path, buf);
   }
 }
