@@ -68,11 +68,7 @@ import { NotificationModule } from './notification/notification.module';
     SpotifyController,
     InfoController,
   ],
-  providers: [
-    AppService,
-    MusicBrainService,
-    SpotifyService,
-  ],
+  providers: [AppService, MusicBrainService, SpotifyService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

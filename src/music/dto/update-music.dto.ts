@@ -10,3 +10,7 @@ export class UpdateMusicDto extends PartialType(CreateMusicDto) {
   genre?: string[];
   disc?: number;
 }
+
+export class SetMusicCoverFromUrlRequestBody {
+  url:string
+}

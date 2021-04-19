@@ -1,7 +1,19 @@
-import { BadRequestException, Controller, Get, Param, Query, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { BaseArtistTemplate } from '../template/artist';
 import { getOrderFromQueryString } from '../utils/query';
+import { UpdateArtistAvatarFromUrl } from './dto/update-artist.dto';
 
 @Controller('artist')
 export class ArtistController {
@@ -27,13 +39,46 @@ export class ArtistController {
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Req() req: Request & { uid: string },
   ) {
+    if (!(await this.artistService.checkAccessible(id, req.uid))) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'artist not accessible',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     const artist = await this.artistService.findOne(+id, req.uid);
     if (artist === undefined) {
       throw new BadRequestException('Invalid artist');
     }
     return new BaseArtistTemplate(artist);
+  }
+  @Post(':id/avatar/url')
+  async setAvatarFromUrl(
+    @Body() body: UpdateArtistAvatarFromUrl,
+    @Param('id') id: number,
+    @Req() req: Request & { uid: string },
+  ) {
+    if (!(await this.artistService.checkAccessible(id, req.uid))) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'artist not accessible',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const artist = await this.artistService.updateArtistAvatarFromUrl(
+      id,
+      body.url,
+    );
+    return {
+      success: true,
+      data: new BaseArtistTemplate(artist),
+    };
   }
 }

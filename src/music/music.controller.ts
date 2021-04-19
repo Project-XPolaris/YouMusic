@@ -13,7 +13,10 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { MusicService } from './music.service';
-import { UpdateMusicDto } from './dto/update-music.dto';
+import {
+  SetMusicCoverFromUrlRequestBody,
+  UpdateMusicDto,
+} from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
@@ -84,6 +87,17 @@ export class MusicController {
     @UploadedFile() file: any,
   ) {
     await this.musicService.updateMusicCover(id, file);
+    return {
+      success: true,
+    };
+  }
+
+  @Post(':id/cover/url')
+  async setCoverFromUrl(
+    @Param('id') id: number,
+    @Body() body: SetMusicCoverFromUrlRequestBody,
+  ) {
+    await this.musicService.setMusicCoverFromUrl(id, body.url);
     return {
       success: true,
     };
