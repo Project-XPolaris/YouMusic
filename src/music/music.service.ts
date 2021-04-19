@@ -34,6 +34,9 @@ export class MusicService {
     const musicRepository = getRepository(Music);
     let queryBuilder = musicRepository.createQueryBuilder('music');
     queryBuilder = queryBuilder
+      .offset((filter.page - 1) * filter.pageSize)
+      .limit(filter.pageSize);
+    queryBuilder = queryBuilder
       .leftJoinAndSelect(
         MediaLibrary,
         'library',

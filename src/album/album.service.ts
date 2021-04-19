@@ -17,7 +17,9 @@ export class AlbumService {
   async findAll(filter: AlbumQueryFilter) {
     const albumRepository = getRepository(Album);
     let queryBuilder = albumRepository.createQueryBuilder('album');
-    queryBuilder = filterByPage<Album>(filter, queryBuilder);
+    queryBuilder = queryBuilder
+      .offset((filter.page - 1) * filter.pageSize)
+      .take(filter.pageSize);
     if (filter.artistId > 0) {
       queryBuilder.where('artist.id = :id', { id: filter.artistId });
     }

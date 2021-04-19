@@ -1,4 +1,4 @@
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder } from 'typeorm';
 
 export const filterByPage = <T>(
   filter: { page?: number; pageSize?: number } | undefined = {
@@ -8,5 +8,7 @@ export const filterByPage = <T>(
   queryBuilder: SelectQueryBuilder<T>,
 ) => {
   const { page = 1, pageSize = 20 } = filter;
-  return queryBuilder.offset((page - 1) * pageSize).limit(pageSize);
+  return queryBuilder
+    .offset((Number(page) - 1) * Number(pageSize))
+    .limit(Number(pageSize));
 };
