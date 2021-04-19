@@ -75,7 +75,10 @@ export class LibraryController {
         reason: 'library not accessible',
       };
     }
-    return this.libraryService.remove(+id);
+    await this.libraryService.remove(+id);
+    return {
+      result: 'success',
+    };
   }
 
   @Post(':id/scan')

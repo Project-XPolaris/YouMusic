@@ -44,7 +44,7 @@ export class Artist {
 
   static async recycleEmptyMusicArtist() {
     const artists = await getRepository(Artist).find({
-      relations: ['music', 'albums'],
+      relations: ['music', 'album'],
     });
     for (const artist of artists) {
       if (artist.music.length === 0) {
