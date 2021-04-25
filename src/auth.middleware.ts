@@ -19,9 +19,13 @@ export class AuthMiddleware implements NestMiddleware {
           req.uid = '-1';
         } else {
           const tokenString = rawAuth.replace('Bearer ', '');
-          const { uid } = await this.authService.check(tokenString);
-          if (uid) {
-            req.uid = uid;
+          try {
+            const { uid } = await this.authService.check(tokenString);
+            if (uid) {
+              req.uid = uid;
+            }
+          } catch (e) {
+            req.uid = '-1';
           }
         }
       } else {
