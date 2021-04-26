@@ -111,7 +111,7 @@ export class TaskService {
 
         // add cover as avatar whether artist avatar is null
         for (const artist of artists) {
-          if (artist.avatar === undefined || artist.avatar === null) {
+          if (!artist.avatar) {
             const artistAvatarFilename = `${uuidv4()}.jpg`;
             await sharp(cover.data)
               .resize({ width: 512 })

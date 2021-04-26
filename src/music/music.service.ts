@@ -9,7 +9,11 @@ import { MediaLibrary } from '../database/entites/library';
 import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
 import { Artist } from '../database/entites/artist';
-import { getOrCreateAlbum, getOrCreateArtist, saveMusicCoverFile } from '../services/music';
+import {
+  getOrCreateAlbum,
+  getOrCreateArtist,
+  saveMusicCoverFile,
+} from '../services/music';
 import { User } from '../database/entites/user';
 import { Album } from '../database/entites/album';
 import * as mm from 'music-metadata';
