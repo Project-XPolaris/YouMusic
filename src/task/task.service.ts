@@ -23,15 +23,19 @@ import sharp = require('sharp');
 import * as fs from 'fs';
 import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
+import * as db from 'mime-db';
 
 export enum TaskStatus {
   Running = 'Running',
   Done = 'Done',
+  Err = 'Error',
 }
+
 export interface Task {
   id: number;
   status: TaskStatus;
 }
+
 export const TaskErrors = {
   OnlyOneTask: 'OnlyOneTask',
   LibraryNotFound: 'LibraryNotFound',
@@ -40,6 +44,7 @@ export const TaskErrors = {
 @Injectable()
 export class TaskService {
   tasks: Array<Task> = [];
+
   private async process(library: MediaLibrary, uid: string) {
     await syncLibrary(library);
     const result = await scanFile(library.path);
@@ -48,12 +53,20 @@ export class TaskService {
     // get owner
     const user = await getRepository(User).findOne({ uid });
     // read music tag
+    const savedAlbum: Album[] = [];
+    const mms = [];
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
+      mms.push(musicID3);
       let album: Album = undefined;
       if (musicID3.common.album) {
-        album = await getOrCreateAlbum(musicID3.common.album, user);
+        // album = savedAlbum.find((it) => it.name === musicID3.common.album);
+        if (!album) {
+          album = await getOrCreateAlbum(musicID3.common.album, user);
+          savedAlbum.push(album);
+        }
       }
+
       let rawArtists = [];
       if (musicID3.common.artist) {
         rawArtists.push(musicID3.common.artist);
@@ -76,6 +89,7 @@ export class TaskService {
       if (musicID3.format.duration) {
         duration = musicID3.format.duration;
       }
+
       const genres: Genre[] = [];
       if (musicID3.common.genre) {
         for (const genreName of musicID3.common.genre) {
@@ -98,12 +112,15 @@ export class TaskService {
       await getRepository(Music).save(music);
       await addMusicToAlbum(album, music);
       // refresh album artist
-      await album.refreshArtist();
-      // save cover
+      if (album) {
+        await album.refreshArtist();
+      }
+      // // save cover
       const pics = musicID3.common.picture;
-      if (pics && pics.length > 0 && album.cover === null) {
+      if (pics && pics.length > 0 && album && !album.cover) {
         const cover = pics[0];
-        const coverFilename = `${uuidv4()}.jpg`;
+        const ext = db[cover.format].extensions[0];
+        const coverFilename = `${uuidv4()}.${ext}`;
         await sharp(cover.data)
           .resize({ width: 512 })
           .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
@@ -112,7 +129,7 @@ export class TaskService {
         // add cover as avatar whether artist avatar is null
         for (const artist of artists) {
           if (!artist.avatar) {
-            const artistAvatarFilename = `${uuidv4()}.jpg`;
+            const artistAvatarFilename = `${uuidv4()}.${ext}`;
             await sharp(cover.data)
               .resize({ width: 512 })
               .toFile(
@@ -126,6 +143,7 @@ export class TaskService {
     }
     return result;
   }
+
   async newTask(
     libraryId: number,
     uid: string,
@@ -172,12 +190,13 @@ export class TaskService {
           onComplete(library);
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        console.log(e);
         this.tasks = this.tasks.map((it) => {
           if (it.id === library.id) {
             return {
               ...it,
-              status: TaskStatus.Done,
+              status: TaskStatus.Err,
             };
           }
           return it;
