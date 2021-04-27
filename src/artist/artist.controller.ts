@@ -17,12 +17,15 @@ import { UpdateArtistAvatarFromUrl } from './dto/update-artist.dto';
 
 @Controller('artist')
 export class ArtistController {
-  constructor(private readonly artistService: ArtistService) {}
+  constructor(private readonly artistService: ArtistService) {
+  }
+
   @Get()
   async findAll(
     @Query('page') page = 1,
     @Query('pageSize') pageSize = 20,
     @Query('order') order = '',
+    @Query('search') search = '',
     @Req() req: Request & { uid: string },
   ) {
     const [data, count] = await this.artistService.findAll({
@@ -30,6 +33,7 @@ export class ArtistController {
       pageSize,
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
+      search,
     });
     return {
       count,
@@ -57,6 +61,7 @@ export class ArtistController {
     }
     return new BaseArtistTemplate(artist);
   }
+
   @Post(':id/avatar/url')
   async setAvatarFromUrl(
     @Body() body: UpdateArtistAvatarFromUrl,

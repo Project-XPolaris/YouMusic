@@ -14,6 +14,7 @@ import { getArrayBufferFromUrl } from '../utils/request';
 export type ArtistFilter = PageFilter & {
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
+  search: string;
 };
 @Injectable()
 export class ArtistService {
@@ -26,6 +27,11 @@ export class ArtistService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`artist.${fieldName}`] = filter.order[fieldName];
     });
+    if (filter.search.length > 0) {
+      queryBuilder = queryBuilder.andWhere('artist.name like :search', {
+        search: `%${filter.search}%`,
+      });
+    }
     queryBuilder = queryBuilder
       .leftJoin('artist.users', 'users')
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
