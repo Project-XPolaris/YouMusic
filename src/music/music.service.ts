@@ -134,12 +134,13 @@ export class MusicService {
         artists.push(artist);
       }
       music.artist = artists;
+
       tags['artist'] = dto.artist.join(';');
     }
-    let prevAlbumId = -1;
+    let prevAlbum: Album;
     if (dto.album) {
       if (music.album) {
-        prevAlbumId = music.album.id;
+        prevAlbum = music.album;
       }
       music.album = await getOrCreateAlbum(dto.album, user);
       // generate cover
@@ -178,13 +179,15 @@ export class MusicService {
     await fs.promises.writeFile(music.path, buf);
     await getRepository(Music).save(music);
     // recycle old album
-    if (prevAlbumId !== -1) {
-      await Album.recycle(prevAlbumId);
+    if (prevAlbum) {
+      await prevAlbum.refreshArtist();
+      await Album.recycle(prevAlbum.id);
     }
+    await music.album.refreshArtist();
   }
   async updateMusicCover(id: number, coverfile: any) {
     const music = await getRepository(Music).findOne(id, {
-      relations: ['album'],
+      relations: ['album', 'album.music'],
     });
     if (music === undefined || music === null) {
       throw new Error('music not exist');
@@ -207,7 +210,9 @@ export class MusicService {
 
     if (
       music.album &&
-      (music.album.cover === undefined || music.album.cover === null)
+      (music.album.cover === undefined ||
+        music.album.cover === null ||
+        music.album.music.length === 1)
     ) {
       // save album cover
       await music.album.setCover(coverfile.buffer);

@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UploadedFile } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
-import { filterByPage } from '../database/utils/page.filter';
 import { PageFilter } from '../database/utils/type.filter';
 import { publicUid } from '../vars';
-import { Music } from '../database/entites/music';
+import { UpdateAlbumDto } from './dto/update-album.dto';
+import * as fs from 'fs';
+import { Promise as id3Promise } from 'node-id3';
+import * as path from 'path';
 
 export type AlbumQueryFilter = {
   artistId: number;
@@ -46,5 +48,40 @@ export class AlbumService {
       .where('album.id = :id', { id })
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] });
     return queryBuilder.getOne();
+  }
+
+  async updateAlbum(id: number, data: UpdateAlbumDto) {
+    let album = await getRepository(Album).findOne(id, {
+      relations: ['music'],
+    });
+    if (!album) {
+      throw new Error('album not found');
+    }
+    if (data.name) {
+      album.name = data.name;
+      for (const music of album.music) {
+        const file = await fs.promises.readFile(music.path);
+        const buf = await id3Promise.update({ album: album.name }, file);
+        await fs.promises.writeFile(music.path, buf);
+      }
+    }
+    album = await getRepository(Album).save(album);
+    return album;
+  }
+
+  async updateCoverFromFile(id: number, file: any) {
+    let album = await getRepository(Album).findOne(id, {
+      relations: ['music'],
+    });
+    if (!album) {
+      throw new Error('album not found');
+    }
+    await album.setCover(file.buffer);
+    const mime = path.extname(file.originalname).replace('.', '');
+    for (const music of album.music) {
+      await music.writeMusicFileCover(mime, file.buffer);
+    }
+    album = await getRepository(Album).save(album);
+    return album;
   }
 }

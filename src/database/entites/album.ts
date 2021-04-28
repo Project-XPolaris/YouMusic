@@ -96,10 +96,6 @@ export class Album {
       .leftJoinAndSelect('artist.music', 'music')
       .where('music.albumId = :id', { id: this.id })
       .getMany();
-    // const artists:Array<Artist> = [];
-    // musicList.forEach((it) => it.artist.forEach((artist) => {
-    //   if (artists.find(exist => exist.id === artist.id))
-    // }));
     this.artist = musicList;
     await getRepository(Album).save(this);
   }

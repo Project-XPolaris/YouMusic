@@ -13,7 +13,8 @@ import {
 import { ArtistService } from './artist.service';
 import { BaseArtistTemplate } from '../template/artist';
 import { getOrderFromQueryString } from '../utils/query';
-import { UpdateArtistAvatarFromUrl } from './dto/update-artist.dto';
+import { UpdateArtistAvatarFromUrl, UpdateArtistDTO } from './dto/update-artist.dto';
+import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 
 @Controller('artist')
 export class ArtistController {
@@ -59,6 +60,25 @@ export class ArtistController {
     if (artist === undefined) {
       throw new BadRequestException('Invalid artist');
     }
+    return new BaseArtistTemplate(artist);
+  }
+
+  @Patch(':id')
+  async updateArtist(
+    @Param('id') id: number,
+    @Req() req: Request & { uid: string },
+    @Body() body: UpdateArtistDTO,
+  ) {
+    if (!(await this.artistService.checkAccessible(id, req.uid))) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'artist not accessible',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const artist = await this.artistService.updateArtist(+id, body);
     return new BaseArtistTemplate(artist);
   }
 

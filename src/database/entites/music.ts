@@ -14,6 +14,9 @@ import { Album } from './album';
 import { MediaLibrary } from './library';
 import { User } from './user';
 import { Genre } from './genre';
+import * as fs from 'fs';
+import NodeID3, { Promise as id3Promise } from 'node-id3';
+import { Buffer } from 'buffer';
 
 @Entity()
 export class Music {
@@ -70,5 +73,33 @@ export class Music {
     if (music?.album?.id) {
       await Album.recycle(music.album.id);
     }
+  };
+  writeMusicFileCover = async (mime: string, imageBuf: Buffer) => {
+    const tags = {
+      image: {
+        mime,
+        type: {
+          id: 3,
+          name: 'front cover',
+        },
+        description: 'cover',
+        imageBuffer: imageBuf,
+      },
+    };
+    const file = await fs.promises.readFile(this.path);
+    const buf = await id3Promise.update(tags, file);
+    await fs.promises.writeFile(this.path, buf);
+  };
+
+  readMusicID3 = async (tags: NodeID3.Tags) => {
+    const file = await fs.promises.readFile(this.path);
+    const buf = await id3Promise.update(tags, file);
+    await fs.promises.writeFile(this.path, buf);
+  };
+
+  writeMusicID3 = async (tags: NodeID3.Tags) => {
+    const file = await fs.promises.readFile(this.path);
+    const buf = await id3Promise.update(tags, file);
+    await fs.promises.writeFile(this.path, buf);
   };
 }

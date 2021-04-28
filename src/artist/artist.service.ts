@@ -10,15 +10,18 @@ import { ApplicationConfig } from '../config';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getArrayBufferFromUrl } from '../utils/request';
+import { UpdateArtistDTO } from './dto/update-artist.dto';
 
 export type ArtistFilter = PageFilter & {
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
 };
+
 @Injectable()
 export class ArtistService {
   constructor(private httpService: HttpService) {}
+
   async findAll(filter: ArtistFilter) {
     const artistRepository = getRepository(Artist);
     let queryBuilder = artistRepository.createQueryBuilder('artist');
@@ -47,6 +50,7 @@ export class ArtistService {
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] })
       .getOne();
   }
+
   async updateArtistAvatarFromUrl(id: number, url: string) {
     const artist = await getRepository(Artist).findOne(id);
     if (!artist) {
@@ -69,6 +73,7 @@ export class ArtistService {
     artist.avatar = saveFilename;
     return await getRepository(Artist).save(artist);
   }
+
   async checkAccessible(id: number, uid: string): Promise<boolean> {
     const artist = await getRepository(Artist).findOne(id, {
       relations: ['users'],
@@ -77,5 +82,25 @@ export class ArtistService {
       return false;
     }
     return Boolean(artist.users.find((it) => it.uid === uid));
+  }
+
+  async updateArtist(id: number, data: UpdateArtistDTO) {
+    let artist = await getRepository(Artist).findOne(id, {
+      relations: ['music', 'music.artist'],
+    });
+    if (data.name) {
+      const oldName = data.name;
+      artist.name = data.name;
+      for (const music of artist.music) {
+        await music.writeMusicID3({
+          artist: [
+            ...music.artist.map((it) => it.name).filter((it) => it !== oldName),
+            data.name,
+          ].join(';'),
+        });
+      }
+    }
+    artist = await getRepository(Artist).save(artist);
+    return artist;
   }
 }
