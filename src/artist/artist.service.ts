@@ -89,7 +89,7 @@ export class ArtistService {
       relations: ['music', 'music.artist'],
     });
     if (data.name) {
-      const oldName = data.name;
+      const oldName = artist.name;
       artist.name = data.name;
       for (const music of artist.music) {
         await music.writeMusicID3({
