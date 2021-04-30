@@ -34,6 +34,7 @@ export class MusicController {
     @Query('album') albumId = 0,
     @Query('ids') ids = '',
     @Query('order') order = '',
+    @Query('search') search = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -44,6 +45,7 @@ export class MusicController {
       ids: ids.split(','),
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
+      search,
     });
     return {
       count,

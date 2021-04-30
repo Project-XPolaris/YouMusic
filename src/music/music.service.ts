@@ -30,6 +30,7 @@ export type MusicQueryFilter = {
   ids: number[] | string[];
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
+  search: string;
 } & PageFilter;
 
 @Injectable()
@@ -38,6 +39,7 @@ export class MusicService {
   async findAll(filter: MusicQueryFilter) {
     const musicRepository = getRepository(Music);
     let queryBuilder = musicRepository.createQueryBuilder('music');
+
     queryBuilder = queryBuilder
       .offset((filter.page - 1) * filter.pageSize)
       .limit(filter.pageSize);
@@ -66,6 +68,11 @@ export class MusicService {
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
       queryBuilder = queryBuilder.andWhere('music.id IN (:...ids)', {
         ids: filter.ids,
+      });
+    }
+    if (filter.search.length > 0) {
+      queryBuilder.andWhere('music.title like :title', {
+        title: `%${filter.search}%`,
       });
     }
 

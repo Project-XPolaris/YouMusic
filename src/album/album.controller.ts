@@ -3,9 +3,12 @@ import {
   Body,
   Controller,
   Get,
-  Param, Post,
+  Param,
+  Post,
   Query,
-  Req, UploadedFile, UseInterceptors,
+  Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AlbumService } from './album.service';
 import { BaseAlbumTemplate } from '../template/album';
@@ -23,6 +26,7 @@ export class AlbumController {
     @Query('pageSize') pageSize = 10,
     @Query('artist') artistId = 0,
     @Query('order') order = '',
+    @Query('search') search = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
@@ -31,6 +35,7 @@ export class AlbumController {
       artistId,
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
+      search
     });
     return {
       count,

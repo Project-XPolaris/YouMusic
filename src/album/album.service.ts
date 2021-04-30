@@ -12,6 +12,7 @@ export type AlbumQueryFilter = {
   artistId: number;
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
+  search: string;
 } & PageFilter;
 
 @Injectable()
@@ -24,6 +25,11 @@ export class AlbumService {
       .take(filter.pageSize);
     if (filter.artistId > 0) {
       queryBuilder.where('artist.id = :id', { id: filter.artistId });
+    }
+    if (filter.search.length > 0) {
+      queryBuilder.andWhere('album.name like :search', {
+        search: `%${filter.search}%`,
+      });
     }
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
