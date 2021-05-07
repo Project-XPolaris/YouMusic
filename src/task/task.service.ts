@@ -24,6 +24,7 @@ import * as fs from 'fs';
 import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
 import * as db from 'mime-db';
+import { replaceExt } from '../utils/string';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -109,6 +110,17 @@ export class TaskService {
       });
       music.artist = artists;
       music.genre = genres;
+
+      // find out lyrics
+      const targetLyricsPath = replaceExt(musicFilePath, '.lrc');
+      try {
+        if (fs.existsSync(targetLyricsPath)) {
+          //file exists
+          music.lyric = targetLyricsPath;
+        }
+      } catch (err) {
+        // without lrc
+      }
       await getRepository(Music).save(music);
       await addMusicToAlbum(album, music);
       // refresh album artist
@@ -119,24 +131,27 @@ export class TaskService {
       const pics = musicID3.common.picture;
       if (pics && pics.length > 0 && album && !album.cover) {
         const cover = pics[0];
-        const ext = db[cover.format].extensions[0];
-        const coverFilename = `${uuidv4()}.${ext}`;
-        await sharp(cover.data)
-          .resize({ width: 512 })
-          .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
-        await saveAlbumCover(album.id, coverFilename);
+        const mime = db[cover.format];
+        if (mime) {
+          const ext = mime.extensions[0];
+          const coverFilename = `${uuidv4()}.${ext}`;
+          await sharp(cover.data)
+            .resize({ width: 512 })
+            .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
+          await saveAlbumCover(album.id, coverFilename);
 
-        // add cover as avatar whether artist avatar is null
-        for (const artist of artists) {
-          if (!artist.avatar) {
-            const artistAvatarFilename = `${uuidv4()}.${ext}`;
-            await sharp(cover.data)
-              .resize({ width: 512 })
-              .toFile(
-                path.join(ApplicationConfig.coverDir, artistAvatarFilename),
-              );
-            artist.avatar = artistAvatarFilename;
-            await saveArtist(artist);
+          // add cover as avatar whether artist avatar is null
+          for (const artist of artists) {
+            if (!artist.avatar) {
+              const artistAvatarFilename = `${uuidv4()}.${ext}`;
+              await sharp(cover.data)
+                .resize({ width: 512 })
+                .toFile(
+                  path.join(ApplicationConfig.coverDir, artistAvatarFilename),
+                );
+              artist.avatar = artistAvatarFilename;
+              await saveArtist(artist);
+            }
           }
         }
       }
