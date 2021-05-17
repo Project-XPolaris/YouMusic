@@ -1,0 +1,7 @@
+{
+  "app_name": "YouMusic Service",
+  "auto_start": false,
+  "type":"Service",
+  "service_name":"YouMusicCoreService.service",
+  "icon":"icon.png"
+}

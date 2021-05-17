@@ -1,0 +1,6 @@
+{
+    "installType":"service",
+    "name":"youmusiccore",
+    "installScript":"./install.sh",
+    "uninstallScript":"./uninstall.sh"
+}
