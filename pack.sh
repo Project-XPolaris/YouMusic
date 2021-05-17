@@ -9,3 +9,8 @@ cp ./docker-compose.yml ./app-output
 cp ./nest-cli.json ./app-output
 cp ./tsconfig.build.json ./app-output
 cp ./tsconfig.build.json ./app-output
+cp ./ulist.json ./app-output
+cp ./youplus.json ./app-output
+cp ./icon.png ./app-output
+cp ./install.sh ./app-output
+cp ./uninstall.sh ./app-output

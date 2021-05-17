@@ -28,8 +28,8 @@ export class MusicController {
 
   @Get()
   async findAll(
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = 20,
+    @Query('page') page = '1',
+    @Query('pageSize') pageSize = '20',
     @Query('artist') artistId = 0,
     @Query('album') albumId = 0,
     @Query('ids') ids = '',
@@ -38,8 +38,8 @@ export class MusicController {
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
-      page,
-      pageSize,
+      page: Number(page),
+      pageSize: Number(pageSize),
       artistId: Number(artistId),
       albumId,
       ids: ids.split(','),
@@ -47,6 +47,7 @@ export class MusicController {
       uid: req.uid,
       search,
     });
+
     return {
       count,
       data: list.map((music) => new BaseMusicTemplate(music)),

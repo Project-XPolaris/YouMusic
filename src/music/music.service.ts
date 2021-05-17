@@ -1,6 +1,6 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import { getRepository } from 'typeorm';
+import { getRepository, ILike, In, Raw } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
@@ -23,11 +23,12 @@ import { Genre } from '../database/entites/genre';
 import { ApplicationConfig } from '../config';
 import { v4 } from 'uuid';
 import * as db from 'mime-db';
+import { uniq } from 'lodash';
 
 export type MusicQueryFilter = {
   artistId: number;
   albumId: number;
-  ids: number[] | string[];
+  ids: string[];
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
@@ -36,53 +37,42 @@ export type MusicQueryFilter = {
 @Injectable()
 export class MusicService {
   constructor(private httpService: HttpService) {}
+
   async findAll(filter: MusicQueryFilter) {
     const musicRepository = getRepository(Music);
-    let queryBuilder = musicRepository.createQueryBuilder('music');
-
-    queryBuilder = queryBuilder
-      .offset((filter.page - 1) * filter.pageSize)
-      .limit(filter.pageSize);
-    queryBuilder = queryBuilder
-      .leftJoinAndSelect(
-        MediaLibrary,
-        'library',
-        'music.libraryId = library.id',
-      )
-      .leftJoin('library.users', 'users')
-      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
-    queryBuilder = queryBuilder
-      .leftJoinAndSelect('music.album', 'album')
-      .leftJoinAndSelect('music.artist', 'artists');
-    queryBuilder = filterByPage<Music>(filter, queryBuilder);
-    if (filter.artistId > 0) {
-      queryBuilder = queryBuilder.andWhere('artists.id = :id', {
-        id: filter.artistId,
-      });
-    }
+    // let queryBuilder = musicRepository.createQueryBuilder('music');
+    const where: any = {};
     if (filter.albumId > 0) {
-      queryBuilder = queryBuilder.andWhere('album.id = :id', {
+      where.album = {
         id: filter.albumId,
-      });
+      };
     }
-    if (filter.ids.length > 0 && filter.ids[0] !== '') {
-      queryBuilder = queryBuilder.andWhere('music.id IN (:...ids)', {
-        ids: filter.ids,
+    if (filter.artistId > 0) {
+      const artist = await getRepository(Artist).findOne(filter.artistId, {
+        relations: ['music'],
       });
+      if (artist) {
+        where.id = In(artist.music.map((it) => it.id));
+      }
+    }
+
+    if (filter.ids.length > 0 && filter.ids[0] !== '') {
+      where.id = In(filter.ids);
     }
     if (filter.search.length > 0) {
-      queryBuilder.andWhere('music.title like :title', {
-        title: `%${filter.search}%`,
-      });
+      where.title = ILike(`%${filter.search}%`);
     }
-
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`music.${fieldName}`] = filter.order[fieldName];
+      order[`${fieldName}`] = filter.order[fieldName];
     });
-    queryBuilder.orderBy(order);
-    // with album
-    return queryBuilder.getManyAndCount();
+    return musicRepository.findAndCount({
+      take: filter.pageSize,
+      skip: (filter.page - 1) * filter.pageSize,
+      order: filter.order,
+      where: where,
+      relations: ['album', 'artist'],
+    });
   }
 
   async findOne(id: number, uid: string) {
@@ -114,6 +104,7 @@ export class MusicService {
       .getCount();
     return count > 0;
   }
+
   async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
     const repo = await getRepository(Music);
     const music = await repo.findOne(id, { relations: ['album'] });
@@ -192,6 +183,7 @@ export class MusicService {
     }
     await music.album.refreshArtist();
   }
+
   async updateMusicCover(id: number, coverfile: any) {
     const music = await getRepository(Music).findOne(id, {
       relations: ['album', 'album.music'],
@@ -226,6 +218,7 @@ export class MusicService {
       await getRepository(Album).save(music.album);
     }
   }
+
   async setMusicCoverFromUrl(musicId: number, url: string) {
     const response = await this.httpService
       .request({

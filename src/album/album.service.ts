@@ -7,6 +7,7 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
 import * as path from 'path';
+import { Artist } from '../database/entites/artist';
 
 export type AlbumQueryFilter = {
   artistId: number;
@@ -23,8 +24,20 @@ export class AlbumService {
     queryBuilder = queryBuilder
       .offset((filter.page - 1) * filter.pageSize)
       .take(filter.pageSize);
+    queryBuilder = queryBuilder
+      .leftJoin('album.users', 'users')
+      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
     if (filter.artistId > 0) {
-      queryBuilder.where('artist.id = :id', { id: filter.artistId });
+      queryBuilder.where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('album.id')
+          .from(Artist, 'artist')
+          .leftJoin('artist.album', 'album')
+          .where('artist.id = :aid', { aid: filter.artistId })
+          .getQuery();
+        return 'album.id IN ' + subQuery;
+      });
     }
     if (filter.search.length > 0) {
       queryBuilder.andWhere('album.name like :search', {
@@ -35,9 +48,7 @@ export class AlbumService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`album.${fieldName}`] = filter.order[fieldName];
     });
-    queryBuilder = queryBuilder
-      .leftJoin('album.users', 'users')
-      .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+
     queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
     queryBuilder.orderBy(order);
     return await queryBuilder.getManyAndCount();
