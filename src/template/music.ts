@@ -13,6 +13,7 @@ export class BaseMusicTemplate {
   year?: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
+  lrc: string;
   constructor(music: Music) {
     this.id = music.id;
     this.title = music.title;
@@ -20,6 +21,9 @@ export class BaseMusicTemplate {
     this.updatedAt = formatDate(music.updatedAt);
     this.duration = music.duration;
     this.track = music.track;
+    if (music.lyric) {
+      this.lrc = `/file/lrc/${music.id}`;
+    }
     if (music.album) {
       this.album = new BaseAlbumTemplate(music.album);
     }

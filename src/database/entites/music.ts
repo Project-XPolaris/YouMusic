@@ -34,6 +34,8 @@ export class Music {
   duration: number;
   @Column({ nullable: true })
   disc: number;
+  @Column({ nullable: true })
+  lyric: string;
 
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,
