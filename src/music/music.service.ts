@@ -40,39 +40,55 @@ export class MusicService {
 
   async findAll(filter: MusicQueryFilter) {
     const musicRepository = getRepository(Music);
-    // let queryBuilder = musicRepository.createQueryBuilder('music');
-    const where: any = {};
+    const queryBuilder = musicRepository.createQueryBuilder('music');
+    queryBuilder
+      .take(filter.pageSize)
+      .skip((filter.page - 1) * filter.pageSize);
+    queryBuilder
+      .leftJoin('music.users', 'users')
+      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
     if (filter.albumId > 0) {
-      where.album = {
-        id: filter.albumId,
-      };
+      queryBuilder.andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('music.id')
+          .from(Album, 'album')
+          .leftJoin('album.music', 'music')
+          .where('album.id = :aid', { aid: filter.albumId })
+          .getQuery();
+        return 'music.id IN ' + subQuery;
+      });
     }
     if (filter.artistId > 0) {
-      const artist = await getRepository(Artist).findOne(filter.artistId, {
-        relations: ['music'],
+      queryBuilder.andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('music.id')
+          .from(Artist, 'artist')
+          .leftJoin('artist.music', 'music')
+          .where('artist.id = :aid', { aid: filter.artistId })
+          .getQuery();
+        return 'music.id IN ' + subQuery;
       });
-      if (artist) {
-        where.id = In(artist.music.map((it) => it.id));
-      }
     }
 
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
-      where.id = In(filter.ids);
+      queryBuilder.andWhereInIds(filter.ids);
     }
     if (filter.search.length > 0) {
-      where.title = ILike(`%${filter.search}%`);
+      queryBuilder.andWhere('music.title like :search', {
+        search: `%${filter.search}%`,
+      });
     }
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`${fieldName}`] = filter.order[fieldName];
+      order[`music.${fieldName}`] = filter.order[fieldName];
     });
-    return musicRepository.findAndCount({
-      take: filter.pageSize,
-      skip: (filter.page - 1) * filter.pageSize,
-      order: filter.order,
-      where: where,
-      relations: ['album', 'artist'],
-    });
+    queryBuilder
+      .leftJoinAndSelect('music.album', 'album')
+      .leftJoinAndSelect('music.artist', 'artist');
+    queryBuilder.orderBy(order);
+    return queryBuilder.getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {
