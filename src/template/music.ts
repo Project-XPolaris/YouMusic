@@ -2,6 +2,7 @@ import { formatDate } from '../utils/time';
 import { Music } from '../database/entites/music';
 import { BaseAlbumTemplate } from './album';
 import { BaseArtistTemplate } from './artist';
+import * as path from 'path';
 
 export class BaseMusicTemplate {
   id: number;
@@ -13,6 +14,7 @@ export class BaseMusicTemplate {
   year?: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
+  filename: string;
   lrc: string;
   constructor(music: Music) {
     this.id = music.id;
@@ -21,6 +23,7 @@ export class BaseMusicTemplate {
     this.updatedAt = formatDate(music.updatedAt);
     this.duration = music.duration;
     this.track = music.track;
+    this.filename = path.basename(music.path);
     if (music.lyric) {
       this.lrc = `/file/lrc/${music.id}`;
     }
