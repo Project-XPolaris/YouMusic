@@ -73,7 +73,7 @@ export class MusicService {
     }
 
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
-      queryBuilder.andWhereInIds(filter.ids);
+      queryBuilder.andWhere('music.id IN (:...ids)', { ids: filter.ids });
     }
     if (filter.search.length > 0) {
       queryBuilder.andWhere('music.title like :search', {
