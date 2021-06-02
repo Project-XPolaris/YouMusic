@@ -14,3 +14,4 @@ cp ./youplus.json ./app-output
 cp ./icon.png ./app-output
 cp ./install.sh ./app-output
 cp ./uninstall.sh ./app-output
+cp ./clean.sh ./app-output

@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { MediaLibrary } from '../database/entites/library';
 import { scanFile, syncLibrary } from '../services/scan';
 import { ApplicationConfig } from '../config';
-import { getRepository } from 'typeorm';
+import { getConnection, getRepository, In, QueryRunner } from 'typeorm';
 import { User } from '../database/entites/user';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
-  addMusicToAlbum,
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
@@ -19,12 +18,12 @@ import { Artist } from '../database/entites/artist';
 import { v4 as uuidv4 } from 'uuid';
 import { ServiceError } from '../error';
 import * as path from 'path';
-import sharp = require('sharp');
 import * as fs from 'fs';
 import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
 import * as db from 'mime-db';
 import { replaceExt } from '../utils/string';
+import sharp = require('sharp');
 
 export enum TaskStatus {
   Running = 'Running',
@@ -55,19 +54,22 @@ export class TaskService {
     const user = await getRepository(User).findOne({ uid });
     // read music tag
     const savedAlbum: Album[] = [];
+    const savedArtist: Artist[] = [];
+    const savedGenre: Genre[] = [];
     const mms = [];
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
       mms.push(musicID3);
       let album: Album = undefined;
       if (musicID3.common.album) {
-        // album = savedAlbum.find((it) => it.name === musicID3.common.album);
+        album = savedAlbum.find((it) => it.name === musicID3.common.album);
         if (!album) {
           album = await getOrCreateAlbum(musicID3.common.album, user);
           savedAlbum.push(album);
         }
       }
 
+      // get artist
       let rawArtists = [];
       if (musicID3.common.artist) {
         rawArtists.push(musicID3.common.artist);
@@ -75,29 +77,43 @@ export class TaskService {
       if (musicID3.common.artists) {
         rawArtists.push(...musicID3.common.artists);
       }
-
       rawArtists = uniq(rawArtists);
       const artists: Array<Artist> = [];
       for (const rawArtist of rawArtists) {
-        const artist = await getOrCreateArtist(rawArtist, user);
+        let artist = savedArtist.find((it: Artist) => it.name === rawArtist);
+        if (!artist) {
+          artist = await getOrCreateArtist(rawArtist, user);
+          savedArtist.push(artist);
+        }
         artists.push(artist);
       }
-      let title = path.basename(musicFilePath).split('.').shift();
+      // get title
+      let title = path
+        .basename(musicFilePath)
+        .replace(path.extname(musicFilePath), '');
       if (musicID3.common.title) {
         title = musicID3.common.title;
       }
+      // get duration
       let duration = 0;
       if (musicID3.format.duration) {
         duration = musicID3.format.duration;
       }
 
+      // get genre
       const genres: Genre[] = [];
       if (musicID3.common.genre) {
         for (const genreName of musicID3.common.genre) {
-          const genre = await Genre.createOrGet(genreName, user);
+          let genre = savedGenre.find((gen: Genre) => gen.name === genreName);
+          if (!genre) {
+            genre = await Genre.createOrGet(genreName, user);
+            savedGenre.push(genre);
+          }
           genres.push(genre);
         }
       }
+
+      // create music
       const music = await getOrCreateMusic({
         title,
         musicFilePath,
@@ -110,7 +126,7 @@ export class TaskService {
       });
       music.artist = artists;
       music.genre = genres;
-
+      music.album = album;
       // find out lyrics
       const targetLyricsPath = replaceExt(musicFilePath, '.lrc');
       try {
@@ -122,36 +138,38 @@ export class TaskService {
         // without lrc
       }
       await getRepository(Music).save(music);
-      await addMusicToAlbum(album, music);
       // refresh album artist
       if (album) {
         await album.refreshArtist();
       }
-      // // save cover
+      // save cover
       const pics = musicID3.common.picture;
       if (pics && pics.length > 0 && album && !album.cover) {
         const cover = pics[0];
         const mime = db[cover.format];
-        if (mime) {
-          const ext = mime.extensions[0];
-          const coverFilename = `${uuidv4()}.${ext}`;
-          await sharp(cover.data)
-            .resize({ width: 512 })
-            .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
-          await saveAlbumCover(album.id, coverFilename);
-
-          // add cover as avatar whether artist avatar is null
-          for (const artist of artists) {
-            if (!artist.avatar) {
-              const artistAvatarFilename = `${uuidv4()}.${ext}`;
-              await sharp(cover.data)
-                .resize({ width: 512 })
-                .toFile(
-                  path.join(ApplicationConfig.coverDir, artistAvatarFilename),
-                );
-              artist.avatar = artistAvatarFilename;
-              await saveArtist(artist);
-            }
+        if (!mime) {
+          continue;
+        }
+        const ext = mime.extensions[0];
+        const coverFilename = `${uuidv4()}.${ext}`;
+        const imageFileNamePath = path.join(
+          ApplicationConfig.coverDir,
+          coverFilename,
+        );
+        await sharp(cover.data)
+          .resize({ width: 512 })
+          .toFile(imageFileNamePath);
+        await saveAlbumCover(album.id, coverFilename);
+        album.cover = coverFilename;
+        for (const artist of artists) {
+          if (!artist.avatar) {
+            const artistAvatarFileName = `${uuidv4()}.${ext}`;
+            await fs.promises.copyFile(
+              imageFileNamePath,
+              path.join(ApplicationConfig.coverDir, artistAvatarFileName),
+            );
+            artist.avatar = artistAvatarFileName;
+            await saveArtist(artist);
           }
         }
       }

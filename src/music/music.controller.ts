@@ -83,7 +83,7 @@ export class MusicController {
   }
 
   @Post(':id/cover')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fieldSize: 50000000 } }))
   async updateMusicCover(
     @Param('id') id: number,
     @Req() req: Request & { uid: string },
