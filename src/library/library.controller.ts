@@ -27,9 +27,13 @@ export class LibraryController {
   @Post()
   async create(
     @Body() createLibraryDto: CreateLibraryDto,
-    @Req() req: Request & { uid: string },
+    @Req() req: Request & { uid: string; token: string },
   ) {
-    return await this.libraryService.create(createLibraryDto, req.uid);
+    return await this.libraryService.create(
+      createLibraryDto,
+      req.uid,
+      req.token,
+    );
   }
 
   @Get()

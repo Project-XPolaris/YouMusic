@@ -7,15 +7,29 @@ import { MediaLibrary } from '../database/entites/library';
 import { User } from '../database/entites/user';
 import { publicUid } from '../vars';
 import { Artist } from '../database/entites/artist';
+import { ConfigService } from '@nestjs/config';
+import { YouPlusService } from '../youplus/youplus.service';
 
 export type LibraryQueryFilter = PageFilter;
 
 @Injectable()
 export class LibraryService {
-  async create(createLibraryDto: CreateLibraryDto, uid: string) {
+  constructor(
+    private configService: ConfigService,
+    private youPlusService: YouPlusService,
+  ) {}
+  async create(createLibraryDto: CreateLibraryDto, uid: string, token: string) {
     const repo = getRepository(MediaLibrary);
     const newLibrary = new MediaLibrary();
     newLibrary.path = createLibraryDto.libraryPath;
+    if (this.configService.get('youplus.enablePath')) {
+      const result = await this.youPlusService.getRealpath(
+        createLibraryDto.libraryPath,
+        token,
+      );
+      newLibrary.path = result.path;
+    }
+
     const userRepo = await getRepository(User);
     const user: User = await userRepo.findOne({ uid });
     if (!user) {

@@ -34,6 +34,7 @@ import { SpotifyController } from './spotify/spotify.controller';
 import { SpotifyAuth } from './database/entites/spotify';
 import { AccountModule } from './account/account.module';
 import { NotificationModule } from './notification/notification.module';
+import { ExploreModule } from './explore/explore.module';
 
 @Module({
   imports: [
@@ -59,11 +60,11 @@ import { NotificationModule } from './notification/notification.module';
     LibraryModule,
     AuthModule,
     AccountModule,
+    ExploreModule,
   ],
   controllers: [
     AppController,
     FileController,
-    ExploreController,
     SearchController,
     SpotifyController,
     InfoController,

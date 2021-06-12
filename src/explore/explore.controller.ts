@@ -1,21 +1,26 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { readdir } from 'fs/promises';
-import { Dirent } from 'fs';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import * as path from 'path';
-import * as os from 'os';
+import { ExploreService, ReadDirItem } from './explore.service';
 
 @Controller('explore')
 export class ExploreController {
+  constructor(private readonly exploreService: ExploreService) {}
   @Get('/read')
-  async getFileList(@Query('path') readPath = '/') {
-    const files: Dirent[] = await readdir(readPath, { withFileTypes: true });
+  async getFileList(
+    @Query('path') readPath = '/',
+    @Req() req: Request & { token: string },
+  ) {
+    const files: ReadDirItem[] = await this.exploreService.readDir(
+      readPath,
+      req.token,
+    );
     return {
       path: readPath,
       sep: path.sep,
       files: files.map((diren) => ({
         name: diren.name,
-        path: path.join(readPath, diren.name),
-        type: diren.isDirectory() ? 'Directory' : 'File',
+        path: diren.path,
+        type: diren.type,
       })),
     };
   }
