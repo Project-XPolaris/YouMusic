@@ -35,6 +35,9 @@ import { SpotifyAuth } from './database/entites/spotify';
 import { AccountModule } from './account/account.module';
 import { NotificationModule } from './notification/notification.module';
 import { ExploreModule } from './explore/explore.module';
+import { NeteaseMusicController } from './neteasemusic/neteaseMusic.controller';
+import { NeteasemusicService } from './neteasemusic/neteasemusic.service';
+import { MetaModule } from './meta/meta.module';
 
 @Module({
   imports: [
@@ -61,6 +64,7 @@ import { ExploreModule } from './explore/explore.module';
     AuthModule,
     AccountModule,
     ExploreModule,
+    MetaModule
   ],
   controllers: [
     AppController,
@@ -68,8 +72,14 @@ import { ExploreModule } from './explore/explore.module';
     SearchController,
     SpotifyController,
     InfoController,
+    NeteaseMusicController,
   ],
-  providers: [AppService, MusicBrainService, SpotifyService],
+  providers: [
+    AppService,
+    MusicBrainService,
+    SpotifyService,
+    NeteasemusicService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

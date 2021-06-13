@@ -1,20 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  getRepository,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { Artist } from './artist';
-import { Album } from './album';
-import { MediaLibrary } from './library';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { User } from './user';
-import { Genre } from './genre';
 
 @Entity()
 export class SpotifyAuth {

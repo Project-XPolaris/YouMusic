@@ -1,9 +1,8 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import { getRepository, ILike, In, Raw } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
-import { filterByPage } from '../database/utils/page.filter';
 import { publicUid } from '../vars';
 import { MediaLibrary } from '../database/entites/library';
 import * as fs from 'fs';
@@ -23,7 +22,7 @@ import { Genre } from '../database/entites/genre';
 import { ApplicationConfig } from '../config';
 import { v4 } from 'uuid';
 import * as db from 'mime-db';
-import { uniq } from 'lodash';
+import { getImageFromContentType } from '../utils/image';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -198,6 +197,9 @@ export class MusicService {
       await Album.recycle(prevAlbum.id);
     }
     await music.album.refreshArtist();
+    if (dto.coverUrl) {
+      await this.setMusicCoverFromUrl(music.id, dto.coverUrl);
+    }
   }
 
   async updateMusicCover(id: number, coverfile: any) {
@@ -244,14 +246,16 @@ export class MusicService {
       })
       .toPromise();
     const imageBuf = Buffer.from(response.data, 'binary');
-    const mime = db[response.headers['content-type']].extensions[0];
+
+    const ext = getImageFromContentType(response.headers['content-type']);
+    if (!ext) {
+      return;
+    }
     const music = await getRepository(Music).findOne(musicId, {
       relations: ['album'],
     });
     if (!music.album.cover) {
-      const saveFilename = `${v4()}.${
-        db[response.headers['content-type']].extensions[0]
-      }`;
+      const saveFilename = `${v4()}.${ext}`;
       const savePath = Path.join(ApplicationConfig.coverDir, saveFilename);
       await fs.promises.writeFile(savePath, imageBuf);
       music.album.cover = saveFilename;
@@ -259,7 +263,7 @@ export class MusicService {
     }
     const tags = {
       image: {
-        mime,
+        mime: response.headers['content-type'],
         type: {
           id: 3,
           name: 'front cover',
