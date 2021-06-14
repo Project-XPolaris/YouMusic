@@ -8,9 +8,11 @@ interface NeteaseSearchAlbumResult {
   picUrl: string;
   artist: { name: string };
 }
+
 @Injectable()
 export class MetaService {
   constructor(private neteaseMusicService: NeteasemusicService) {}
+
   async searchAlbum(key: string): Promise<SearchAlbumEntity[]> {
     const {
       albums,
@@ -23,5 +25,13 @@ export class MetaService {
       cover: it.picUrl,
       artists: it.artist?.name,
     }));
+  }
+
+  async searchArtist(key: string) {
+    const result = await this.neteaseMusicService.search(
+      key,
+      SearchType.artist,
+    );
+    return result;
   }
 }

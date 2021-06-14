@@ -8,4 +8,8 @@ export class MetaController {
   async SearchAlbum(@Query() key: string) {
     return await this.metaService.searchAlbum(key);
   }
+  @Get('search/artist')
+  async SearchArtist(@Query() key: string) {
+    return await this.metaService.searchArtist(key);
+  }
 }

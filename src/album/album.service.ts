@@ -1,4 +1,4 @@
-import { Injectable, UploadedFile } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { PageFilter } from '../database/utils/type.filter';
@@ -23,7 +23,7 @@ export class AlbumService {
     let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder = queryBuilder
       .offset((filter.page - 1) * filter.pageSize)
-      .take(filter.pageSize);
+      .limit(filter.pageSize);
     queryBuilder = queryBuilder
       .leftJoin('album.users', 'users')
       .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
@@ -48,8 +48,7 @@ export class AlbumService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`album.${fieldName}`] = filter.order[fieldName];
     });
-
-    queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
+    // queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
     queryBuilder.orderBy(order);
     return await queryBuilder.getManyAndCount();
   }
