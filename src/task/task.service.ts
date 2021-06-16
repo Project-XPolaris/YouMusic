@@ -161,17 +161,7 @@ export class TaskService {
           .toFile(imageFileNamePath);
         await saveAlbumCover(album.id, coverFilename);
         album.cover = coverFilename;
-        for (const artist of artists) {
-          if (!artist.avatar) {
-            const artistAvatarFileName = `${uuidv4()}.${ext}`;
-            await fs.promises.copyFile(
-              imageFileNamePath,
-              path.join(ApplicationConfig.coverDir, artistAvatarFileName),
-            );
-            artist.avatar = artistAvatarFileName;
-            await saveArtist(artist);
-          }
-        }
+
       }
     }
     return result;

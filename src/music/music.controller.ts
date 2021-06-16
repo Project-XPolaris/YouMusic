@@ -21,10 +21,11 @@ import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { MetaService } from "../meta/meta.service";
 
 @Controller('music')
 export class MusicController {
-  constructor(private readonly musicService: MusicService) {}
+  constructor(private readonly musicService: MusicService,private metaService : MetaService) {}
 
   @Get()
   async findAll(

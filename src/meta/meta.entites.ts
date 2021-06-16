@@ -8,3 +8,10 @@ export interface SearchArtistEntity {
   cover: string;
   artists: string;
 }
+
+export interface SearchMusicEntity {
+  source: string;
+  id: string;
+  name: string;
+  artists: { name: string }[];
+}

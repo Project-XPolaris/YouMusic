@@ -4,6 +4,7 @@ import {
   login_cellphone,
   search,
   SearchType,
+  lyric,
 } from 'NeteaseCloudMusicApi';
 import { createHash } from 'crypto';
 
@@ -17,11 +18,22 @@ export class NeteasemusicService {
     });
     return response;
   }
+
   async search(
     key: string,
-    type: SearchType | undefined,
+    {
+      limit,
+      type,
+    }: {
+      type?: SearchType;
+      limit?: number;
+    },
   ): Promise<APIBaseResponse & any> {
-    const response = await search({ keywords: key, type });
+    const response = await search({ keywords: key, type, limit });
     return response.body.result;
+  }
+  async getLyric(id: string): Promise<any> {
+    const response = await lyric({ id });
+    return response.body.lrc as string;
   }
 }
