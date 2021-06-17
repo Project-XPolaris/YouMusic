@@ -22,8 +22,8 @@ export class AlbumService {
     const albumRepository = getRepository(Album);
     let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder = queryBuilder
-      .offset((filter.page - 1) * filter.pageSize)
-      .limit(filter.pageSize);
+      .skip((filter.page - 1) * filter.pageSize)
+      .take(filter.pageSize);
     queryBuilder = queryBuilder
       .leftJoin('album.users', 'users')
       .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
@@ -48,8 +48,9 @@ export class AlbumService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`album.${fieldName}`] = filter.order[fieldName];
     });
-    // queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
+    queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
     queryBuilder.orderBy(order);
+
     return await queryBuilder.getManyAndCount();
   }
 
