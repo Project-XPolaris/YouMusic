@@ -276,4 +276,21 @@ export class MusicService {
     const buf = await id3Promise.update(tags, file);
     await fs.promises.writeFile(music.path, buf);
   }
+
+  async updateLyric(id: number, uid: string, content: string): Promise<Music> {
+    const music = await this.findOne(id, uid);
+    if (!music) {
+      return;
+    }
+    if (music.lyric && music.lyric.length !== 0 && fs.existsSync(music.lyric)) {
+      await fs.promises.unlink(music.lyric);
+    }
+    const lrcFilePath = path.join(
+      path.dirname(music.path),
+      `${music.title}.lrc`,
+    );
+    await fs.promises.writeFile(lrcFilePath, content);
+    music.lyric = lrcFilePath;
+    return music.save();
+  }
 }

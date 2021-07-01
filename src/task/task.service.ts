@@ -1,29 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { MediaLibrary } from '../database/entites/library';
-import { scanFile, syncLibrary } from '../services/scan';
-import { ApplicationConfig } from '../config';
-import { getConnection, getRepository, In, QueryRunner } from 'typeorm';
-import { User } from '../database/entites/user';
-import * as mm from 'music-metadata';
-import { Album } from '../database/entites/album';
-import {
-  getOrCreateAlbum,
-  getOrCreateArtist,
-  getOrCreateMusic,
-  saveAlbumCover,
-  saveArtist,
-} from '../services/music';
-import { uniq } from 'lodash';
-import { Artist } from '../database/entites/artist';
-import { v4 as uuidv4 } from 'uuid';
-import { ServiceError } from '../error';
-import * as path from 'path';
-import * as fs from 'fs';
-import { Genre } from '../database/entites/genre';
-import { Music } from '../database/entites/music';
-import * as db from 'mime-db';
-import { replaceExt } from '../utils/string';
-import sharp = require('sharp');
+import { Injectable } from "@nestjs/common";
+import { MediaLibrary } from "../database/entites/library";
+import { scanFile, syncLibrary } from "../services/scan";
+import { ApplicationConfig } from "../config";
+import { getRepository } from "typeorm";
+import { User } from "../database/entites/user";
+import * as mm from "music-metadata";
+import { Album } from "../database/entites/album";
+import { getOrCreateAlbum, getOrCreateArtist, getOrCreateMusic, saveAlbumCover } from "../services/music";
+import { uniq } from "lodash";
+import { Artist } from "../database/entites/artist";
+import { v4 as uuidv4 } from "uuid";
+import { ServiceError } from "../error";
+import * as path from "path";
+import * as fs from "fs";
+import { Genre } from "../database/entites/genre";
+import { Music } from "../database/entites/music";
+import * as db from "mime-db";
+import { replaceExt } from "../utils/string";
+import * as md5file from "md5-file";
+import sharp = require("sharp");
 
 export enum TaskStatus {
   Running = 'Running',
@@ -45,7 +40,7 @@ export const TaskErrors = {
 export class TaskService {
   tasks: Array<Task> = [];
 
-  private async process(library: MediaLibrary, uid: string) {
+  private async scanProcess(library: MediaLibrary, uid: string) {
     await syncLibrary(library);
     const result = await scanFile(library.path);
     // prepare cover directory
@@ -60,6 +55,14 @@ export class TaskService {
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
       mms.push(musicID3);
+      // skip if exist
+      const existMusic = await getRepository(Music).findOne({ where: { path: musicFilePath } });
+      if (existMusic != null) {
+        const fileMd5 = await md5file(musicFilePath);
+        if (existMusic.checksum === fileMd5) {
+          continue;
+        }
+      }
       let album: Album = undefined;
       if (musicID3.common.album) {
         album = savedAlbum.find((it) => it.name === musicID3.common.album);
@@ -161,7 +164,6 @@ export class TaskService {
           .toFile(imageFileNamePath);
         await saveAlbumCover(album.id, coverFilename);
         album.cover = coverFilename;
-
       }
     }
     return result;
@@ -198,7 +200,7 @@ export class TaskService {
       };
       this.tasks.push();
     }
-    this.process(library, uid)
+    this.scanProcess(library, uid)
       .then(() => {
         this.tasks = this.tasks.map((it) => {
           if (it.id === library.id) {

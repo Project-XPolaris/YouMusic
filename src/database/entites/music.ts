@@ -22,7 +22,7 @@ import { Buffer } from 'buffer';
 export class Music {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ unique: true })
   path: string;
   @Column()
   title: string;
@@ -36,6 +36,8 @@ export class Music {
   disc: number;
   @Column({ nullable: true })
   lyric: string;
+  @Column({ nullable: false })
+  checksum: string;
 
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,
@@ -104,4 +106,7 @@ export class Music {
     const buf = await id3Promise.update(tags, file);
     await fs.promises.writeFile(this.path, buf);
   };
+  async save() {
+    return await getRepository(Music).save(this);
+  }
 }
