@@ -55,14 +55,6 @@ export class TaskService {
     for (const musicFilePath of result) {
       const musicID3 = await mm.parseFile(musicFilePath);
       mms.push(musicID3);
-      // skip if exist
-      const existMusic = await getRepository(Music).findOne({ where: { path: musicFilePath } });
-      if (existMusic != null) {
-        const fileMd5 = await md5file(musicFilePath);
-        if (existMusic.checksum === fileMd5) {
-          continue;
-        }
-      }
       let album: Album = undefined;
       if (musicID3.common.album) {
         album = savedAlbum.find((it) => it.name === musicID3.common.album);
