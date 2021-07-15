@@ -19,6 +19,8 @@ export class MetaController {
   }
   @Post('lyric')
   async getLyricFromSearchMusic(@Body() searchMusic: SearchMusicEntity) {
-    return await this.metaService.getLyricFromSearchMusic(searchMusic);
+    return {
+      lyric: await this.metaService.getLyricFromSearchMusic(searchMusic),
+    };
   }
 }

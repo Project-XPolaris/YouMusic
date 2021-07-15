@@ -15,3 +15,7 @@ export class UpdateMusicDto extends PartialType(CreateMusicDto) {
 export class SetMusicCoverFromUrlRequestBody {
   url: string;
 }
+
+export class UpdateMusicLyricDto {
+  content: string;
+}

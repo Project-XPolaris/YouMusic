@@ -58,9 +58,16 @@ export class MetaService {
     }
     return musicResult;
   }
-  async getLyricFromSearchMusic(searchMusic: SearchMusicEntity): Promise<any> {
+  async getLyricFromSearchMusic(
+    searchMusic: SearchMusicEntity,
+  ): Promise<string> {
     if (searchMusic.source === 'NeteaseMusic') {
-      return this.neteaseMusicService.getLyric(searchMusic.id);
+      const {
+        lyric,
+      }: { lyric: string } = await this.neteaseMusicService.getLyric(
+        searchMusic.id,
+      );
+      return lyric;
     } else {
       throw new Error('target source unsupport get lyric');
     }

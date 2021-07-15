@@ -16,16 +16,20 @@ import { MusicService } from './music.service';
 import {
   SetMusicCoverFromUrlRequestBody,
   UpdateMusicDto,
+  UpdateMusicLyricDto,
 } from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MetaService } from "../meta/meta.service";
+import { MetaService } from '../meta/meta.service';
 
 @Controller('music')
 export class MusicController {
-  constructor(private readonly musicService: MusicService,private metaService : MetaService) {}
+  constructor(
+    private readonly musicService: MusicService,
+    private metaService: MetaService,
+  ) {}
 
   @Get()
   async findAll(
@@ -105,5 +109,18 @@ export class MusicController {
     return {
       success: true,
     };
+  }
+  @Post(':id/lyric')
+  async updateLyric(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+    @Body() dto: UpdateMusicLyricDto,
+  ) {
+    const music = await this.musicService.updateLyric(
+      +id,
+      req.uid,
+      dto.content,
+    );
+    return music;
   }
 }

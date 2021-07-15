@@ -30,6 +30,7 @@ export class ArtistService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`artist.${fieldName}`] = filter.order[fieldName];
     });
+    queryBuilder.orderBy(order)
     if (filter.search.length > 0) {
       queryBuilder = queryBuilder.andWhere('artist.name like :search', {
         search: `%${filter.search}%`,

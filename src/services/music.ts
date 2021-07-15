@@ -1,17 +1,15 @@
-import { getRepository } from 'typeorm';
-import { Album } from '../database/entites/album';
-import { Artist } from '../database/entites/artist';
-import { Music } from '../database/entites/music';
-import { MediaLibrary } from '../database/entites/library';
-import { User } from '../database/entites/user';
-import { uniq } from 'lodash';
-import * as mm from 'music-metadata';
-import { Genre } from '../database/entites/genre';
-import { v4 as uuidv4 } from 'uuid';
-import { ApplicationConfig } from '../config';
-import * as path from 'path';
-import sharp = require('sharp');
-import { IAudioMetadata } from 'music-metadata';
+import { getRepository } from "typeorm";
+import { Album } from "../database/entites/album";
+import { Artist } from "../database/entites/artist";
+import { Music } from "../database/entites/music";
+import { MediaLibrary } from "../database/entites/library";
+import { User } from "../database/entites/user";
+import { IAudioMetadata } from "music-metadata";
+import { v4 as uuidv4 } from "uuid";
+import { ApplicationConfig } from "../config";
+import * as path from "path";
+import sharp = require("sharp");
+import * as md5file from 'md5-file';
 
 export const getOrCreateAlbum = async (name: string, user: User) => {
   let album = await getRepository(Album)
@@ -88,6 +86,7 @@ export const getOrCreateMusic = async ({
   music.year = year;
   music.track = track;
   music.disc = disc;
+  music.checksum = await md5file(musicFilePath);
   await getRepository(Music).save(music);
   return music;
 };
