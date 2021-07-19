@@ -1,34 +1,45 @@
-import { Injectable } from "@nestjs/common";
-import { MediaLibrary } from "../database/entites/library";
-import { scanFile, syncLibrary } from "../services/scan";
-import { ApplicationConfig } from "../config";
-import { getRepository } from "typeorm";
-import { User } from "../database/entites/user";
-import * as mm from "music-metadata";
-import { Album } from "../database/entites/album";
-import { getOrCreateAlbum, getOrCreateArtist, getOrCreateMusic, saveAlbumCover } from "../services/music";
-import { uniq } from "lodash";
-import { Artist } from "../database/entites/artist";
-import { v4 as uuidv4 } from "uuid";
-import { ServiceError } from "../error";
-import * as path from "path";
-import * as fs from "fs";
-import { Genre } from "../database/entites/genre";
-import { Music } from "../database/entites/music";
-import * as db from "mime-db";
-import { replaceExt } from "../utils/string";
-import * as md5file from "md5-file";
-import sharp = require("sharp");
+import { Injectable } from '@nestjs/common';
+import { MediaLibrary } from '../database/entites/library';
+import { scanFile, syncLibrary } from '../services/scan';
+import { ApplicationConfig } from '../config';
+import { getRepository } from 'typeorm';
+import { User } from '../database/entites/user';
+import * as mm from 'music-metadata';
+import { Album } from '../database/entites/album';
+import {
+  getOrCreateAlbum,
+  getOrCreateArtist,
+  getOrCreateMusic,
+  saveAlbumCover,
+} from '../services/music';
+import { uniq } from 'lodash';
+import { Artist } from '../database/entites/artist';
+import { v4 as uuidv4 } from 'uuid';
+import { ServiceError } from '../error';
+import * as path from 'path';
+import * as fs from 'fs';
+import { Genre } from '../database/entites/genre';
+import { Music } from '../database/entites/music';
+import * as db from 'mime-db';
+import { replaceExt } from '../utils/string';
+import sharp = require('sharp');
 
 export enum TaskStatus {
   Running = 'Running',
   Done = 'Done',
   Err = 'Error',
 }
-
+export type TaskOutput = ScanLibraryOutput;
 export interface Task {
   id: number;
   status: TaskStatus;
+  type: string;
+  output: TaskOutput;
+}
+
+export interface ScanLibraryOutput {
+  total: number;
+  current: number;
 }
 
 export const TaskErrors = {
@@ -40,9 +51,20 @@ export const TaskErrors = {
 export class TaskService {
   tasks: Array<Task> = [];
 
-  private async scanProcess(library: MediaLibrary, uid: string) {
+  private async scanProcess(
+    library: MediaLibrary,
+    uid: string,
+    {
+      onAnalyzeComplete,
+      onCurrentUpdate,
+    }: {
+      onAnalyzeComplete: (total: number) => void;
+      onCurrentUpdate: (current: number) => void;
+    },
+  ) {
     await syncLibrary(library);
     const result = await scanFile(library.path);
+    onAnalyzeComplete(result.length);
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
     // get owner
@@ -52,7 +74,9 @@ export class TaskService {
     const savedArtist: Artist[] = [];
     const savedGenre: Genre[] = [];
     const mms = [];
-    for (const musicFilePath of result) {
+    for (let idx = 0; idx < result.length; idx++) {
+      onCurrentUpdate(idx);
+      const musicFilePath = result[idx];
       const musicID3 = await mm.parseFile(musicFilePath);
       mms.push(musicID3);
       let album: Album = undefined;
@@ -161,7 +185,7 @@ export class TaskService {
     return result;
   }
 
-  async newTask(
+  async newScanTask(
     libraryId: number,
     uid: string,
     { onComplete }: { onComplete?: (library: MediaLibrary) => void },
@@ -189,10 +213,22 @@ export class TaskService {
       task = {
         id: library.id,
         status: TaskStatus.Running,
+        type: 'ScanLibrary',
+        output: {
+          total: 0,
+          current: 0,
+        },
       };
-      this.tasks.push();
+      this.tasks.push(task);
     }
-    this.scanProcess(library, uid)
+    this.scanProcess(library, uid, {
+      onAnalyzeComplete: (total) => {
+        task.output.total = total;
+      },
+      onCurrentUpdate: (current) => {
+        task.output.current = current + 1;
+      },
+    })
       .then(() => {
         this.tasks = this.tasks.map((it) => {
           if (it.id === library.id) {
@@ -219,7 +255,6 @@ export class TaskService {
           return it;
         });
       });
-    this.tasks.push(task);
     return task;
   }
 }

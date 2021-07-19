@@ -98,7 +98,7 @@ export class LibraryController {
       };
     }
     try {
-      await this.taskService.newTask(id, req.uid, {
+      await this.taskService.newScanTask(id, req.uid, {
         onComplete: (library) => {
           this.notificationService.scanCompleteEvent(req.nid, library);
         },
