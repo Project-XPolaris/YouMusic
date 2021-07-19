@@ -6,6 +6,9 @@ export class TaskController {
   constructor(private taskService: TaskService) {}
   @Get('/')
   async getTaskList() {
-    return this.taskService.tasks;
+    return {
+      success: true,
+      tasks: this.taskService.tasks,
+    };
   }
 }
