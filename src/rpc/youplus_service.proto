@@ -1,0 +1,76 @@
+package youplus;
+service YouPlusService {
+  rpc CheckDataset (CheckDatasetRequest) returns (CheckDatasetReply) {}
+  rpc GetDatasetInfo (GetDatasetInfoRequest) returns (GetDatasetInfoReply) {}
+  rpc CreateDataset (CreateDatasetRequest) returns (ActionReply) {}
+  rpc DeleteDataset (DeleteDatasetRequest) returns (ActionReply) {}
+  rpc CreateSnapshot (CreateSnapshotRequest) returns (ActionReply) {}
+  rpc DeleteSnapshot (DeleteSnapshotRequest) returns (ActionReply) {}
+  rpc RollbackDataset (RollbackDatasetRequest) returns (ActionReply) {}
+  rpc RegisterEntry (RegisterEntryRequest) returns (ActionReply) {}
+  rpc UnregisterEntry (UnregisterEntryRequest) returns (ActionReply) {}
+  rpc UpdateEntryExport (UpdateEntryExportRequest) returns (ActionReply) {}
+  rpc EntryHeartbeat (HeartbeatRequest) returns (ActionReply) {}
+}
+
+message CheckDatasetRequest {
+  required string path = 1;
+}
+
+message CheckDatasetReply {
+  required bool isDataset = 1;
+}
+
+message CreateDatasetRequest {
+  required string path = 1;
+}
+message DeleteDatasetRequest {
+  required string path = 1;
+}
+message CreateSnapshotRequest {
+  required string dataset = 1;
+  required  string snapshot = 2;
+}
+message DeleteSnapshotRequest {
+  required string dataset = 1;
+  required  string snapshot = 2;
+}
+message RollbackDatasetRequest {
+  required string dataset = 1;
+  required  string snapshot = 2;
+}
+
+message ActionReply {
+  required bool success = 1;
+  optional string reason = 2;
+  optional int64  code = 3;
+}
+
+message GetDatasetInfoRequest {
+  required string dataset = 1;
+}
+message Snapshot {
+  required string name = 1;
+}
+message GetDatasetInfoReply {
+  required string path = 1;
+  repeated Snapshot snapshots = 2;
+}
+
+message RegisterEntryRequest {
+  required  string name = 1;
+  required string instance = 2;
+  required int64 version = 3;
+}
+message UnregisterEntryRequest {
+  required string instance = 1;
+}
+message UpdateEntryExportRequest  {
+  required  string data = 1;
+  required string instance = 2;
+}
+message HeartbeatRequest {
+  required  string name = 1;
+  required string instance = 2;
+  required string state = 3;
+}
