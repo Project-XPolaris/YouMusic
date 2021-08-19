@@ -19,7 +19,6 @@ import { LibraryModule } from './library/library.module';
 import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
-import { ExploreController } from './explore/explore.controller';
 import configuration from './config/configuration';
 import { AuthMiddleware } from './auth.middleware';
 import { User } from './database/entites/user';
@@ -38,6 +37,7 @@ import { ExploreModule } from './explore/explore.module';
 import { NeteaseMusicController } from './neteasemusic/neteaseMusic.controller';
 import { NeteasemusicService } from './neteasemusic/neteasemusic.service';
 import { MetaModule } from './meta/meta.module';
+import { EntityModule } from './entity/entity.module';
 
 @Module({
   imports: [
@@ -64,7 +64,8 @@ import { MetaModule } from './meta/meta.module';
     AuthModule,
     AccountModule,
     ExploreModule,
-    MetaModule
+    MetaModule,
+    EntityModule,
   ],
   controllers: [
     AppController,
