@@ -86,7 +86,6 @@ export const getOrCreateMusic = async ({
   music.year = year;
   music.track = track;
   music.disc = disc;
-  music.checksum = await md5file(musicFilePath);
   await getRepository(Music).save(music);
   return music;
 };

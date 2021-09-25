@@ -122,16 +122,18 @@ export class TaskService {
       // get genre
       const genres: Genre[] = [];
       const v1 = musicID3.native.ID3v1;
-      const genreTag = v1.find((it) => it.id === 'genre');
-      if (genreTag) {
-        let genre = savedGenre.find(
-          (gen: Genre) => gen.name === genreTag.value,
-        );
-        if (!genre) {
-          genre = await Genre.createOrGet(genreTag.value, user);
-          savedGenre.push(genre);
+      if (v1) {
+        const genreTag = v1.find((it) => it.id === 'genre');
+        if (genreTag) {
+          let genre = savedGenre.find(
+            (gen: Genre) => gen.name === genreTag.value,
+          );
+          if (!genre) {
+            genre = await Genre.createOrGet(genreTag.value, user);
+            savedGenre.push(genre);
+          }
+          genres.push(genre);
         }
-        genres.push(genre);
       }
 
       // create music
