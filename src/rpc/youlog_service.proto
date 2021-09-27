@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package = "github.com/project-xpolaris/youplustoolkit/youlog";
+package youlog;
+service LogService {
+  rpc WriteLog (LogData) returns (WriteReply) {}
+}
+
+message LogData {
+  string application = 1;
+  string instance    = 2;
+  string scope       = 3;
+  string extra       = 4;
+  string message     = 5;
+  int64  level       = 6;
+  int64  time        = 7;
+}
+
+message WriteReply {
+  bool success = 1;
+}

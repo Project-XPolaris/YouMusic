@@ -3,6 +3,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
+  OnApplicationBootstrap,
 } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -37,7 +38,8 @@ import { ExploreModule } from './explore/explore.module';
 import { NeteaseMusicController } from './neteasemusic/neteaseMusic.controller';
 import { NeteasemusicService } from './neteasemusic/neteasemusic.service';
 import { MetaModule } from './meta/meta.module';
-import { EntityModule } from './entity/entity.module';
+import { LogModule } from './log/log.module';
+import { LogService } from './log/log.service';
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { EntityModule } from './entity/entity.module';
     }),
     HttpModule,
     NotificationModule,
+    LogModule,
     TaskModule,
     MusicModule,
     ArtistModule,
@@ -65,7 +68,6 @@ import { EntityModule } from './entity/entity.module';
     AccountModule,
     ExploreModule,
     MetaModule,
-    EntityModule,
   ],
   controllers: [
     AppController,
@@ -82,7 +84,11 @@ import { EntityModule } from './entity/entity.module';
     NeteasemusicService,
   ],
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnApplicationBootstrap {
+  constructor(private logService: LogService) {}
+  onApplicationBootstrap() {
+    this.logService.info({ content: 'Service starting', scope: 'boot' });
+  }
   configure(consumer: MiddlewareConsumer): any {
     consumer.apply(AuthMiddleware).forRoutes('*');
   }

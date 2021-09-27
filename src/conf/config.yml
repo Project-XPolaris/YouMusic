@@ -8,6 +8,10 @@ youplus:
     name: "youmusiccore"
     version: 1
     heartbeat: 3000
+youlog:
+  enable: false
+  rpc: "localhost:50052"
+  name: "youmusiccore"
 spotify:
   clientId: "210f3d41c0af4aefb8115b57524a2155"
   secret: "32f238ca0d174945b8abdedd856a5148"
