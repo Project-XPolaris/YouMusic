@@ -39,7 +39,7 @@ export class ArtistService {
     queryBuilder = queryBuilder
       .leftJoin('artist.users', 'users')
       .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
-    return await queryBuilder.getManyAndCount();
+    return await queryBuilder.orderBy(order).getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {
