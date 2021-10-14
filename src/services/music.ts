@@ -1,14 +1,14 @@
-import { getRepository } from "typeorm";
-import { Album } from "../database/entites/album";
-import { Artist } from "../database/entites/artist";
-import { Music } from "../database/entites/music";
-import { MediaLibrary } from "../database/entites/library";
-import { User } from "../database/entites/user";
-import { IAudioMetadata } from "music-metadata";
-import { v4 as uuidv4 } from "uuid";
-import { ApplicationConfig } from "../config";
-import * as path from "path";
-import sharp = require("sharp");
+import { getRepository } from 'typeorm';
+import { Album } from '../database/entites/album';
+import { Artist } from '../database/entites/artist';
+import { Music } from '../database/entites/music';
+import { MediaLibrary } from '../database/entites/library';
+import { User } from '../database/entites/user';
+import { IAudioMetadata } from 'music-metadata';
+import { v4 as uuidv4 } from 'uuid';
+import { ApplicationConfig } from '../config';
+import * as path from 'path';
+import sharp = require('sharp');
 import * as md5file from 'md5-file';
 
 export const getOrCreateAlbum = async (name: string, user: User) => {
@@ -54,6 +54,7 @@ export const getOrCreateMusic = async ({
   year,
   track,
   disc,
+  lastModify,
 }: {
   title: string;
   musicFilePath: string;
@@ -63,6 +64,7 @@ export const getOrCreateMusic = async ({
   year?: number;
   track?: number;
   disc?: number;
+  lastModify: Date;
 }) => {
   let music = await getRepository(Music)
     .createQueryBuilder('music')
@@ -86,6 +88,7 @@ export const getOrCreateMusic = async ({
   music.year = year;
   music.track = track;
   music.disc = disc;
+  music.lastModify = lastModify;
   await getRepository(Music).save(music);
   return music;
 };

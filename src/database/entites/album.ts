@@ -50,15 +50,18 @@ export class Album {
    * recycle album if music is empty
    * @param id album id
    */
-  static async recycle(id: string | number) {
+  static async recycle(id: string | number): Promise<boolean> {
     const repository = await getRepository(Album);
     const album = await repository.findOne(id, { relations: ['music'] });
     if (album === undefined) {
-      return;
+      // no album
+      return true;
     }
     if (album.music.length === 0) {
       await album.delete();
+      return true;
     }
+    return false;
   }
   async delete() {
     const repository = await getRepository(Album);

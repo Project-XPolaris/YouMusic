@@ -36,6 +36,8 @@ export class Music {
   disc: number;
   @Column({ nullable: true })
   lyric: string;
+  @Column({ nullable: true })
+  lastModify: Date;
 
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,
@@ -67,13 +69,18 @@ export class Music {
 
   static deleteMusic = async (id: string | number) => {
     const repository = await getRepository(Music);
-    const music = await repository.findOne(id, { relations: ['album'] });
+    const music = await repository.findOne(id, {
+      relations: ['album', 'artist'],
+    });
     if (music === undefined) {
       return;
     }
     await repository.delete(music.id);
     if (music?.album?.id) {
       await Album.recycle(music.album.id);
+    }
+    for (const musicArtist of music?.artist ?? []) {
+      await Artist.recycleIfEmpty(musicArtist.id);
     }
   };
   writeMusicFileCover = async (mime: string, imageBuf: Buffer) => {

@@ -29,7 +29,9 @@ export enum TaskStatus {
   Done = 'Done',
   Err = 'Error',
 }
+
 export type TaskOutput = ScanLibraryOutput;
+
 export interface Task {
   id: number;
   status: TaskStatus;
@@ -46,7 +48,6 @@ export const TaskErrors = {
   OnlyOneTask: 'OnlyOneTask',
   LibraryNotFound: 'LibraryNotFound',
 };
-
 @Injectable()
 export class TaskService {
   tasks: Array<Task> = [];
@@ -62,7 +63,6 @@ export class TaskService {
       onCurrentUpdate: (current: number) => void;
     },
   ) {
-    await syncLibrary(library);
     const result = await scanFile(library.path);
     onAnalyzeComplete(result.length);
     // prepare cover directory
@@ -74,9 +74,48 @@ export class TaskService {
     const savedArtist: Artist[] = [];
     const savedGenre: Genre[] = [];
     const mms = [];
-    for (let idx = 0; idx < result.length; idx++) {
+    // find out updated file
+    let musics = await getRepository(Music)
+      .createQueryBuilder('music')
+      .leftJoinAndSelect('music.users', 'users')
+      .where('music.libraryId = :libraryId', {
+        libraryId: library.id,
+      })
+      .andWhere('users.uid = :uid', { uid: user.uid })
+      .getMany();
+    const scanResult: string[] = [];
+    for (const musicFilePath of result) {
+      const targetMusic = musics.find((music) => music.path === musicFilePath);
+      if (!targetMusic) {
+        // is new file
+        scanResult.push(musicFilePath);
+        continue;
+      }
+      const fileStat = await fs.promises.stat(targetMusic.path);
+      if (!fileStat) {
+        continue;
+      }
+      console.log({
+        name: path.basename(musicFilePath),
+        ftime: fileStat.mtime.getTime(),
+        rtime: targetMusic.lastModify.getTime(),
+      });
+      if (fileStat.mtime.getTime() === targetMusic.lastModify.getTime()) {
+        musics = musics.filter((music) => music.id !== targetMusic.id);
+      } else {
+        scanResult.push(musicFilePath);
+      }
+    }
+    // remove music that file is not exist
+    for (const music of musics) {
+      await Music.deleteMusic(music.id);
+    }
+    // refresh music file meta
+    for (let idx = 0; idx < scanResult.length; idx++) {
       onCurrentUpdate(idx);
-      const musicFilePath = result[idx];
+      const musicFilePath = scanResult[idx];
+      const fileStat = await fs.promises.stat(musicFilePath);
+
       const musicID3 = await mm.parseFile(musicFilePath);
       mms.push(musicID3);
       let album: Album = undefined;
@@ -146,6 +185,7 @@ export class TaskService {
         year: musicID3.common.year,
         track: musicID3.common.track.no,
         disc: musicID3.common.disk.no,
+        lastModify: fileStat.mtime,
       });
       music.artist = artists;
       music.genre = genres;
@@ -186,6 +226,7 @@ export class TaskService {
         album.cover = coverFilename;
       }
     }
+
     return result;
   }
 

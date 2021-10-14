@@ -47,6 +47,19 @@ export class Artist {
       }
     }
   }
+  static async recycleIfEmpty(id: string | number): Promise<boolean> {
+    const repository = await getRepository(Artist);
+    const artist = await repository.findOne(id, { relations: ['music'] });
+    if (artist === undefined) {
+      // no artist
+      return true;
+    }
+    if (artist.music.length === 0) {
+      await repository.delete(artist.id);
+      return true;
+    }
+    return false;
+  }
   async recycle() {
     await getRepository(Artist).delete(this.id);
   }
