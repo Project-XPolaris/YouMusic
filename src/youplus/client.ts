@@ -25,7 +25,12 @@ export class YouPlusClient {
     });
     return response.data;
   }
-
+  public async userAuth(username: string,password : string): Promise<any> {
+    const response = await axios.post(`${this.apiUrl}/user/auth`, {
+      username,password
+    });
+    return response.data;
+  }
   public async readDir(target: string, token: string): Promise<DirItem[]> {
     const response = await axios.get(`${this.apiUrl}/path/readdir`, {
       headers: {

@@ -11,6 +11,7 @@ import { getRepository } from 'typeorm';
 import { Music } from '../database/entites/music';
 import { ServerResponse } from 'http';
 import { getImageFromID3 } from '../utils/id3';
+
 @Controller('file')
 export class FileController {
   @Get('audio/:id')
@@ -20,8 +21,10 @@ export class FileController {
     const stat = fs.statSync(music.path);
     const stream = fs.createReadStream(music.path);
     res.setHeader('Content-Length', stat.size);
+    res.setHeader('Accept-Ranges', 'bytes');
     stream.pipe(res);
   }
+
   @Get('music/:id/cover')
   async musicCoverHandler(@Param('id') id: string, @Res() res: ServerResponse) {
     const music = await getRepository(Music).findOne(id);
@@ -33,6 +36,7 @@ export class FileController {
 
     res.end(pic.data);
   }
+
   @Get('lrc/:id')
   async lyricHandler(@Param('id') id: string, @Res() res: ServerResponse) {
     const music = await getRepository(Music).findOne(id);
