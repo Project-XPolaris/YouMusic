@@ -1,19 +1,19 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
+  Entity,
   getRepository,
-  ManyToMany,
   JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Album } from './album';
-import { Music } from './music';
-import { Library } from '../../library/entities/library.entity';
-import { User } from './user';
+import {Album} from './album';
+import {Music} from './music';
+import {User} from './user';
+import {Artist} from './artist';
+import {publicUid} from '../../vars';
 
 @Entity()
 export class MediaLibrary {
@@ -31,8 +31,11 @@ export class MediaLibrary {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Album, (album) => album.music)
-  album: Album;
+  @OneToMany(() => Album, (album) => album.library)
+  albums: Album[];
+
+  @OneToMany(() => Artist, (artist) => artist.library)
+  artists: Artist[];
 
   @ManyToMany(() => User)
   @JoinTable()
@@ -52,5 +55,13 @@ export class MediaLibrary {
       return false;
     }
     await library.delete();
+  }
+  static async getLibraryByUid(uid: string) {
+    const libraryRepository = getRepository(MediaLibrary);
+    let queryBuilder = libraryRepository.createQueryBuilder('library');
+    queryBuilder = queryBuilder
+      .leftJoin('library.users', 'users')
+      .where('users.uid in (:...uids)', { uids: [uid, publicUid] });
+    return await queryBuilder.getMany();
   }
 }

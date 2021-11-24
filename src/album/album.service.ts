@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { PageFilter } from '../database/utils/type.filter';
@@ -8,6 +8,8 @@ import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
 import * as path from 'path';
 import { Artist } from '../database/entites/artist';
+import { LibraryService } from '../library/library.service';
+import { MediaLibrary } from '../database/entites/library';
 
 export type AlbumQueryFilter = {
   artistId: number;
@@ -19,14 +21,15 @@ export type AlbumQueryFilter = {
 @Injectable()
 export class AlbumService {
   async findAll(filter: AlbumQueryFilter) {
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
     const albumRepository = getRepository(Album);
     let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder = queryBuilder
       .skip((filter.page - 1) * filter.pageSize)
       .take(filter.pageSize);
-    queryBuilder = queryBuilder
-      .leftJoin('album.users', 'users')
-      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+    queryBuilder = queryBuilder.where('album.libraryId in (:...id)', {
+      id: libraries.map((it) => it.id),
+    });
     if (filter.artistId > 0) {
       queryBuilder.where((qb) => {
         const subQuery = qb
@@ -55,15 +58,17 @@ export class AlbumService {
   }
 
   async findOne(id: number, uid: string) {
+    const libraries = await MediaLibrary.getLibraryByUid(uid);
     const albumRepository = getRepository(Album);
     const queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder
-      .leftJoin('album.users', 'users')
       .leftJoinAndSelect('album.music', 'music')
       .leftJoinAndSelect('album.artist', 'artist')
       .leftJoinAndSelect('music.artist', 'musicArtist')
       .where('album.id = :id', { id })
-      .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] });
+      .andWhere('album.libraryId in (:...lid)', {
+        lid: libraries.map((it) => it.id),
+      });
     return queryBuilder.getOne();
   }
 

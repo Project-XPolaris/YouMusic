@@ -11,36 +11,37 @@ import * as path from 'path';
 import sharp = require('sharp');
 import * as md5file from 'md5-file';
 
-export const getOrCreateAlbum = async (name: string, user: User) => {
+export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   let album = await getRepository(Album)
     .createQueryBuilder('album')
-    .leftJoinAndSelect('album.users', 'users')
     .where('album.name = :name', { name })
-    .andWhere('users.uid = :uid', { uid: user.uid })
+    .andWhere('libraryId = :id', { id: library.id })
     .getOne();
   if (album) {
     return album;
   }
   album = new Album();
   album.name = name;
-  album.users = [user];
+  album.library = library;
   await getRepository(Album).save(album);
   return album;
 };
 
-export const getOrCreateArtist = async (name: string, user: User) => {
+export const getOrCreateArtist = async (
+  name: string,
+  library: MediaLibrary,
+) => {
   let artist = await getRepository(Artist)
     .createQueryBuilder('artist')
-    .leftJoinAndSelect('artist.users', 'users')
     .where('artist.name = :name', { name })
-    .andWhere('users.uid = :uid', { uid: user.uid })
+    .andWhere('libraryId = :id', { id: library.id })
     .getOne();
   if (artist) {
     return artist;
   }
   artist = new Artist();
   artist.name = name;
-  artist.users = [user];
+  artist.library = library;
   await getRepository(Artist).save(artist);
   return artist;
 };
@@ -50,7 +51,6 @@ export const getOrCreateMusic = async ({
   musicFilePath,
   library,
   duration,
-  user,
   year,
   track,
   disc,
@@ -60,7 +60,6 @@ export const getOrCreateMusic = async ({
   musicFilePath: string;
   library: MediaLibrary;
   duration: number;
-  user: User;
   year?: number;
   track?: number;
   disc?: number;
@@ -68,14 +67,12 @@ export const getOrCreateMusic = async ({
 }) => {
   let music = await getRepository(Music)
     .createQueryBuilder('music')
-    .leftJoinAndSelect('music.users', 'users')
     .where('music.path = :path', {
       path: musicFilePath,
     })
     .andWhere('music.libraryId = :libraryId', {
       libraryId: library.id,
     })
-    .andWhere('users.uid = :uid', { uid: user.uid })
     .getOne();
   if (music === undefined) {
     music = new Music();
@@ -84,7 +81,6 @@ export const getOrCreateMusic = async ({
   music.path = musicFilePath;
   music.library = library;
   music.duration = duration;
-  music.users = [user];
   music.year = year;
   music.track = track;
   music.disc = disc;

@@ -5,6 +5,7 @@ import {
   getRepository,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,9 +15,9 @@ import { Music } from './music';
 import * as path from 'path';
 import { ApplicationConfig } from '../../config';
 import * as fs from 'fs';
-import { User } from './user';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer';
+import { MediaLibrary } from './library';
 import sharp = require('sharp');
 
 @Entity()
@@ -32,10 +33,6 @@ export class Album {
   @OneToMany(() => Music, (music) => music.album)
   music: Music[];
 
-  @ManyToMany(() => User)
-  @JoinTable()
-  users: User[];
-
   @ManyToMany(() => Artist, (artist) => artist.album)
   @JoinTable()
   artist: Artist[];
@@ -45,6 +42,9 @@ export class Album {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => MediaLibrary, (library) => library.albums)
+  library: MediaLibrary;
 
   /**
    * recycle album if music is empty

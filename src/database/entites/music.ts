@@ -17,6 +17,7 @@ import { Genre } from './genre';
 import * as fs from 'fs';
 import NodeID3, { Promise as id3Promise } from 'node-id3';
 import { Buffer } from 'buffer';
+import { Library } from '../../library/entities/library.entity';
 
 @Entity()
 export class Music {
@@ -50,10 +51,6 @@ export class Music {
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;
-
-  @ManyToMany(() => User)
-  @JoinTable()
-  users: User[];
 
   @ManyToMany(() => Genre, (genre) => genre.music, {
     cascade: true,

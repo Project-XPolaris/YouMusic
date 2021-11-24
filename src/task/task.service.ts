@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MediaLibrary } from '../database/entites/library';
-import { scanFile, syncLibrary } from '../services/scan';
+import { scanFile } from '../services/scan';
 import { ApplicationConfig } from '../config';
 import { getRepository } from 'typeorm';
 import { User } from '../database/entites/user';
@@ -51,7 +51,6 @@ export const TaskErrors = {
 @Injectable()
 export class TaskService {
   tasks: Array<Task> = [];
-
   private async scanProcess(
     library: MediaLibrary,
     uid: string,
@@ -77,11 +76,9 @@ export class TaskService {
     // find out updated file
     let musics = await getRepository(Music)
       .createQueryBuilder('music')
-      .leftJoinAndSelect('music.users', 'users')
       .where('music.libraryId = :libraryId', {
         libraryId: library.id,
       })
-      .andWhere('users.uid = :uid', { uid: user.uid })
       .getMany();
     const scanResult: string[] = [];
     for (const musicFilePath of result) {
@@ -95,11 +92,6 @@ export class TaskService {
       if (!fileStat) {
         continue;
       }
-      console.log({
-        name: path.basename(musicFilePath),
-        ftime: fileStat.mtime.getTime(),
-        rtime: targetMusic.lastModify.getTime(),
-      });
       if (fileStat.mtime.getTime() === targetMusic.lastModify.getTime()) {
         musics = musics.filter((music) => music.id !== targetMusic.id);
       } else {
@@ -122,7 +114,7 @@ export class TaskService {
       if (musicID3.common.album) {
         album = savedAlbum.find((it) => it.name === musicID3.common.album);
         if (!album) {
-          album = await getOrCreateAlbum(musicID3.common.album, user);
+          album = await getOrCreateAlbum(musicID3.common.album, library);
           savedAlbum.push(album);
         }
       }
@@ -140,7 +132,7 @@ export class TaskService {
       for (const rawArtist of rawArtists) {
         let artist = savedArtist.find((it: Artist) => it.name === rawArtist);
         if (!artist) {
-          artist = await getOrCreateArtist(rawArtist, user);
+          artist = await getOrCreateArtist(rawArtist, library);
           savedArtist.push(artist);
         }
         artists.push(artist);
@@ -168,7 +160,7 @@ export class TaskService {
             (gen: Genre) => gen.name === genreTag.value,
           );
           if (!genre) {
-            genre = await Genre.createOrGet(genreTag.value, user);
+            genre = await Genre.createOrGet(genreTag.value, library);
             savedGenre.push(genre);
           }
           genres.push(genre);
@@ -181,7 +173,6 @@ export class TaskService {
         musicFilePath,
         library,
         duration,
-        user,
         year: musicID3.common.year,
         track: musicID3.common.track.no,
         disc: musicID3.common.disk.no,

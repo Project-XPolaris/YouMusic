@@ -35,7 +35,7 @@ export class AlbumController {
       artistId,
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
-      search
+      search,
     });
     return {
       count,

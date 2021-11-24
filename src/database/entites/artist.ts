@@ -3,14 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   getRepository,
-  JoinTable,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Album } from './album';
 import { Music } from './music';
-import { User } from './user';
+import { MediaLibrary } from './library';
 
 @Entity()
 export class Artist {
@@ -24,10 +24,6 @@ export class Artist {
   @ManyToMany(() => Music, (music) => music.artist)
   music: Music[];
 
-  @ManyToMany(() => User, (user) => user.artist)
-  @JoinTable()
-  users: User[];
-
   @ManyToMany(() => Album, (album) => album.artist)
   album: Album[];
 
@@ -36,6 +32,9 @@ export class Artist {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => MediaLibrary, (library) => library.albums)
+  library: MediaLibrary;
 
   static async recycleEmptyMusicArtist() {
     const artists = await getRepository(Artist).find({

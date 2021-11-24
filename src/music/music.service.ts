@@ -3,7 +3,6 @@ import { UpdateMusicDto } from './dto/update-music.dto';
 import { getRepository } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
-import { publicUid } from '../vars';
 import { MediaLibrary } from '../database/entites/library';
 import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
@@ -13,7 +12,6 @@ import {
   getOrCreateArtist,
   saveMusicCoverFile,
 } from '../services/music';
-import { User } from '../database/entites/user';
 import { Album } from '../database/entites/album';
 import * as mm from 'music-metadata';
 import * as path from 'path';
@@ -21,7 +19,6 @@ import * as Path from 'path';
 import { Genre } from '../database/entites/genre';
 import { ApplicationConfig } from '../config';
 import { v4 } from 'uuid';
-import * as db from 'mime-db';
 import { getImageFromContentType } from '../utils/image';
 
 export type MusicQueryFilter = {
@@ -38,14 +35,15 @@ export class MusicService {
   constructor(private httpService: HttpService) {}
 
   async findAll(filter: MusicQueryFilter) {
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
     const musicRepository = getRepository(Music);
     const queryBuilder = musicRepository.createQueryBuilder('music');
     queryBuilder
       .take(filter.pageSize)
       .skip((filter.page - 1) * filter.pageSize);
-    queryBuilder
-      .leftJoin('music.users', 'users')
-      .where('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+    queryBuilder.where('music.libraryId in (:...lid)', {
+      lid: libraries.map((it) => it.id),
+    });
     if (filter.albumId > 0) {
       queryBuilder.andWhere((qb) => {
         const subQuery = qb
@@ -91,12 +89,14 @@ export class MusicService {
   }
 
   async findOne(id: number, uid: string) {
+    const libraries = await MediaLibrary.getLibraryByUid(uid);
     const musicRepository = getRepository(Music);
     return await musicRepository
       .createQueryBuilder('music')
-      .leftJoin('music.users', 'users')
       .whereInIds([id])
-      .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] })
+      .andWhere('music.libraryId in (:...lid)', {
+        lid: libraries.map((it) => it.id),
+      })
       .getOne();
   }
 
@@ -104,29 +104,12 @@ export class MusicService {
     return await Music.deleteMusic(id);
   }
 
-  async checkRemoveAccessible(id: number, uid: string) {
-    const repo = await getRepository(Music);
-    const count = await repo
-      .createQueryBuilder('music')
-      .leftJoinAndSelect(
-        MediaLibrary,
-        'library',
-        'music.libraryId = library.id',
-      )
-      .leftJoin('library.users', 'users')
-      .where('users.uid in (:...uid)', { uid: [publicUid, uid] })
-      .where('music.id = :id', { id })
-      .getCount();
-    return count > 0;
-  }
-
   async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
     const repo = await getRepository(Music);
-    const music = await repo.findOne(id, { relations: ['album'] });
+    const music = await repo.findOne(id, { relations: ['album', 'library'] });
     if (music === undefined || music === null) {
       throw new Error('music not exist');
     }
-    const user = await getRepository(User).findOne({ uid });
     const tags: { [key: string]: string | number } = {};
     if (dto.title) {
       tags['title'] = dto.title;
@@ -135,7 +118,7 @@ export class MusicService {
     const artists: Artist[] = [];
     if (dto.artist) {
       for (const artistName of dto.artist) {
-        const artist = await getOrCreateArtist(artistName, user);
+        const artist = await getOrCreateArtist(artistName, music.library);
         if (
           (artist.avatar === null || artist.avatar.length === 0) &&
           music.album.cover
@@ -155,7 +138,7 @@ export class MusicService {
       if (music.album) {
         prevAlbum = music.album;
       }
-      music.album = await getOrCreateAlbum(dto.album, user);
+      music.album = await getOrCreateAlbum(dto.album, music.library);
       // generate cover
       if (music.album.cover === null || music.album.cover.length === 0) {
         const meta = await mm.parseFile(music.path);
@@ -177,7 +160,7 @@ export class MusicService {
     if (dto.genre) {
       const genres: Genre[] = [];
       for (const genreName of dto.genre) {
-        const genre = await Genre.createOrGet(genreName, user);
+        const genre = await Genre.createOrGet(genreName, music.library);
         genres.push(genre);
       }
       music.genre = genres;

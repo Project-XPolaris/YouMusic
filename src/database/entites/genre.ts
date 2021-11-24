@@ -3,13 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   getRepository,
-  JoinTable,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user';
-import { Music } from './music';
+import {Music} from './music';
+import {MediaLibrary} from './library';
 
 @Entity()
 export class Genre {
@@ -21,30 +21,25 @@ export class Genre {
   @ManyToMany(() => Music, (music) => music.genre)
   music: Music[];
 
-  @ManyToMany(() => User)
-  @JoinTable()
-  users: User[];
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  static async createOrGet(name: string, user: User) {
+  @ManyToOne(() => MediaLibrary, (library) => library.albums)
+  library: MediaLibrary;
+  static async createOrGet(name: string, library: MediaLibrary) {
     const repo = await getRepository(Genre);
     let genre = await repo
       .createQueryBuilder('genre')
-      .leftJoin('genre.users', 'user')
       .where('genre.name = :name', { name })
-      .andWhere('user.uid = :uid', { uid: user.uid })
+      .andWhere('genre.libraryId = id', { id: library.id })
       .getOne();
     if (genre) {
       return genre;
     }
     genre = new Genre();
     genre.name = name;
-    genre.users = [user];
     genre = await getRepository(Genre).save(genre);
     return genre;
   }

@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { getArrayBufferFromUrl } from '../utils/request';
 import { UpdateArtistDTO } from './dto/update-artist.dto';
+import { MediaLibrary } from '../database/entites/library';
 
 export type ArtistFilter = PageFilter & {
   order: { [key: string]: 'ASC' | 'DESC' };
@@ -23,6 +24,7 @@ export class ArtistService {
   constructor(private httpService: HttpService) {}
 
   async findAll(filter: ArtistFilter) {
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
     const artistRepository = getRepository(Artist);
     let queryBuilder = artistRepository.createQueryBuilder('artist');
     queryBuilder = filterByPage<Artist>(filter, queryBuilder);
@@ -30,25 +32,28 @@ export class ArtistService {
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`artist.${fieldName}`] = filter.order[fieldName];
     });
-    queryBuilder.orderBy(order)
+    queryBuilder.orderBy(order);
     if (filter.search.length > 0) {
       queryBuilder = queryBuilder.andWhere('artist.name like :search', {
         search: `%${filter.search}%`,
       });
     }
-    queryBuilder = queryBuilder
-      .leftJoin('artist.users', 'users')
-      .andWhere('users.uid in (:...uid)', { uid: [publicUid, filter.uid] });
+    queryBuilder = queryBuilder.where('artist.libraryId in (:...id)', {
+      id: libraries.map((it) => it.id),
+    });
     return await queryBuilder.orderBy(order).getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {
     const artistRepository = getRepository(Artist);
+    const libraries = await MediaLibrary.getLibraryByUid(uid);
     return await artistRepository
       .createQueryBuilder('artist')
       .leftJoin('artist.users', 'users')
       .andWhereInIds([id])
-      .andWhere('users.uid in (:...uid)', { uid: [publicUid, uid] })
+      .andWhere('artist.libraryId in (:...lid)', {
+        lid: libraries.map((it) => it.id),
+      })
       .getOne();
   }
 
@@ -76,13 +81,13 @@ export class ArtistService {
   }
 
   async checkAccessible(id: number, uid: string): Promise<boolean> {
-    const artist = await getRepository(Artist).findOne(id, {
-      relations: ['users'],
-    });
-    if (!artist) {
-      return false;
-    }
-    return Boolean(artist.users.find((it) => it.uid === uid));
+    const libraries = await MediaLibrary.getLibraryByUid(uid);
+    const artist = await getRepository(Artist)
+      .createQueryBuilder('artist')
+      .where('artist.libraryId in (:...lid)', {
+        lid: libraries.map((it) => it.id),
+      });
+    return Boolean(artist);
   }
 
   async updateArtist(id: number, data: UpdateArtistDTO) {
