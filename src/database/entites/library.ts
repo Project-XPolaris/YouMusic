@@ -9,11 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Album} from './album';
-import {Music} from './music';
-import {User} from './user';
-import {Artist} from './artist';
-import {publicUid} from '../../vars';
+import { Album } from './album';
+import { Music } from './music';
+import { User } from './user';
+import { Artist } from './artist';
+import { publicUid } from '../../vars';
 
 @Entity()
 export class MediaLibrary {

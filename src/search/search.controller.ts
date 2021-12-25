@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { mbApi } from '../mb';
 import { MusicBrainService } from '../mb/MusicBrain.service';
 import { SearchAlbumResult } from './entities/searchAlbumResult';
 

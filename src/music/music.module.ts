@@ -1,7 +1,7 @@
-import { HttpModule, Module } from "@nestjs/common";
-import { MusicService } from "./music.service";
-import { MusicController } from "./music.controller";
-import { MetaModule } from "../meta/meta.module";
+import { HttpModule, Module } from '@nestjs/common';
+import { MusicService } from './music.service';
+import { MusicController } from './music.controller';
+import { MetaModule } from '../meta/meta.module';
 
 @Module({
   controllers: [MusicController],

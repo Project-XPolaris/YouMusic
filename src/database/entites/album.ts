@@ -28,7 +28,7 @@ export class Album {
   name: string;
 
   @Column({ nullable: true })
-  cover: string;
+  cover?: string;
 
   @OneToMany(() => Music, (music) => music.album)
   music: Music[];

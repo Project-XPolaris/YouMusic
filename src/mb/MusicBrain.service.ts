@@ -15,7 +15,6 @@ export class MusicBrainService {
     return await mbApi.getRelease(id, ['recordings', 'artists']);
   }
   async getReleaseArt(release) {
-    const url = `http://coverartarchive.org/release/${release}`;
     const response = await this.http
       .get(`http://coverartarchive.org/release/${release}`, {
         proxy: {

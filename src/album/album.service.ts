@@ -1,14 +1,12 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { PageFilter } from '../database/utils/type.filter';
-import { publicUid } from '../vars';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import * as fs from 'fs';
 import { Promise as id3Promise } from 'node-id3';
 import * as path from 'path';
 import { Artist } from '../database/entites/artist';
-import { LibraryService } from '../library/library.service';
 import { MediaLibrary } from '../database/entites/library';
 
 export type AlbumQueryFilter = {

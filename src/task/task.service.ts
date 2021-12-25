@@ -3,7 +3,6 @@ import { MediaLibrary } from '../database/entites/library';
 import { scanFile } from '../services/scan';
 import { ApplicationConfig } from '../config';
 import { getRepository } from 'typeorm';
-import { User } from '../database/entites/user';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
@@ -66,13 +65,6 @@ export class TaskService {
     onAnalyzeComplete(result.length);
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
-    // get owner
-    const user = await getRepository(User).findOne({ uid });
-    // read music tag
-    const savedAlbum: Album[] = [];
-    const savedArtist: Artist[] = [];
-    const savedGenre: Genre[] = [];
-    const mms = [];
     // find out updated file
     let musics = await getRepository(Music)
       .createQueryBuilder('music')
@@ -80,7 +72,7 @@ export class TaskService {
         libraryId: library.id,
       })
       .getMany();
-    const scanResult: string[] = [];
+    const scanResult: string[] = result;
     for (const musicFilePath of result) {
       const targetMusic = musics.find((music) => music.path === musicFilePath);
       if (!targetMusic) {
@@ -109,14 +101,9 @@ export class TaskService {
       const fileStat = await fs.promises.stat(musicFilePath);
 
       const musicID3 = await mm.parseFile(musicFilePath);
-      mms.push(musicID3);
       let album: Album = undefined;
       if (musicID3.common.album) {
-        album = savedAlbum.find((it) => it.name === musicID3.common.album);
-        if (!album) {
-          album = await getOrCreateAlbum(musicID3.common.album, library);
-          savedAlbum.push(album);
-        }
+        album = await getOrCreateAlbum(musicID3.common.album, library);
       }
 
       // get artist
@@ -130,11 +117,7 @@ export class TaskService {
       rawArtists = uniq(rawArtists);
       const artists: Array<Artist> = [];
       for (const rawArtist of rawArtists) {
-        let artist = savedArtist.find((it: Artist) => it.name === rawArtist);
-        if (!artist) {
-          artist = await getOrCreateArtist(rawArtist, library);
-          savedArtist.push(artist);
-        }
+        const artist = await getOrCreateArtist(rawArtist, library);
         artists.push(artist);
       }
       // get title
@@ -156,13 +139,7 @@ export class TaskService {
       if (v1) {
         const genreTag = v1.find((it) => it.id === 'genre');
         if (genreTag) {
-          let genre = savedGenre.find(
-            (gen: Genre) => gen.name === genreTag.value,
-          );
-          if (!genre) {
-            genre = await Genre.createOrGet(genreTag.value, library);
-            savedGenre.push(genre);
-          }
+          const genre = await Genre.createOrGet(genreTag.value, library);
           genres.push(genre);
         }
       }
@@ -177,6 +154,10 @@ export class TaskService {
         track: musicID3.common.track.no,
         disc: musicID3.common.disk.no,
         lastModify: fileStat.mtime,
+        lossless: musicID3.format.lossless,
+        bitrate: musicID3.format.bitrate,
+        sampleRate: musicID3.format.sampleRate,
+        size: fileStat.size,
       });
       music.artist = artists;
       music.genre = genres;

@@ -16,6 +16,11 @@ export class BaseMusicTemplate {
   artist: BaseArtistTemplate[];
   filename: string;
   lrc: string;
+  lossless: boolean;
+  bitrate: number;
+  size: number;
+  sampleRate: number;
+  ext: string;
   constructor(music: Music) {
     this.id = music.id;
     this.title = music.title;
@@ -24,6 +29,7 @@ export class BaseMusicTemplate {
     this.duration = music.duration;
     this.track = music.track;
     this.filename = path.basename(music.path);
+    this.ext = path.extname(music.path).replace('.', '');
     if (music.lyric) {
       this.lrc = `/file/lrc/${music.id}`;
     }
@@ -37,6 +43,16 @@ export class BaseMusicTemplate {
     }
     if (music.year) {
       this.year = music.year;
+    }
+    if (music.bitrate) {
+      this.bitrate = music.bitrate;
+    }
+    if (music.sampleRate) {
+      this.sampleRate = music.sampleRate;
+    }
+    this.lossless = music.lossless;
+    if (music.size) {
+      this.size = music.size;
     }
   }
 }

@@ -3,7 +3,6 @@ import { getRepository } from 'typeorm';
 import { Artist } from '../database/entites/artist';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
-import { publicUid } from '../vars';
 import { v4 } from 'uuid';
 import * as db from 'mime-db';
 import { ApplicationConfig } from '../config';

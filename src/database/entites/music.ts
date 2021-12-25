@@ -12,12 +12,10 @@ import {
 import { Artist } from './artist';
 import { Album } from './album';
 import { MediaLibrary } from './library';
-import { User } from './user';
 import { Genre } from './genre';
 import * as fs from 'fs';
 import NodeID3, { Promise as id3Promise } from 'node-id3';
 import { Buffer } from 'buffer';
-import { Library } from '../../library/entities/library.entity';
 
 @Entity()
 export class Music {
@@ -39,7 +37,14 @@ export class Music {
   lyric: string;
   @Column({ nullable: true })
   lastModify: Date;
-
+  @Column()
+  size: number;
+  @Column()
+  bitrate: number;
+  @Column()
+  sampleRate: number;
+  @Column()
+  lossless: boolean;
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,
   })
@@ -47,7 +52,7 @@ export class Music {
   artist: Artist[];
 
   @ManyToOne(() => Album, (album) => album.music)
-  album: Album;
+  album?: Album;
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;

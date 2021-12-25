@@ -13,13 +13,15 @@ import {
 import { ArtistService } from './artist.service';
 import { BaseArtistTemplate } from '../template/artist';
 import { getOrderFromQueryString } from '../utils/query';
-import { UpdateArtistAvatarFromUrl, UpdateArtistDTO } from './dto/update-artist.dto';
+import {
+  UpdateArtistAvatarFromUrl,
+  UpdateArtistDTO,
+} from './dto/update-artist.dto';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 
 @Controller('artist')
 export class ArtistController {
-  constructor(private readonly artistService: ArtistService) {
-  }
+  constructor(private readonly artistService: ArtistService) {}
 
   @Get()
   async findAll(

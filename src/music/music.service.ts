@@ -119,14 +119,14 @@ export class MusicService {
     if (dto.artist) {
       for (const artistName of dto.artist) {
         const artist = await getOrCreateArtist(artistName, music.library);
-        if (
-          (artist.avatar === null || artist.avatar.length === 0) &&
-          music.album.cover
-        ) {
-          // get copy of album
-          artist.avatar = await music.album.duplicateCover();
-          await getRepository(Artist).save(artist);
-        }
+        // if (
+        //   (artist.avatar === null || artist.avatar.length === 0) &&
+        //   music.album.cover
+        // ) {
+        //   // get copy of album
+        //   artist.avatar = await music.album.duplicateCover();
+        //   await getRepository(Artist).save(artist);
+        // }
         artists.push(artist);
       }
       music.artist = artists;
@@ -179,7 +179,9 @@ export class MusicService {
       await prevAlbum.refreshArtist();
       await Album.recycle(prevAlbum.id);
     }
-    await music.album.refreshArtist();
+    if (music.album) {
+      await music.album.refreshArtist();
+    }
     if (dto.coverUrl) {
       await this.setMusicCoverFromUrl(music.id, dto.coverUrl);
     }

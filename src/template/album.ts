@@ -23,7 +23,9 @@ export class BaseAlbumTemplate {
       this.music = album.music.map((music) => new BaseMusicTemplate(music));
     }
     if (album.artist) {
-      this.artist = album.artist.map((artist) => new BaseArtistTemplate(artist));
+      this.artist = album.artist.map(
+        (artist) => new BaseArtistTemplate(artist),
+      );
     }
   }
 }

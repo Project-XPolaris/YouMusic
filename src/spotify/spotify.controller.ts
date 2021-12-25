@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Query, Redirect, Req } from '@nestjs/common';
+import { Controller, Delete, Get, Query, Req } from '@nestjs/common';
 import { SpotifyService } from './spotify.service';
 import { NotificationService } from '../notification/notification.service';
 

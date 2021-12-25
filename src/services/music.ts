@@ -3,14 +3,11 @@ import { Album } from '../database/entites/album';
 import { Artist } from '../database/entites/artist';
 import { Music } from '../database/entites/music';
 import { MediaLibrary } from '../database/entites/library';
-import { User } from '../database/entites/user';
 import { IAudioMetadata } from 'music-metadata';
 import { v4 as uuidv4 } from 'uuid';
 import { ApplicationConfig } from '../config';
 import * as path from 'path';
 import sharp = require('sharp');
-import * as md5file from 'md5-file';
-
 export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   let album = await getRepository(Album)
     .createQueryBuilder('album')
@@ -55,6 +52,10 @@ export const getOrCreateMusic = async ({
   track,
   disc,
   lastModify,
+  sampleRate,
+  bitrate,
+  size,
+  lossless,
 }: {
   title: string;
   musicFilePath: string;
@@ -64,6 +65,10 @@ export const getOrCreateMusic = async ({
   track?: number;
   disc?: number;
   lastModify: Date;
+  sampleRate?: number;
+  bitrate?: number;
+  size?: number;
+  lossless?: boolean;
 }) => {
   let music = await getRepository(Music)
     .createQueryBuilder('music')
@@ -85,6 +90,10 @@ export const getOrCreateMusic = async ({
   music.track = track;
   music.disc = disc;
   music.lastModify = lastModify;
+  music.sampleRate = sampleRate;
+  music.lossless = lossless;
+  music.size = size;
+  music.bitrate = bitrate;
   await getRepository(Music).save(music);
   return music;
 };

@@ -4,7 +4,6 @@ import { getConnection, getRepository } from 'typeorm';
 import { SpotifyAuth } from '../database/entites/spotify';
 import dayjs = require('dayjs');
 import { stringToBase64 } from '../utils/string';
-import { NotificationService } from '../notification/notification.service';
 
 export interface SpotifyTokenResult {
   access_token: string;

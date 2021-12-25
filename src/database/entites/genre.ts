@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {Music} from './music';
-import {MediaLibrary} from './library';
+import { Music } from './music';
+import { MediaLibrary } from './library';
 
 @Entity()
 export class Genre {

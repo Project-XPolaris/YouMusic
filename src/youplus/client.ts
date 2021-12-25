@@ -25,9 +25,10 @@ export class YouPlusClient {
     });
     return response.data;
   }
-  public async userAuth(username: string,password : string): Promise<any> {
+  public async userAuth(username: string, password: string): Promise<any> {
     const response = await axios.post(`${this.apiUrl}/user/auth`, {
-      username,password
+      username,
+      password,
     });
     return response.data;
   }
