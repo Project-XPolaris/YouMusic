@@ -38,3 +38,4 @@ lerna-debug.log*
 
 /app-output
 /deploy
+data/covers/
