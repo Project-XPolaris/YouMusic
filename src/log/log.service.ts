@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { Observable } from 'rxjs/dist/types';
+import { Observable } from 'rxjs';
 
 export interface LogRPCService {
   writeLog: (data: {

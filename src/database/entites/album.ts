@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer';
 import { MediaLibrary } from './library';
-import sharp = require('sharp');
+import {makeThumbnail} from "../../utils/image";
 
 @Entity()
 export class Album {
@@ -88,9 +88,10 @@ export class Album {
   }
   async setCover(fileBuffer: Buffer) {
     const coverFilename = `${uuidv4()}.jpg`;
-    await sharp(fileBuffer)
-      .resize({ width: 512 })
-      .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
+    await makeThumbnail(
+      fileBuffer,
+      path.join(ApplicationConfig.coverDir, coverFilename),
+    );
     this.cover = coverFilename;
   }
   async refreshArtist() {

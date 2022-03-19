@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 import { join } from 'path';
 
-const YAML_CONFIG_FILENAME = '../conf/config.yml';
+const YAML_CONFIG_FILENAME = '../../data/config.yml';
 
 export default () => {
   return yaml.load(

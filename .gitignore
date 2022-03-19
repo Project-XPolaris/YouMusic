@@ -37,3 +37,4 @@ lerna-debug.log*
 /static
 
 /app-output
+/deploy

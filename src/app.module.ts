@@ -48,7 +48,7 @@ import { LogService } from './log/log.service';
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'ym_db.sqlite',
+      database: './data/ym_db.sqlite',
       logging: true,
       entities: [MediaLibrary, Music, Artist, Album, User, Genre, SpotifyAuth],
       synchronize: true,

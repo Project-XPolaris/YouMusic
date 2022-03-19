@@ -1,4 +1,7 @@
 import * as db from 'mime-db';
+import Jimp from 'jimp';
+import path from 'path';
+import { ApplicationConfig } from '../config';
 
 export const getImageFromContentType = (
   contentType: string,
@@ -15,4 +18,10 @@ export const getImageFromContentType = (
         return content.extensions[0];
       }
   }
+};
+
+export const makeThumbnail = async (input: Buffer, output: string) => {
+  let coverImage = await Jimp.read(input);
+  coverImage = coverImage.resize(512, Jimp.AUTO, Jimp.RESIZE_BEZIER);
+  await coverImage.write(output);
 };

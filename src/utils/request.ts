@@ -1,11 +1,10 @@
 import { HttpService } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
 import { Buffer } from 'buffer';
 
 export const getArrayBufferFromUrl = async (
   service: HttpService,
   url,
-): Promise<{ response: AxiosResponse<any>; buf: Buffer }> => {
+): Promise<{ response; buf: Buffer }> => {
   const response = await service
     .request({
       url,

@@ -39,11 +39,11 @@ export class Music {
   lastModify: Date;
   @Column()
   size: number;
-  @Column()
+  @Column({ nullable: true })
   bitrate: number;
-  @Column()
+  @Column({ nullable: true })
   sampleRate: number;
-  @Column()
+  @Column({ nullable: true })
   lossless: boolean;
   @ManyToMany(() => Artist, (artist) => artist.music, {
     cascade: true,

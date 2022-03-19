@@ -3,3 +3,4 @@ dist/
 *.sqlite
 .idea
 static/
+app-output/

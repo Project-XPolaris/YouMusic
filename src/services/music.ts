@@ -7,7 +7,8 @@ import { IAudioMetadata } from 'music-metadata';
 import { v4 as uuidv4 } from 'uuid';
 import { ApplicationConfig } from '../config';
 import * as path from 'path';
-import sharp = require('sharp');
+import Jimp from 'jimp';
+
 export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   let album = await getRepository(Album)
     .createQueryBuilder('album')
@@ -132,9 +133,11 @@ export const saveMusicCoverFile = async (
   if (pics && pics.length > 0) {
     const cover = pics[0];
     const coverFilename = `${uuidv4()}.jpg`;
-    await sharp(cover.data)
-      .resize({ width: 512 })
-      .toFile(path.join(ApplicationConfig.coverDir, coverFilename));
+    let coverImage = await Jimp.read(cover.data);
+    coverImage = coverImage.resize(512, Jimp.AUTO, Jimp.RESIZE_BEZIER);
+    await coverImage.write(
+      path.join(ApplicationConfig.coverDir, coverFilename),
+    );
     return coverFilename;
   }
   return undefined;

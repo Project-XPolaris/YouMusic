@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { Observable } from 'rxjs/dist/types';
+import { Observable } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import * as os from 'os';
 
