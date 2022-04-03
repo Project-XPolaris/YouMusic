@@ -1,6 +1,10 @@
 auth:
   enable: false
   url: "http://localhost:8999/user/auth"
+sqlite:
+  path: "./data/ym_db.sqlite"
+storage:
+  root: "./storage"
 youplus:
   url: "http://localhost:8999"
   rpc: "localhost:50055"

@@ -24,6 +24,9 @@ export const scanFile = async (
         continue;
       }
       if (item.isFile()) {
+        if (item.name.startsWith('.')) {
+          continue;
+        }
         const ext = path.extname(item.name);
         if (option.extension.find((it) => it === ext)) {
           result.push(path.join(currentDirPath, item.name));

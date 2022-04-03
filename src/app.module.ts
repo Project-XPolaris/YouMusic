@@ -40,21 +40,54 @@ import { NeteasemusicService } from './neteasemusic/neteasemusic.service';
 import { MetaModule } from './meta/meta.module';
 import { LogModule } from './log/log.module';
 import { LogService } from './log/log.service';
+import { ConfigService } from '@nestjs/config';
+import { mkdir } from 'fs';
+import { ApplicationConfig } from './config';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '../', 'static'),
-    }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: './data/ym_db.sqlite',
-      logging: true,
-      entities: [MediaLibrary, Music, Artist, Album, User, Genre, SpotifyAuth],
-      synchronize: true,
-    }),
     ConfigModule.forRoot({
       load: [configuration],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          type: 'sqlite',
+          database: configService.get('sqlite.path'),
+          logging: true,
+          entities: [
+            MediaLibrary,
+            Music,
+            Artist,
+            Album,
+            User,
+            Genre,
+            SpotifyAuth,
+          ],
+          synchronize: true,
+        };
+      },
+    }),
+    ServeStaticModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const storageRoot = configService.get<string>('storage.root');
+        const coverStoragePath = path.join(storageRoot, 'covers');
+        ApplicationConfig.coverDir = coverStoragePath;
+        mkdir(coverStoragePath, { recursive: true }, (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+        return [
+          {
+            rootPath: path.join(storageRoot),
+          },
+        ];
+      },
     }),
     HttpModule,
     NotificationModule,
