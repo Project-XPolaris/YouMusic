@@ -1,6 +1,3 @@
-auth:
-  enable: false
-  url: "http://localhost:8999/user/auth"
 sqlite:
   path: "./data/ym_db.sqlite"
 storage:
@@ -19,3 +16,15 @@ youlog:
 spotify:
   clientId: "210f3d41c0af4aefb8115b57524a2155"
   secret: "32f238ca0d174945b8abdedd856a5148"
+oauth:
+  url: "http://localhost:8602"
+  appid: "appid"
+  secret: "secret"
+auth:
+  youauth:
+    type: youauth
+    enable: true
+    url: "http://localhost:8602"
+  youplus:
+    type: youplus
+    enable: true

@@ -70,7 +70,11 @@ export class Album {
       const artistRepo = await getRepository(Artist);
       const artistAvatarUsage = await artistRepo.count({ avatar: this.cover });
       if (artistAvatarUsage === 0) {
-        await fs.unlinkSync(path.join(ApplicationConfig.coverDir, this.cover));
+        const coverPath = path.join(ApplicationConfig.coverDir, this.cover);
+        const isExist = await fs.existsSync(coverPath);
+        if (isExist) {
+          await fs.unlinkSync(coverPath);
+        }
       }
     }
   }

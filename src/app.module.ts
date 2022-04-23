@@ -43,6 +43,7 @@ import { LogService } from './log/log.service';
 import { ConfigService } from '@nestjs/config';
 import { mkdir } from 'fs';
 import { ApplicationConfig } from './config';
+import { Oauth } from './database/entites/oauth';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { ApplicationConfig } from './config';
             User,
             Genre,
             SpotifyAuth,
+            Oauth,
           ],
           synchronize: true,
         };
@@ -119,9 +121,11 @@ import { ApplicationConfig } from './config';
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {
   constructor(private logService: LogService) {}
+
   onApplicationBootstrap() {
     this.logService.info({ content: 'Service starting', scope: 'boot' });
   }
+
   configure(consumer: MiddlewareConsumer): any {
     consumer.apply(AuthMiddleware).forRoutes('*');
   }

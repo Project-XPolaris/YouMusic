@@ -4,12 +4,14 @@ import {
   Entity,
   getRepository,
   ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { MediaLibrary } from './library';
 import { SpotifyAuth } from './spotify';
+import { Oauth } from './oauth';
 
 @Entity()
 export class User {
@@ -25,6 +27,9 @@ export class User {
 
   @ManyToMany(() => MediaLibrary)
   libraries: MediaLibrary[];
+
+  @OneToMany(() => Oauth, (oauth) => oauth.user)
+  tokens: Oauth[];
 
   @OneToOne(() => SpotifyAuth, (auth) => auth.user, { nullable: true })
   spotifyAuth: SpotifyAuth;

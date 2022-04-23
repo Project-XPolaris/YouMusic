@@ -37,7 +37,7 @@ export class MediaLibrary {
   @OneToMany(() => Artist, (artist) => artist.library)
   artists: Artist[];
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, { onDelete: 'CASCADE' })
   @JoinTable()
   users: User[];
 
@@ -50,7 +50,7 @@ export class MediaLibrary {
   }
   static async deleteById(id: number | string): Promise<boolean> {
     const repo = await getRepository(MediaLibrary);
-    const library = await repo.findOne(id, { relations: ['music'] });
+    const library = await repo.findOne(id, { relations: ['music', 'users'] });
     if (library === undefined) {
       return false;
     }
