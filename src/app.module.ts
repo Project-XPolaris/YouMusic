@@ -54,22 +54,37 @@ import { Oauth } from './database/entites/oauth';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return {
-          type: 'sqlite',
-          database: configService.get('sqlite.path'),
-          logging: true,
-          entities: [
-            MediaLibrary,
-            Music,
-            Artist,
-            Album,
-            User,
-            Genre,
-            SpotifyAuth,
-            Oauth,
-          ],
-          synchronize: true,
-        };
+        const entities = [
+          MediaLibrary,
+          Music,
+          Artist,
+          Album,
+          User,
+          Genre,
+          SpotifyAuth,
+          Oauth,
+        ];
+        const datasource = configService.get('datasource.type');
+        switch (datasource) {
+          case 'sqlite':
+            return {
+              type: 'sqlite',
+              database: configService.get('datasource.path'),
+              entities,
+              synchronize: true,
+            };
+          case 'mysql':
+            return {
+              type: 'mysql',
+              host: configService.get('datasource.host'),
+              port: configService.get('datasource.port'),
+              username: configService.get('datasource.username'),
+              password: configService.get('datasource.password'),
+              database: configService.get('datasource.database'),
+              entities,
+              synchronize: true,
+            };
+        }
       },
     }),
     ServeStaticModule.forRootAsync({
