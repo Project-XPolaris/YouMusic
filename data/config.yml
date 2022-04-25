@@ -1,7 +1,8 @@
-sqlite:
+datasource:
+  type: sqlite
   path: "./data/ym_db.sqlite"
 storage:
-  root: "./storage"
+  root: "./data/storage"
 youplus:
   url: "http://localhost:8999"
   rpc: "localhost:50055"
@@ -28,3 +29,5 @@ auth:
   youplus:
     type: youplus
     enable: true
+thumbnail:
+  engine: "default"

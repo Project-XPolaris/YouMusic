@@ -8,6 +8,9 @@ import { Promise as id3Promise } from 'node-id3';
 import * as path from 'path';
 import { Artist } from '../database/entites/artist';
 import { MediaLibrary } from '../database/entites/library';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
+import { v4 as uuidv4 } from 'uuid';
+import { ApplicationConfig } from '../config';
 
 export type AlbumQueryFilter = {
   artistId: number;
@@ -18,6 +21,7 @@ export type AlbumQueryFilter = {
 
 @Injectable()
 export class AlbumService {
+  constructor(private thumbnailService: ThumbnailService) {}
   async findAll(filter: AlbumQueryFilter) {
     const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
     const albumRepository = getRepository(Album);
@@ -96,7 +100,12 @@ export class AlbumService {
     if (!album) {
       throw new Error('album not found');
     }
-    await album.setCover(file.buffer);
+    const coverFilename = `${uuidv4()}.jpg`;
+    await this.thumbnailService.generate(
+      file.b,
+      path.join(ApplicationConfig.coverDir, coverFilename),
+    );
+    album.cover = coverFilename;
     const mime = path.extname(file.originalname).replace('.', '');
     for (const music of album.music) {
       await music.writeMusicFileCover(mime, file.buffer);

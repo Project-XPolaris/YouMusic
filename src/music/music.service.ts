@@ -1,4 +1,4 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import {HttpService, Injectable, LoggerService} from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { getRepository } from 'typeorm';
 import { Music } from 'src/database/entites/music';
@@ -18,8 +18,9 @@ import * as path from 'path';
 import * as Path from 'path';
 import { Genre } from '../database/entites/genre';
 import { ApplicationConfig } from '../config';
-import { v4 } from 'uuid';
-import { getImageFromContentType } from '../utils/image';
+import { v4 as uuidv4, v4 } from 'uuid';
+import { getImageFromContentType, makeThumbnail } from '../utils/image';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -32,7 +33,10 @@ export type MusicQueryFilter = {
 
 @Injectable()
 export class MusicService {
-  constructor(private httpService: HttpService) {}
+  constructor(
+    private httpService: HttpService,
+    private thumbnailService: ThumbnailService,
+  ) {}
 
   async findAll(filter: MusicQueryFilter) {
     const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
@@ -217,7 +221,12 @@ export class MusicService {
         music.album.music.length === 1)
     ) {
       // save album cover
-      await music.album.setCover(coverfile.buffer);
+      const coverFilename = `${uuidv4()}.jpg`;
+      await this.thumbnailService.generate(
+        file.buffer as any,
+        path.join(ApplicationConfig.coverDir, coverFilename),
+      );
+      music.album.cover = coverFilename;
       await getRepository(Album).save(music.album);
     }
   }

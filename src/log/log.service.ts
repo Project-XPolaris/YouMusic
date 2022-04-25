@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
@@ -42,6 +42,11 @@ export class LogService implements OnModuleInit {
     extra?: any;
     scope?: string;
   }) {
+    if (!extra) {
+      Logger.verbose(`[${scope}] ${content}`);
+    } else {
+      Logger.verbose(`[${scope}] ${content}`, extra);
+    }
     if (!this.enableLog) {
       return;
     }

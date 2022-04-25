@@ -21,7 +21,7 @@ import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
 import * as db from 'mime-db';
 import { replaceExt } from '../utils/string';
-import { makeThumbnail } from '../utils/image';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -51,7 +51,7 @@ export const TaskErrors = {
 @Injectable()
 export class TaskService {
   tasks: Array<Task> = [];
-
+  constructor(private thumbnailService: ThumbnailService) {}
   private async scanProcess(
     library: MediaLibrary,
     uid: string,
@@ -194,7 +194,7 @@ export class TaskService {
             ApplicationConfig.coverDir,
             coverFilename,
           );
-          await makeThumbnail(cover.data, imageFileNamePath);
+          await this.thumbnailService.generate(cover.data, imageFileNamePath);
           await saveAlbumCover(album.id, coverFilename);
           album.cover = coverFilename;
         }

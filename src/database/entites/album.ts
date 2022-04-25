@@ -30,10 +30,10 @@ export class Album {
   @Column({ nullable: true })
   cover?: string;
 
-  @OneToMany(() => Music, (music) => music.album)
+  @OneToMany(() => Music, (music) => music.album,{onDelete: 'CASCADE'})
   music: Music[];
 
-  @ManyToMany(() => Artist, (artist) => artist.album)
+  @ManyToMany(() => Artist, (artist) => artist.album,{onDelete: 'CASCADE'})
   @JoinTable()
   artist: Artist[];
 
@@ -43,7 +43,7 @@ export class Album {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => MediaLibrary, (library) => library.albums)
+  @ManyToOne(() => MediaLibrary, (library) => library.albums,{onDelete: 'CASCADE'})
   library: MediaLibrary;
 
   /**
