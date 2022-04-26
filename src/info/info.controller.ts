@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as path from "path";
 
 @Controller()
 export class InfoController {
@@ -10,7 +11,7 @@ export class InfoController {
     const oauthEnabled = Boolean(oauthConfig);
     const oauthUrl = new URL(oauthConfig.url);
     oauthUrl.searchParams.set('appid', oauthConfig.appid);
-    oauthUrl.pathname = '/login';
+    oauthUrl.pathname = path.join(oauthUrl.pathname) + '/login';
     const authObj = this.configService.get('auth');
     const auths = [];
     Object.getOwnPropertyNames(authObj).forEach((key: string) => {
