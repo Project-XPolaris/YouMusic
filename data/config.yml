@@ -29,5 +29,8 @@ auth:
   youplus:
     type: youplus
     enable: true
+  anonymous:
+    type: anonymous
+    enable: true
 thumbnail:
   engine: "default"

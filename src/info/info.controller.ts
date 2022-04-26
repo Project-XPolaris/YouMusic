@@ -33,6 +33,12 @@ export class InfoController {
             type: 'base',
             url: '/user/auth',
           });
+          break;
+        case 'anonymous':
+          auths.push({
+            name: 'Anonymous',
+            type: 'anonymous',
+          });
       }
     });
     return {
@@ -42,7 +48,7 @@ export class InfoController {
       authUrl: this.configService.get('auth.url'),
       oauth: oauthEnabled,
       oauthUrl: oauthUrl.toString(),
-      auth:auths,
+      auth: auths,
     };
   }
 }
