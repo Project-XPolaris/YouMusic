@@ -48,11 +48,11 @@ export class ArtistService {
     const libraries = await MediaLibrary.getLibraryByUid(uid);
     return await artistRepository
       .createQueryBuilder('artist')
-      .leftJoin('artist.users', 'users')
+      // .leftJoin('artist.library', 'library')
       .andWhereInIds([id])
-      .andWhere('artist.libraryId in (:...lid)', {
-        lid: libraries.map((it) => it.id),
-      })
+      // .andWhere('artist.libraryId in (:...lid)', {
+      //   lid: libraries.map((it) => it.id),
+      // })
       .getOne();
   }
 
