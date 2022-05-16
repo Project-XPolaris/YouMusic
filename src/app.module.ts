@@ -81,6 +81,7 @@ import { Oauth } from './database/entites/oauth';
               username: configService.get('datasource.username'),
               password: configService.get('datasource.password'),
               database: configService.get('datasource.database'),
+              retryAttempts: 3,
               entities,
               synchronize: true,
             };

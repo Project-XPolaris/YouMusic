@@ -4,22 +4,20 @@ import { scanFile } from '../services/scan';
 import { ApplicationConfig } from '../config';
 import { getRepository } from 'typeorm';
 import * as mm from 'music-metadata';
+import { IAudioMetadata } from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
-  saveAlbumCover,
 } from '../services/music';
 import { uniq } from 'lodash';
 import { Artist } from '../database/entites/artist';
-import { v4 as uuidv4 } from 'uuid';
 import { ServiceError } from '../error';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
-import * as db from 'mime-db';
 import { replaceExt } from '../utils/string';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 
@@ -96,6 +94,7 @@ export class TaskService {
     for (const music of musics) {
       await Music.deleteMusic(music.id);
     }
+    const generateJobs: Array<{ id3: IAudioMetadata; albumId: number }> = [];
     // refresh music file meta
     for (let idx = 0; idx < scanResult.length; idx++) {
       try {
@@ -183,26 +182,14 @@ export class TaskService {
         // save cover
         const pics = musicID3.common.picture;
         if (pics && pics.length > 0 && album && !album.cover) {
-          const cover = pics[0];
-          const mime = db[cover.format];
-          if (!mime) {
-            continue;
-          }
-          const ext = mime.extensions[0];
-          const coverFilename = `${uuidv4()}.${ext}`;
-          const imageFileNamePath = path.join(
-            ApplicationConfig.coverDir,
-            coverFilename,
-          );
-          await this.thumbnailService.generate(cover.data, imageFileNamePath);
-          await saveAlbumCover(album.id, coverFilename);
-          album.cover = coverFilename;
+          generateJobs.push({ id3: musicID3, albumId: album.id });
         }
       } catch (e) {
         console.log(e);
       }
     }
-
+    // launch generate cover
+    this.thumbnailService.generateMusicCover(generateJobs);
     return result;
   }
 

@@ -54,12 +54,16 @@ export class Artist {
       return true;
     }
     if (artist.music.length === 0) {
-      await repository.delete(artist.id);
+      await artist.recycle();
       return true;
     }
     return false;
   }
   async recycle() {
+    const repository = await getRepository(Artist);
+    const artist = await repository.findOne(this.id, { relations: ['music'] });
+    artist.music = [];
+    artist.album = [];
     await getRepository(Artist).delete(this.id);
   }
 }
