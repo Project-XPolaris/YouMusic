@@ -4,12 +4,12 @@ import { scanFile } from '../services/scan';
 import { ApplicationConfig } from '../config';
 import { getRepository } from 'typeorm';
 import * as mm from 'music-metadata';
-import { IAudioMetadata } from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
+  saveAlbumCover,
 } from '../services/music';
 import { uniq } from 'lodash';
 import { Artist } from '../database/entites/artist';
@@ -20,6 +20,9 @@ import { Genre } from '../database/entites/genre';
 import { Music } from '../database/entites/music';
 import { replaceExt } from '../utils/string';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
+import { LogService } from '../log/log.service';
+import { v4 as uuidv4 } from 'uuid';
+import * as db from 'mime-db';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -49,7 +52,10 @@ export const TaskErrors = {
 @Injectable()
 export class TaskService {
   tasks: Array<Task> = [];
-  constructor(private thumbnailService: ThumbnailService) {}
+  constructor(
+    private thumbnailService: ThumbnailService,
+    private logService: LogService,
+  ) {}
   private async scanProcess(
     library: MediaLibrary,
     uid: string,
@@ -61,7 +67,14 @@ export class TaskService {
       onCurrentUpdate: (current: number) => void;
     },
   ) {
+    const startScanTime = Date.now();
     const result = await scanFile(library.path);
+    const endScanTime = Date.now();
+    this.logService.info({
+      content: `Scan ${library.path} complete in ${
+        endScanTime - startScanTime
+      }ms`,
+    });
     onAnalyzeComplete(result.length);
     // prepare cover directory
     await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
@@ -73,6 +86,7 @@ export class TaskService {
       })
       .getMany();
     const scanResult: string[] = [];
+    const getSyncListStart = Date.now();
     for (const musicFilePath of result) {
       const targetMusic = musics.find((music) => music.path === musicFilePath);
       if (!targetMusic) {
@@ -84,31 +98,58 @@ export class TaskService {
       if (!fileStat) {
         continue;
       }
+      if (fileStat.size === 0) {
+        continue;
+      }
       if (fileStat.mtime.getTime() === targetMusic.lastModify.getTime()) {
         musics = musics.filter((music) => music.id !== targetMusic.id);
       } else {
         scanResult.push(musicFilePath);
       }
     }
+    const getSyncListEnd = Date.now();
+    this.logService.info({
+      content: `Get sync list complete in ${
+        getSyncListEnd - getSyncListStart
+      }ms`,
+    });
     // remove music that file is not exist
+    const removeNotExistStart = Date.now();
     for (const music of musics) {
       await Music.deleteMusic(music.id);
     }
-    const generateJobs: Array<{ id3: IAudioMetadata; albumId: number }> = [];
+    const removeNotExistEnd = Date.now();
+    this.logService.info({
+      content: `Remove not exist music complete in ${
+        removeNotExistEnd - removeNotExistStart
+      }ms`,
+    });
     // refresh music file meta
+    let updatedAlbums: Album[] = [];
     for (let idx = 0; idx < scanResult.length; idx++) {
       try {
         onCurrentUpdate(idx);
         const musicFilePath = scanResult[idx];
         let fileStat = undefined;
+        const readFileStart = Date.now();
         fileStat = await fs.promises.stat(musicFilePath);
         const musicID3 = await mm.parseFile(musicFilePath);
+        const readFileEnd = Date.now();
+        this.logService.info({
+          content: `Read file ${musicFilePath} complete in ${
+            readFileEnd - readFileStart
+          }ms`,
+        });
         let album: Album = undefined;
         if (musicID3.common.album) {
           album = await getOrCreateAlbum(musicID3.common.album, library);
+          updatedAlbums = [
+            ...updatedAlbums.filter((it) => it.id !== album.id),
+            album,
+          ];
         }
-
-        // get artist
+        const saveMusicStart = Date.now();
+        //get artist
         let rawArtists = [];
         if (musicID3.common.artist) {
           rawArtists.push(musicID3.common.artist);
@@ -176,20 +217,40 @@ export class TaskService {
         }
         await getRepository(Music).save(music);
         // refresh album artist
-        if (album) {
-          await album.refreshArtist();
-        }
+        const saveMusicEnd = Date.now();
+        this.logService.info({
+          content: `Save music ${musicFilePath} complete in ${
+            saveMusicEnd - saveMusicStart
+          }ms`,
+        });
         // save cover
         const pics = musicID3.common.picture;
         if (pics && pics.length > 0 && album && !album.cover) {
-          generateJobs.push({ id3: musicID3, albumId: album.id });
+          const cover = pics[0];
+          const mime = db[cover.format];
+          if (!mime) {
+            continue;
+          }
+          const ext = mime.extensions[0];
+          const coverFilename = `${uuidv4()}.${ext}`;
+          const imageFileNamePath = path.join(
+            ApplicationConfig.coverDir,
+            coverFilename,
+          );
+          await this.thumbnailService.generate(cover.data, imageFileNamePath);
+          await saveAlbumCover(album.id, coverFilename);
+          album.cover = coverFilename;
         }
       } catch (e) {
-        console.log(e);
+        this.logService.info({
+          content: `Save music ${scanResult[idx]} failed with err  ${e}`,
+        });
       }
     }
-    // launch generate cover
-    this.thumbnailService.generateMusicCover(generateJobs);
+    // update album artist
+    for (const updatedAlbum of updatedAlbums) {
+      await updatedAlbum.refreshArtist();
+    }
     return result;
   }
 
