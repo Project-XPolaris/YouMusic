@@ -1,4 +1,4 @@
-import {HttpService, Injectable, LoggerService} from '@nestjs/common';
+import { HttpService, Injectable, LoggerService } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
 import { getRepository } from 'typeorm';
 import { Music } from 'src/database/entites/music';
@@ -45,9 +45,11 @@ export class MusicService {
     queryBuilder
       .take(filter.pageSize)
       .skip((filter.page - 1) * filter.pageSize);
-    queryBuilder.where('music.libraryId in (:...lid)', {
-      lid: libraries.map((it) => it.id),
-    });
+    if (libraries.length > 0) {
+      queryBuilder.where('music.libraryId in (:...lid)', {
+        lid: libraries.map((it) => it.id),
+      });
+    }
     if (filter.albumId > 0) {
       queryBuilder.andWhere((qb) => {
         const subQuery = qb
@@ -95,13 +97,13 @@ export class MusicService {
   async findOne(id: number, uid: string) {
     const libraries = await MediaLibrary.getLibraryByUid(uid);
     const musicRepository = getRepository(Music);
-    return await musicRepository
-      .createQueryBuilder('music')
-      .whereInIds([id])
-      .andWhere('music.libraryId in (:...lid)', {
+    let query = musicRepository.createQueryBuilder('music').whereInIds([id]);
+    if (libraries.length > 0) {
+      query = query.andWhere('music.libraryId in (:...lid)', {
         lid: libraries.map((it) => it.id),
-      })
-      .getOne();
+      });
+    }
+    return await query.getOne();
   }
 
   async remove(id: number) {

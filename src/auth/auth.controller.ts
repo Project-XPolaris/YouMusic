@@ -7,10 +7,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('/user/auth')
   async userAuth(@Body() userAuthDto: UserAuthDto) {
-    return await this.authService.client.userAuth(
+    const response = await this.authService.client.userAuth(
       userAuthDto.username,
       userAuthDto.password,
     );
+    return {
+      success: true,
+      data: {
+        username: response.uid,
+        accessToken: response.token,
+      },
+    };
   }
   @Get('/user/auth')
   async checkAuth(@Query('token') token: string) {

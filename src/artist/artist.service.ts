@@ -37,9 +37,11 @@ export class ArtistService {
         search: `%${filter.search}%`,
       });
     }
-    queryBuilder = queryBuilder.where('artist.libraryId in (:...id)', {
-      id: libraries.map((it) => it.id),
-    });
+    if (libraries.length > 0) {
+      queryBuilder = queryBuilder.where('artist.libraryId in (:...id)', {
+        id: libraries.map((it) => it.id),
+      });
+    }
     return await queryBuilder.orderBy(order).getManyAndCount();
   }
 

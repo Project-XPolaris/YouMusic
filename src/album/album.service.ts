@@ -29,9 +29,11 @@ export class AlbumService {
     queryBuilder = queryBuilder
       .skip((filter.page - 1) * filter.pageSize)
       .take(filter.pageSize);
-    queryBuilder = queryBuilder.where('album.libraryId in (:...id)', {
-      id: libraries.map((it) => it.id),
-    });
+    if (libraries.length > 0) {
+      queryBuilder = queryBuilder.where('album.libraryId in (:...id)', {
+        id: libraries.map((it) => it.id),
+      });
+    }
     if (filter.artistId > 0) {
       queryBuilder.where((qb) => {
         const subQuery = qb
@@ -62,15 +64,18 @@ export class AlbumService {
   async findOne(id: number, uid: string) {
     const libraries = await MediaLibrary.getLibraryByUid(uid);
     const albumRepository = getRepository(Album);
-    const queryBuilder = albumRepository.createQueryBuilder('album');
+    let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder
       .leftJoinAndSelect('album.music', 'music')
       .leftJoinAndSelect('album.artist', 'artist')
       .leftJoinAndSelect('music.artist', 'musicArtist')
-      .where('album.id = :id', { id })
-      .andWhere('album.libraryId in (:...lid)', {
+      .where('album.id = :id', { id });
+
+    if (libraries.length > 0) {
+      queryBuilder = queryBuilder.andWhere('album.libraryId in (:...lid)', {
         lid: libraries.map((it) => it.id),
       });
+    }
     return queryBuilder.getOne();
   }
 
