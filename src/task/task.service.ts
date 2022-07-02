@@ -23,7 +23,7 @@ import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { LogService } from '../log/log.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from 'mime-db';
-
+import { encodeImageToBlurhash } from '../utils/blurhash';
 export enum TaskStatus {
   Running = 'Running',
   Done = 'Done',
@@ -225,7 +225,7 @@ export class TaskService {
         });
         // save cover
         const pics = musicID3.common.picture;
-        if (pics && pics.length > 0 && album && !album.cover) {
+        if ((pics && pics.length > 0 && album && !album.cover) || true) {
           const cover = pics[0];
           const mime = db[cover.format];
           if (!mime) {
@@ -238,8 +238,10 @@ export class TaskService {
             coverFilename,
           );
           await this.thumbnailService.generate(cover.data, imageFileNamePath);
-          await saveAlbumCover(album.id, coverFilename);
+          const hash = await encodeImageToBlurhash(cover.data);
           album.cover = coverFilename;
+          album.blurHash = hash;
+          await getRepository(Album).save(album);
         }
       } catch (e) {
         this.logService.info({

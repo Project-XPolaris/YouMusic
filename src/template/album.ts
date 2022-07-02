@@ -7,6 +7,7 @@ export class BaseAlbumTemplate {
   id: number;
   name: string;
   cover: string;
+  blurHash: string;
   createdAt: string;
   updatedAt: string;
   artist: BaseArtistTemplate[] = [];
@@ -14,6 +15,7 @@ export class BaseAlbumTemplate {
   constructor(album: Album) {
     this.id = album.id;
     this.name = album.name;
+    this.blurHash = album.blurHash;
     if (album.cover) {
       this.cover = `/covers/${album.cover}`;
     }

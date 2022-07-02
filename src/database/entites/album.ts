@@ -26,7 +26,8 @@ export class Album {
   id: number;
   @Column()
   name: string;
-
+  @Column({ nullable: true })
+  blurHash: string;
   @Column({ nullable: true })
   cover?: string;
 
