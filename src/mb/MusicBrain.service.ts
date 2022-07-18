@@ -12,7 +12,7 @@ export class MusicBrainService {
     return await mbApi.search('release', { query: query });
   }
   async getRelease(id: string) {
-    return await mbApi.getRelease(id, ['recordings', 'artists']);
+    return await mbApi.lookupRelease(id, ['recordings', 'artists']);
   }
   async getReleaseArt(release) {
     const response = await this.http
