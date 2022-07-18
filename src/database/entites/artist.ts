@@ -46,6 +46,7 @@ export class Artist {
       }
     }
   }
+
   static async recycleIfEmpty(id: string | number): Promise<boolean> {
     const repository = await getRepository(Artist);
     const artist = await repository.findOne(id, { relations: ['music'] });
@@ -59,11 +60,13 @@ export class Artist {
     }
     return false;
   }
+
   async recycle() {
-    const repository = await getRepository(Artist);
+    const repository = await getRepository<Artist>(Artist);
     const artist = await repository.findOne(this.id, { relations: ['music'] });
     artist.music = [];
     artist.album = [];
+    await repository.save(artist);
     await getRepository(Artist).delete(this.id);
   }
 }

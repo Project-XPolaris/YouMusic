@@ -16,6 +16,7 @@ import { Genre } from './genre';
 import * as fs from 'fs';
 import NodeID3, { Promise as id3Promise } from 'node-id3';
 import { Buffer } from 'buffer';
+import { Tag } from './tag';
 
 @Entity()
 export class Music {
@@ -63,6 +64,12 @@ export class Music {
   @JoinTable()
   genre: Genre[];
 
+  @ManyToMany(() => Tag, (tag) => tag.music, {
+    cascade: true,
+  })
+  @JoinTable()
+  tags: Tag[];
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -72,11 +79,14 @@ export class Music {
   static deleteMusic = async (id: string | number) => {
     const repository = await getRepository(Music);
     const music = await repository.findOne(id, {
-      relations: ['album', 'artist'],
+      relations: ['album', 'artist', 'tags'],
     });
     if (music === undefined) {
       return;
     }
+    music.artist = [];
+    music.tags = [];
+    await repository.save(music);
     await repository.delete(music.id);
     if (music?.album?.id) {
       await Album.recycle(music.album.id);
@@ -113,6 +123,7 @@ export class Music {
     const buf = await id3Promise.update(tags, file);
     await fs.promises.writeFile(this.path, buf);
   };
+
   async save() {
     return await getRepository(Music).save(this);
   }

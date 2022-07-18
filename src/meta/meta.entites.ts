@@ -1,7 +1,10 @@
 export interface SearchAlbumEntity {
+  id: string;
   name: string;
-  cover: string;
+  cover?: string;
   artists: string;
+  releaseDate?: string;
+  source: string;
 }
 export interface SearchArtistEntity {
   name: string;
@@ -14,4 +17,12 @@ export interface SearchMusicEntity {
   id: string;
   name: string;
   artists: { name: string }[];
+}
+
+export interface AlbumMeta {
+  mbId?: string;
+  nemId?: string;
+  name?: string;
+  cover?: string;
+  artist?: string;
 }

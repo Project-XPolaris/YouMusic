@@ -9,7 +9,6 @@ import {
   getOrCreateAlbum,
   getOrCreateArtist,
   getOrCreateMusic,
-  saveAlbumCover,
 } from '../services/music';
 import { uniq } from 'lodash';
 import { Artist } from '../database/entites/artist';
@@ -24,6 +23,7 @@ import { LogService } from '../log/log.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from 'mime-db';
 import { encodeImageToBlurhash } from '../utils/blurhash';
+
 export enum TaskStatus {
   Running = 'Running',
   Done = 'Done',

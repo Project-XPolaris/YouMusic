@@ -19,3 +19,6 @@ export class SetMusicCoverFromUrlRequestBody {
 export class UpdateMusicLyricDto {
   content: string;
 }
+export class AddMusicTags {
+  names: string[];
+}

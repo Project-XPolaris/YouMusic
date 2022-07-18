@@ -5,6 +5,7 @@ import {
   search,
   SearchType,
   lyric,
+  album,
 } from 'NeteaseCloudMusicApi';
 import { createHash } from 'crypto';
 
@@ -24,13 +25,21 @@ export class NeteasemusicService {
     {
       limit,
       type,
+      artist,
     }: {
       type?: SearchType;
       limit?: number;
+      artist?: string;
     },
   ): Promise<APIBaseResponse & any> {
+    if (artist) {
+      key = `${key} ${artist}`;
+    }
     const response = await search({ keywords: key, type, limit });
     return response.body.result;
+  }
+  async getAlbumWithId(id): Promise<any> {
+    return album({ id });
   }
   async getLyric(id: string): Promise<any> {
     const response = await lyric({ id });

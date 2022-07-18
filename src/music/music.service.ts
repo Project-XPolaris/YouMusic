@@ -1,6 +1,6 @@
-import { HttpService, Injectable, LoggerService } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import { getRepository } from 'typeorm';
+import { getRepository, In } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
@@ -19,16 +19,20 @@ import * as Path from 'path';
 import { Genre } from '../database/entites/genre';
 import { ApplicationConfig } from '../config';
 import { v4 as uuidv4, v4 } from 'uuid';
-import { getImageFromContentType, makeThumbnail } from '../utils/image';
+import { getImageFromContentType } from '../utils/image';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
+import { Tag } from '../database/entites/tag';
 
 export type MusicQueryFilter = {
   artistId: number;
   albumId: number;
   ids: string[];
+  tags: string[];
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
+  title: string;
+  path: string;
 } & PageFilter;
 
 @Injectable()
@@ -82,6 +86,21 @@ export class MusicService {
       queryBuilder.andWhere('music.title like :search', {
         search: `%${filter.search}%`,
       });
+    }
+    if (filter.title.length > 0) {
+      queryBuilder.andWhere('music.title = :title', {
+        title: filter.title,
+      });
+    }
+    if (filter.path.length > 0) {
+      queryBuilder.andWhere('music.path = :path', {
+        path: filter.path,
+      });
+    }
+    if (filter.tags.length > 0) {
+      queryBuilder
+        .leftJoinAndSelect('music.tags', 'tag')
+        .andWhere('tag.id in (:...tags)', { tags: filter.tags });
     }
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
@@ -288,5 +307,33 @@ export class MusicService {
     await fs.promises.writeFile(lrcFilePath, content);
     music.lyric = lrcFilePath;
     return music.save();
+  }
+
+  async addMusicTags(names: string[], musicId: number) {
+    const music = await getRepository(Music).findOne(musicId, {
+      relations: ['library', 'tags'],
+    });
+    const tags = await getRepository(Tag).find({
+      where: {
+        name: In(names),
+      },
+    });
+    // get not exist tags
+    const notExistTags = names.filter((name) => {
+      return tags.find((tag) => tag.name === name) === undefined;
+    });
+    if (notExistTags.length !== 0) {
+      const newTags = await getRepository(Tag).save(
+        notExistTags.map((name) => {
+          return {
+            name,
+            library: music.library,
+          };
+        }),
+      );
+      tags.push(...newTags);
+    }
+    music.tags = [...music.tags, ...tags];
+    await getRepository(Music).save(music);
   }
 }

@@ -44,6 +44,8 @@ import { ConfigService } from '@nestjs/config';
 import { mkdir } from 'fs';
 import { ApplicationConfig } from './config';
 import { Oauth } from './database/entites/oauth';
+import { Tag } from "./database/entites/tag";
+import { TagModule } from "./tag/tag.module";
 
 @Module({
   imports: [
@@ -63,6 +65,7 @@ import { Oauth } from './database/entites/oauth';
           Genre,
           SpotifyAuth,
           Oauth,
+          Tag,
         ];
         const datasource = configService.get('datasource.type');
         switch (datasource) {
@@ -119,6 +122,7 @@ import { Oauth } from './database/entites/oauth';
     AccountModule,
     ExploreModule,
     MetaModule,
+    TagModule,
   ],
   controllers: [
     AppController,

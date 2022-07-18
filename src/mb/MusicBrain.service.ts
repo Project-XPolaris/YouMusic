@@ -9,7 +9,7 @@ export class MusicBrainService {
     artistname?: string;
     inc?: any;
   }) {
-    return await mbApi.search('release', query);
+    return await mbApi.search('release', { query: query });
   }
   async getRelease(id: string) {
     return await mbApi.getRelease(id, ['recordings', 'artists']);

@@ -14,6 +14,7 @@ import { Music } from './music';
 import { User } from './user';
 import { Artist } from './artist';
 import { publicUid } from '../../vars';
+import { Tag } from './tag';
 
 @Entity()
 export class MediaLibrary {
@@ -36,6 +37,8 @@ export class MediaLibrary {
 
   @OneToMany(() => Artist, (artist) => artist.library)
   artists: Artist[];
+  @OneToMany(() => Tag, (tag) => tag.library)
+  tags: Tag[];
 
   @ManyToMany(() => User, { onDelete: 'CASCADE' })
   @JoinTable()
@@ -45,12 +48,20 @@ export class MediaLibrary {
     for (const libraryMusic of this.music) {
       await Music.deleteMusic(libraryMusic.id);
     }
+    for (const tag of this.tags) {
+      await getRepository(Tag).delete(tag.id);
+    }
+    for (const artist of this.artists) {
+      await getRepository(Artist).delete(artist.id);
+    }
     const repo = await getRepository(MediaLibrary);
     await repo.delete(this.id);
   }
   static async deleteById(id: number | string): Promise<boolean> {
     const repo = await getRepository(MediaLibrary);
-    const library = await repo.findOne(id, { relations: ['music', 'users'] });
+    const library = await repo.findOne(id, {
+      relations: ['music', 'users', 'tags', 'artists'],
+    });
     if (library === undefined) {
       return false;
     }

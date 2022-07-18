@@ -6,8 +6,11 @@ import { SearchMusicEntity } from './meta.entites';
 export class MetaController {
   constructor(private metaService: MetaService) {}
   @Get('search/album')
-  async SearchAlbum(@Query() key: string) {
-    return await this.metaService.searchAlbum(key);
+  async SearchAlbum(
+    @Query('key') key: string,
+    @Query('artist') artist?: string,
+  ) {
+    return await this.metaService.searchAlbum(key, { artist });
   }
   @Get('search/artist')
   async SearchArtist(@Query() key: string) {
@@ -22,5 +25,12 @@ export class MetaController {
     return {
       lyric: await this.metaService.getLyricFromSearchMusic(searchMusic),
     };
+  }
+  @Get('album')
+  async getAlbumDetail(
+    @Query('mbId') mbId?: string,
+    @Query('nemId') nemId?: string,
+  ) {
+    return await this.metaService.getAlbumDetail({ mbId, nemId });
   }
 }

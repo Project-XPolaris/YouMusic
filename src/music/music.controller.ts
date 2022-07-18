@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { MusicService } from './music.service';
 import {
+  AddMusicTags,
   SetMusicCoverFromUrlRequestBody,
   UpdateMusicDto,
   UpdateMusicLyricDto,
@@ -39,6 +40,9 @@ export class MusicController {
     @Query('ids') ids = '',
     @Query('order') order = '',
     @Query('search') search = '',
+    @Query('name') title = '',
+    @Query('path') path = '',
+    @Query('tag') tag = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -50,6 +54,9 @@ export class MusicController {
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
       search,
+      title,
+      path,
+      tags: tag.split(','),
     });
 
     return {
@@ -74,6 +81,7 @@ export class MusicController {
   async remove(@Param('id') id: string) {
     return await this.musicService.remove(+id);
   }
+
   @Patch(':id/file')
   async updateMusicFile(
     @Param('id') id: number,
@@ -109,6 +117,7 @@ export class MusicController {
       success: true,
     };
   }
+
   @Post(':id/lyric')
   async updateLyric(
     @Param('id') id: string,
@@ -121,5 +130,12 @@ export class MusicController {
       dto.content,
     );
     return music;
+  }
+  @Post(':id/tags')
+  async addTags(@Body() dto: AddMusicTags, @Param('id') id: string) {
+    await this.musicService.addMusicTags(dto.names, +id);
+    return {
+      success: true,
+    };
   }
 }
