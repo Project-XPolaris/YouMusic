@@ -17,6 +17,7 @@ export type AlbumQueryFilter = {
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
+  tag: string;
 } & PageFilter;
 
 @Injectable()
@@ -42,6 +43,19 @@ export class AlbumService {
           .from(Artist, 'artist')
           .leftJoin('artist.album', 'album')
           .where('artist.id = :aid', { aid: filter.artistId })
+          .getQuery();
+        return 'album.id IN ' + subQuery;
+      });
+    }
+    if (filter.tag) {
+      queryBuilder.where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('album.id')
+          .from(Album, 'album')
+          .leftJoin('album.music', 'music')
+          .leftJoin('music.tags', 'tags')
+          .where('tags.id = :tag', { tag: filter.tag })
           .getQuery();
         return 'album.id IN ' + subQuery;
       });

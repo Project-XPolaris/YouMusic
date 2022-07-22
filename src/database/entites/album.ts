@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer';
 import { MediaLibrary } from './library';
-import {makeThumbnail} from "../../utils/image";
+import { makeThumbnail } from '../../utils/image';
 
 @Entity()
 export class Album {
@@ -29,12 +29,14 @@ export class Album {
   @Column({ nullable: true })
   blurHash: string;
   @Column({ nullable: true })
+  domainColor: string;
+  @Column({ nullable: true })
   cover?: string;
 
-  @OneToMany(() => Music, (music) => music.album,{onDelete: 'CASCADE'})
+  @OneToMany(() => Music, (music) => music.album, { onDelete: 'CASCADE' })
   music: Music[];
 
-  @ManyToMany(() => Artist, (artist) => artist.album,{onDelete: 'CASCADE'})
+  @ManyToMany(() => Artist, (artist) => artist.album, { onDelete: 'CASCADE' })
   @JoinTable()
   artist: Artist[];
 
@@ -44,7 +46,9 @@ export class Album {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => MediaLibrary, (library) => library.albums,{onDelete: 'CASCADE'})
+  @ManyToOne(() => MediaLibrary, (library) => library.albums, {
+    onDelete: 'CASCADE',
+  })
   library: MediaLibrary;
 
   /**
@@ -64,6 +68,7 @@ export class Album {
     }
     return false;
   }
+
   async delete() {
     const repository = await getRepository(Album);
     await repository.delete(this.id);
@@ -79,6 +84,7 @@ export class Album {
       }
     }
   }
+
   async duplicateCover(): Promise<string> {
     const ext = path.extname(this.cover);
     const newFilename = `${uuidv4()}${ext}`;
@@ -91,6 +97,7 @@ export class Album {
     );
     return newFilename;
   }
+
   async setCover(fileBuffer: Buffer) {
     const coverFilename = `${uuidv4()}.jpg`;
     await makeThumbnail(
@@ -99,6 +106,7 @@ export class Album {
     );
     this.cover = coverFilename;
   }
+
   async refreshArtist() {
     const musicList = await getRepository(Artist)
       .createQueryBuilder('artist')

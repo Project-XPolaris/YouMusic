@@ -23,6 +23,7 @@ import { LogService } from '../log/log.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from 'mime-db';
 import { encodeImageToBlurhash } from '../utils/blurhash';
+import { getAverageColor } from "fast-average-color-node";
 
 export enum TaskStatus {
   Running = 'Running',
@@ -241,6 +242,9 @@ export class TaskService {
           const hash = await encodeImageToBlurhash(cover.data);
           album.cover = coverFilename;
           album.blurHash = hash;
+          // get domain color
+          const color = await getAverageColor(cover.data);
+          album.domainColor = color.hex;
           await getRepository(Album).save(album);
         }
       } catch (e) {

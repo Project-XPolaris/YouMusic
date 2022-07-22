@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { getRepository } from 'typeorm';
-import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
@@ -11,6 +10,7 @@ export type TagQueryFilter = {
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
+  albumId: number;
 } & PageFilter;
 
 @Injectable()
@@ -43,6 +43,11 @@ export class TagService {
         .leftJoinAndSelect('tag.music', 'music')
         .andWhere('music.id = :id', { id: filter.musicId });
     }
+    if (filter.albumId > 0) {
+      queryBuilder
+        .leftJoinAndSelect('tag.music', 'music')
+        .andWhere('music.albumId = :id', { id: filter.albumId });
+    }
     const order = {};
     Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
       order[`tag.${fieldName}`] = filter.order[fieldName];
@@ -53,7 +58,7 @@ export class TagService {
 
   async findOne(id: number, uid: string) {
     const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const tagRepository = getRepository(Music);
+    const tagRepository = getRepository(Tag);
     let query = tagRepository.createQueryBuilder('tag').whereInIds([id]);
     if (libraries.length > 0) {
       query = query.andWhere('tag.libraryId in (:...lid)', {

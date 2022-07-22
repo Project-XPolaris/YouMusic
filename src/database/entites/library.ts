@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  getConnection,
   getRepository,
   JoinTable,
   ManyToMany,
@@ -58,14 +59,27 @@ export class MediaLibrary {
     await repo.delete(this.id);
   }
   static async deleteById(id: number | string): Promise<boolean> {
-    const repo = await getRepository(MediaLibrary);
-    const library = await repo.findOne(id, {
-      relations: ['music', 'users', 'tags', 'artists'],
+    await getConnection().transaction(async (transactionalEntityManager) => {
+      const libraryRepo = transactionalEntityManager.getRepository(
+        MediaLibrary,
+      );
+      const library = await libraryRepo.findOne(id);
+      // remove music
+      const musicRepo = transactionalEntityManager.getRepository(Music);
+      await musicRepo.delete({ library: library });
+      // remove tags
+      const tagRepo = transactionalEntityManager.getRepository(Tag);
+      await tagRepo.delete({ library: library });
+      // remove artists
+      const artistRepo = transactionalEntityManager.getRepository(Artist);
+      await artistRepo.delete({ library: library });
+      // remove albums
+      const albumRepo = transactionalEntityManager.getRepository(Album);
+      await albumRepo.delete({ library: library });
+      // remove library
+      await libraryRepo.delete(id);
     });
-    if (library === undefined) {
-      return false;
-    }
-    await library.delete();
+    return true;
   }
   static async getLibraryByUid(uid: string) {
     const libraryRepository = getRepository(MediaLibrary);

@@ -40,6 +40,7 @@ export class Genre {
     }
     genre = new Genre();
     genre.name = name;
+    genre.library = library;
     genre = await getRepository(Genre).save(genre);
     return genre;
   }

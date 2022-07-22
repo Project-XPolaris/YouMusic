@@ -57,7 +57,6 @@ export class LibraryService {
 
   async remove(id: number) {
     await MediaLibrary.deleteById(id);
-    await Artist.recycleEmptyMusicArtist();
   }
 
   async checkAccessible(libraryId: number, uid: string) {

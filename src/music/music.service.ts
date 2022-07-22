@@ -97,7 +97,7 @@ export class MusicService {
         path: filter.path,
       });
     }
-    if (filter.tags.length > 0) {
+    if (filter.tags.length > 0 && filter.tags[0] !== '') {
       queryBuilder
         .leftJoinAndSelect('music.tags', 'tag')
         .andWhere('tag.id in (:...tags)', { tags: filter.tags });

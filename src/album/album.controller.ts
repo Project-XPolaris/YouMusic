@@ -27,6 +27,7 @@ export class AlbumController {
     @Query('artist') artistId = 0,
     @Query('order') order = '',
     @Query('search') search = '',
+    @Query('tag') tag = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
@@ -36,6 +37,7 @@ export class AlbumController {
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
       search,
+      tag,
     });
     return {
       count,

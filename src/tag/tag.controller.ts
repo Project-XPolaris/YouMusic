@@ -20,6 +20,7 @@ export class TagController {
     @Query('pageSize') pageSize = '20',
     @Query('ids') ids = '',
     @Query('music') music = '',
+    @Query('album') album = '',
     @Query('order') order = '',
     @Query('search') search = '',
     @Req() req: Request & { uid: string },
@@ -32,6 +33,7 @@ export class TagController {
       uid: req.uid,
       musicId: +music,
       search,
+      albumId: +album,
     });
     return {
       count,
@@ -43,10 +45,10 @@ export class TagController {
     @Param('id') id: string,
     @Req() req: Request & { uid: string },
   ) {
-    const music = await this.tagService.findOne(+id, req.uid);
-    if (music === undefined) {
+    const tag = await this.tagService.findOne(+id, req.uid);
+    if (tag === undefined) {
       throw new BadRequestException('Invalid tag');
     }
-    return music;
+    return new TagTemplate(tag);
   }
 }
