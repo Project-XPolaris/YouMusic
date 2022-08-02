@@ -43,6 +43,7 @@ export class MusicController {
     @Query('name') title = '',
     @Query('path') path = '',
     @Query('tag') tag = '',
+    @Query('pathSearch') pathSearch = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -57,6 +58,7 @@ export class MusicController {
       title,
       path,
       tags: tag.split(','),
+      pathSearch,
     });
 
     return {

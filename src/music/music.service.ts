@@ -33,6 +33,7 @@ export type MusicQueryFilter = {
   search: string;
   title: string;
   path: string;
+  pathSearch: string;
 } & PageFilter;
 
 @Injectable()
@@ -85,6 +86,11 @@ export class MusicService {
     if (filter.search.length > 0) {
       queryBuilder.andWhere('music.title like :search', {
         search: `%${filter.search}%`,
+      });
+    }
+    if (filter.pathSearch.length > 0) {
+      queryBuilder.andWhere('music.path like :search', {
+        search: `%${filter.pathSearch}%`,
       });
     }
     if (filter.title.length > 0) {
