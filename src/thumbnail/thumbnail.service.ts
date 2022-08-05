@@ -10,9 +10,10 @@ import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
 import { getRepository } from 'typeorm';
 import { LogService } from '../log/log.service';
+import { StorageService } from '../storage/storage.service';
 
 export interface ThumbnailGenerator {
-  generate(buffer: Buffer, output: string): Promise<void>;
+  generate(buffer: Buffer): Promise<Buffer>;
 }
 
 @Injectable({})
@@ -22,14 +23,17 @@ export class ThumbnailService {
     @Inject('ENGINE')
     private engine: ThumbnailGenerator,
     private loggerService: LogService,
+    private storageService: StorageService,
   ) {}
-  generate(buffer: Buffer, output: string): Promise<void> {
+  async generate(buffer: Buffer, output: string): Promise<void> {
     if (buffer.length > 1024 * 500) {
       // 500kb
-      fs.writeFileSync(output, buffer);
+      await this.storageService.uploadCover(output, buffer);
+      // fs.writeFileSync(output, buffer);
       return;
     }
-    return this.engine.generate(buffer, output);
+    const outputBuffer: Buffer = await this.engine.generate(buffer);
+    await this.storageService.uploadCover(output, outputBuffer);
   }
   async generateMusicCover(
     list: Array<{
@@ -41,7 +45,9 @@ export class ThumbnailService {
       try {
         const { id3, albumId } = item;
         const pics = id3.common.picture;
-        const album = await getRepository(Album).findOne(albumId);
+        const album = await getRepository(Album).findOne({
+          where: { id: albumId },
+        });
         if (pics && pics.length > 0 && album && !album.cover) {
           const cover = pics[0];
           const mime = db[cover.format];

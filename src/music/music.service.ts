@@ -22,6 +22,7 @@ import { v4 as uuidv4, v4 } from 'uuid';
 import { getImageFromContentType } from '../utils/image';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { Tag } from '../database/entites/tag';
+import { StorageService } from '../storage/storage.service';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -41,6 +42,7 @@ export class MusicService {
   constructor(
     private httpService: HttpService,
     private thumbnailService: ThumbnailService,
+    private storageService: StorageService,
   ) {}
 
   async findAll(filter: MusicQueryFilter) {
@@ -137,7 +139,10 @@ export class MusicService {
 
   async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
     const repo = await getRepository(Music);
-    const music = await repo.findOne(id, { relations: ['album', 'library'] });
+    const music = await repo.findOne({
+      where: { id },
+      relations: ['album', 'library'],
+    });
     if (music === undefined || music === null) {
       throw new Error('music not exist');
     }
@@ -150,14 +155,6 @@ export class MusicService {
     if (dto.artist) {
       for (const artistName of dto.artist) {
         const artist = await getOrCreateArtist(artistName, music.library);
-        // if (
-        //   (artist.avatar === null || artist.avatar.length === 0) &&
-        //   music.album.cover
-        // ) {
-        //   // get copy of album
-        //   artist.avatar = await music.album.duplicateCover();
-        //   await getRepository(Artist).save(artist);
-        // }
         artists.push(artist);
       }
       music.artist = artists;
@@ -219,7 +216,8 @@ export class MusicService {
   }
 
   async updateMusicCover(id: number, coverfile: any) {
-    const music = await getRepository(Music).findOne(id, {
+    const music = await getRepository(Music).findOne({
+      where: { id },
       relations: ['album', 'album.music'],
     });
     if (music === undefined || music === null) {
@@ -272,11 +270,13 @@ export class MusicService {
     if (!ext) {
       return;
     }
-    const music = await getRepository(Music).findOne(musicId, {
+    const music = await getRepository(Music).findOne({
+      where: { id: musicId },
       relations: ['album'],
     });
     if (!music.album.cover) {
       const saveFilename = `${v4()}.${ext}`;
+
       const savePath = Path.join(ApplicationConfig.coverDir, saveFilename);
       await fs.promises.writeFile(savePath, imageBuf);
       music.album.cover = saveFilename;
@@ -316,7 +316,8 @@ export class MusicService {
   }
 
   async addMusicTags(names: string[], musicId: number) {
-    const music = await getRepository(Music).findOne(musicId, {
+    const music = await getRepository(Music).findOne({
+      where: { id: musicId },
       relations: ['library', 'tags'],
     });
     const tags = await getRepository(Tag).find({

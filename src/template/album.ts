@@ -19,7 +19,7 @@ export class BaseAlbumTemplate {
     this.blurHash = album.blurHash;
     this.color = album.domainColor;
     if (album.cover) {
-      this.cover = `/covers/${album.cover}`;
+      this.cover = `/album/${album.id}/cover`;
     }
     this.createdAt = formatDate(album.createdAt);
     this.updatedAt = formatDate(album.updatedAt);

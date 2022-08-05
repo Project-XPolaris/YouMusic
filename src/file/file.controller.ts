@@ -17,7 +17,7 @@ export class FileController {
   @Get('audio/:id')
   @Header('Content-Type', 'audio/mpeg')
   async audioHandler(@Param('id') id: string, @Res() res: ServerResponse) {
-    const music = await getRepository(Music).findOne(id);
+    const music = await getRepository(Music).findOne({ where: { id: +id } });
     const stat = fs.statSync(music.path);
     const stream = fs.createReadStream(music.path);
     res.setHeader('Content-Length', stat.size);
@@ -27,19 +27,18 @@ export class FileController {
 
   @Get('music/:id/cover')
   async musicCoverHandler(@Param('id') id: string, @Res() res: ServerResponse) {
-    const music = await getRepository(Music).findOne(id);
+    const music = await getRepository(Music).findOne({ where: { id: +id } });
     if (!music) {
       throw new NotFoundException();
     }
     const pic = await getImageFromID3(music.path);
     res.setHeader('Content-Type', pic.format);
-
     res.end(pic.data);
   }
 
   @Get('lrc/:id')
   async lyricHandler(@Param('id') id: string, @Res() res: ServerResponse) {
-    const music = await getRepository(Music).findOne(id);
+    const music = await getRepository(Music).findOne({ where: { id: +id } });
     if (!music.lyric) {
       throw new NotFoundException();
     }

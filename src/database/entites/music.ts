@@ -47,7 +47,7 @@ export class Music {
   @Column({ nullable: true })
   lossless: boolean;
   @ManyToMany(() => Artist, (artist) => artist.music, {
-    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   artist: Artist[];
@@ -57,7 +57,6 @@ export class Music {
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;
-
   @ManyToMany(() => Genre, (genre) => genre.music, {
     cascade: true,
   })
@@ -65,7 +64,7 @@ export class Music {
   genre: Genre[];
 
   @ManyToMany(() => Tag, (tag) => tag.music, {
-    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   tags: Tag[];
@@ -78,7 +77,8 @@ export class Music {
 
   static deleteMusic = async (id: string | number) => {
     const repository = await getRepository(Music);
-    const music = await repository.findOne(id, {
+    const music = await repository.findOne({
+      where: { id: +id },
       relations: ['album', 'artist', 'tags'],
     });
     if (music === undefined) {

@@ -57,7 +57,10 @@ export class Album {
    */
   static async recycle(id: string | number): Promise<boolean> {
     const repository = await getRepository(Album);
-    const album = await repository.findOne(id, { relations: ['music'] });
+    const album = await repository.findOne({
+      where: { id: +id },
+      relations: ['music'],
+    });
     if (album === undefined) {
       // no album
       return true;
@@ -74,7 +77,9 @@ export class Album {
     await repository.delete(this.id);
     if (this.cover !== null) {
       const artistRepo = await getRepository(Artist);
-      const artistAvatarUsage = await artistRepo.count({ avatar: this.cover });
+      const artistAvatarUsage = await artistRepo.count({
+        where: { avatar: this.cover },
+      });
       if (artistAvatarUsage === 0) {
         const coverPath = path.join(ApplicationConfig.coverDir, this.cover);
         const isExist = await fs.existsSync(coverPath);

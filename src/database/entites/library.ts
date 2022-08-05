@@ -60,10 +60,11 @@ export class MediaLibrary {
   }
   static async deleteById(id: number | string): Promise<boolean> {
     await getConnection().transaction(async (transactionalEntityManager) => {
-      const libraryRepo = transactionalEntityManager.getRepository(
-        MediaLibrary,
-      );
-      const library = await libraryRepo.findOne(id);
+      const libraryRepo =
+        transactionalEntityManager.getRepository(MediaLibrary);
+      const library = await libraryRepo.findOne({
+        where: { id: +id },
+      });
       // remove music
       const musicRepo = transactionalEntityManager.getRepository(Music);
       await musicRepo.delete({ library: library });

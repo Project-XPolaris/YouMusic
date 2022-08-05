@@ -14,10 +14,8 @@ import { Album } from './database/entites/album';
 import { MusicModule } from './music/music.module';
 import { ArtistModule } from './artist/artist.module';
 import { AlbumModule } from './album/album.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { FileController } from './file/file.controller';
 import { LibraryModule } from './library/library.module';
-import * as path from 'path';
 import { MediaLibrary } from './database/entites/library';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import configuration from './config/configuration';
@@ -41,11 +39,9 @@ import { MetaModule } from './meta/meta.module';
 import { LogModule } from './log/log.module';
 import { LogService } from './log/log.service';
 import { ConfigService } from '@nestjs/config';
-import { mkdir } from 'fs';
-import { ApplicationConfig } from './config';
 import { Oauth } from './database/entites/oauth';
-import { Tag } from "./database/entites/tag";
-import { TagModule } from "./tag/tag.module";
+import { Tag } from './database/entites/tag';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [
@@ -89,25 +85,6 @@ import { TagModule } from "./tag/tag.module";
               synchronize: true,
             };
         }
-      },
-    }),
-    ServeStaticModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const storageRoot = configService.get<string>('storage.root');
-        const coverStoragePath = path.join(storageRoot, 'covers');
-        ApplicationConfig.coverDir = coverStoragePath;
-        mkdir(coverStoragePath, { recursive: true }, (err) => {
-          if (err) {
-            console.log(err);
-          }
-        });
-        return [
-          {
-            rootPath: path.join(storageRoot),
-          },
-        ];
       },
     }),
     HttpModule,

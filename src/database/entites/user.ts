@@ -25,7 +25,7 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => MediaLibrary)
+  @ManyToMany(() => MediaLibrary, { cascade: true })
   libraries: MediaLibrary[];
 
   @OneToMany(() => Oauth, (oauth) => oauth.user)
@@ -35,7 +35,7 @@ export class User {
   spotifyAuth: SpotifyAuth;
   async createOrGet() {
     const repo = await getRepository(User);
-    const count = await repo.count({ uid: this.uid });
+    const count = await repo.count({ where: { uid: this.uid } });
     if (count === 0) {
       await repo.save(this);
     }

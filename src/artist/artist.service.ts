@@ -59,7 +59,9 @@ export class ArtistService {
   }
 
   async updateArtistAvatarFromUrl(id: number, url: string) {
-    const artist = await getRepository(Artist).findOne(id);
+    const artist = await getRepository(Artist).findOne({
+      where: { id },
+    });
     if (!artist) {
       return;
     }
@@ -92,7 +94,8 @@ export class ArtistService {
   }
 
   async updateArtist(id: number, data: UpdateArtistDTO) {
-    let artist = await getRepository(Artist).findOne(id, {
+    let artist = await getRepository(Artist).findOne({
+      where: { id },
       relations: ['music', 'music.artist'],
     });
     if (data.name) {

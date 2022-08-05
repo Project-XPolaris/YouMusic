@@ -21,10 +21,10 @@ export class Artist {
   @Column({ nullable: true })
   avatar: string;
 
-  @ManyToMany(() => Music, (music) => music.artist)
+  @ManyToMany(() => Music, (music) => music.artist, { onDelete: 'CASCADE' })
   music: Music[];
 
-  @ManyToMany(() => Album, (album) => album.artist)
+  @ManyToMany(() => Album, (album) => album.artist, { onDelete: 'CASCADE' })
   album: Album[];
 
   @CreateDateColumn()
@@ -49,7 +49,10 @@ export class Artist {
 
   static async recycleIfEmpty(id: string | number): Promise<boolean> {
     const repository = await getRepository(Artist);
-    const artist = await repository.findOne(id, { relations: ['music'] });
+    const artist = await repository.findOne({
+      where: { id: +id },
+      relations: ['music'],
+    });
     if (artist === undefined) {
       // no artist
       return true;
@@ -63,7 +66,10 @@ export class Artist {
 
   async recycle() {
     const repository = await getRepository<Artist>(Artist);
-    const artist = await repository.findOne(this.id, { relations: ['music'] });
+    const artist = await repository.findOne({
+      where: { id: this.id },
+      relations: ['music'],
+    });
     artist.music = [];
     artist.album = [];
     await repository.save(artist);

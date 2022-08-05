@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,10 +17,17 @@ import { getOrderFromQueryString } from '../utils/query';
 import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { StorageService } from '../storage/storage.service';
+import { ServerResponse } from 'http';
+import { Readable } from 'stream';
 
 @Controller('album')
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(
+    private readonly albumService: AlbumService,
+    private readonly storageService: StorageService,
+  ) {}
+
   @Get()
   async findAll(
     @Query('page') page = 1,
@@ -84,5 +92,23 @@ export class AlbumController {
     }
     album = await this.albumService.updateCoverFromFile(+id, file);
     return new BaseAlbumTemplate(album);
+  }
+
+  @Get(':id/cover')
+  async getCoverImage(
+    @Param('id') id: string,
+    @Res() res: ServerResponse,
+    @Req() req: Request & { uid: string },
+  ) {
+    const album = await this.albumService.findOne(+id, req.uid);
+    if (album === undefined) {
+      throw new BadRequestException('Invalid album');
+    }
+    console.log(album.cover);
+    const data = await this.storageService.getCover(album.cover);
+    if (data instanceof Readable) {
+      // res.setHeader('Content-Type', 'image/jpeg');
+      data.pipe(res);
+    }
   }
 }

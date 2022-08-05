@@ -18,7 +18,9 @@ export class Tag {
   @Column()
   name: string;
 
-  @ManyToMany(() => Music, (music) => music.tags)
+  @ManyToMany(() => Music, (music) => music.tags, {
+    cascade: true,
+  })
   music: Music[];
 
   @CreateDateColumn()

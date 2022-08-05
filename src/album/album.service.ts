@@ -94,7 +94,8 @@ export class AlbumService {
   }
 
   async updateAlbum(id: number, data: UpdateAlbumDto) {
-    let album = await getRepository(Album).findOne(id, {
+    let album = await getRepository(Album).findOne({
+      where: { id },
       relations: ['music'],
     });
     if (!album) {
@@ -113,7 +114,8 @@ export class AlbumService {
   }
 
   async updateCoverFromFile(id: number, file: any) {
-    let album = await getRepository(Album).findOne(id, {
+    let album = await getRepository(Album).findOne({
+      where: { id },
       relations: ['music'],
     });
     if (!album) {

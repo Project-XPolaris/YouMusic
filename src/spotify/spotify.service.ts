@@ -41,7 +41,9 @@ export class SpotifyService {
           },
         })
         .toPromise();
-      let authRec = await getRepository(SpotifyAuth).findOne({ uid });
+      let authRec = await getRepository(SpotifyAuth).findOne({
+        where: { uid },
+      });
       if (authRec === undefined) {
         authRec = new SpotifyAuth();
       }
@@ -75,7 +77,7 @@ export class SpotifyService {
         },
       })
       .toPromise();
-    let authRec = await getRepository(SpotifyAuth).findOne({ uid });
+    let authRec = await getRepository(SpotifyAuth).findOne({ where: { uid } });
     if (authRec === undefined) {
       authRec = new SpotifyAuth();
     }
@@ -88,7 +90,9 @@ export class SpotifyService {
     return response.data.access_token;
   }
   async getUserAccessToken(uid: string) {
-    const auth = await getRepository(SpotifyAuth).findOne({ uid });
+    const auth = await getRepository(SpotifyAuth).findOne({
+      where: { uid },
+    });
     if (auth === undefined) {
       throw new Error('user not login');
     }

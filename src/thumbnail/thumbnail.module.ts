@@ -1,4 +1,4 @@
-import { Global, LoggerService, Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { ThumbnailService } from './thumbnail.service';
 import { ConfigService } from '@nestjs/config';
@@ -6,10 +6,12 @@ import { ThumbnailClient } from './client';
 import { JimpThumbnailGenerator } from './jimp';
 import { LogService } from '../log/log.service';
 import { LogModule } from '../log/log.module';
+import { StorageModule } from '../storage/storage.module';
+import { StorageService } from '../storage/storage.service';
 
 @Global()
 @Module({
-  imports: [ConfigModule, LogModule],
+  imports: [ConfigModule, LogModule, StorageModule],
   exports: [ThumbnailService],
   providers: [
     ThumbnailService,
@@ -40,6 +42,7 @@ import { LogModule } from '../log/log.module';
         }
       },
     },
+    StorageService,
   ],
 })
 export class ThumbnailModule {}

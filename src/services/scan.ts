@@ -38,7 +38,8 @@ export const scanFile = async (
 };
 export const syncLibrary = async (library: MediaLibrary) => {
   const libraryRepo = await getRepository(MediaLibrary);
-  const syncLibrary = await libraryRepo.findOne(library.id, {
+  const syncLibrary = await libraryRepo.findOne({
+    where: { id: library.id },
     relations: ['music'],
   });
   if (syncLibrary === undefined) {

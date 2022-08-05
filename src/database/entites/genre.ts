@@ -18,7 +18,7 @@ export class Genre {
   @Column()
   name: string;
 
-  @ManyToMany(() => Music, (music) => music.genre)
+  @ManyToMany(() => Music, (music) => music.genre, { onDelete: 'CASCADE' })
   music: Music[];
 
   @CreateDateColumn()

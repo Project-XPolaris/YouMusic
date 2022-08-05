@@ -31,7 +31,7 @@ export class LibraryService {
     }
 
     const userRepo = await getRepository(User);
-    const user: User = await userRepo.findOne({ uid });
+    const user: User = await userRepo.findOne({ where: { uid } });
     if (!user) {
       throw new Error(`userid = ${uid} not exist`);
     }
@@ -52,7 +52,9 @@ export class LibraryService {
 
   async findOne(id: number) {
     const libraryRepository = getRepository(MediaLibrary);
-    return await libraryRepository.findOne(id);
+    return await libraryRepository.findOne({
+      where: { id },
+    });
   }
 
   async remove(id: number) {

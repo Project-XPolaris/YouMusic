@@ -88,6 +88,7 @@ export class LibraryController {
   @Post(':id/scan')
   async scanLibrary(
     @Param('id') id: number,
+    @Query('force_thumbnail') forceThumbnail = '0',
     @Req() req: Request & { uid: string; nid: string },
   ) {
     const isAccessible = await this.libraryService.checkAccessible(id, req.uid);
@@ -98,7 +99,7 @@ export class LibraryController {
       };
     }
     try {
-      await this.taskService.newScanTask(id, req.uid, {
+      await this.taskService.newScanTask(id, req.uid, forceThumbnail === '1', {
         onComplete: (library) => {
           this.notificationService.scanCompleteEvent(req.nid, library);
         },

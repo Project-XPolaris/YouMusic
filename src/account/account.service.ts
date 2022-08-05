@@ -12,7 +12,9 @@ export class AccountService {
       uid,
       spotifyLogin: false,
     };
-    const spotifyAuth = await getRepository(SpotifyAuth).findOne({ uid });
+    const spotifyAuth = await getRepository(SpotifyAuth).findOne({
+      where: { uid },
+    });
     if (spotifyAuth) {
       info.spotifyLogin = true;
     }

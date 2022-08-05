@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MediaLibrary } from '../database/entites/library';
 import { scanFile } from '../services/scan';
-import { ApplicationConfig } from '../config';
 import { getRepository } from 'typeorm';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
@@ -23,7 +22,8 @@ import { LogService } from '../log/log.service';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from 'mime-db';
 import { encodeImageToBlurhash } from '../utils/blurhash';
-import { getAverageColor } from "fast-average-color-node";
+import { getAverageColor } from 'fast-average-color-node';
+import { StorageService } from '../storage/storage.service';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -56,10 +56,12 @@ export class TaskService {
   constructor(
     private thumbnailService: ThumbnailService,
     private logService: LogService,
+    private storageService: StorageService,
   ) {}
   private async scanProcess(
     library: MediaLibrary,
     uid: string,
+    forceThumbnail: boolean,
     {
       onAnalyzeComplete,
       onCurrentUpdate,
@@ -77,8 +79,6 @@ export class TaskService {
       }ms`,
     });
     onAnalyzeComplete(result.length);
-    // prepare cover directory
-    await fs.promises.mkdir(ApplicationConfig.coverDir, { recursive: true });
     // find out updated file
     let musics = await getRepository(Music)
       .createQueryBuilder('music')
@@ -226,26 +226,27 @@ export class TaskService {
         });
         // save cover
         const pics = musicID3.common.picture;
-        if ((pics && pics.length > 0 && album && !album.cover) || true) {
-          const cover = pics[0];
-          const mime = db[cover.format];
-          if (!mime) {
-            continue;
+        if ((pics && pics.length > 0 && album) || forceThumbnail) {
+          let isExist = false;
+          if (!forceThumbnail && album?.cover) {
+            isExist = await this.storageService.existCover(album.cover);
           }
-          const ext = mime.extensions[0];
-          const coverFilename = `${uuidv4()}.${ext}`;
-          const imageFileNamePath = path.join(
-            ApplicationConfig.coverDir,
-            coverFilename,
-          );
-          await this.thumbnailService.generate(cover.data, imageFileNamePath);
-          const hash = await encodeImageToBlurhash(cover.data);
-          album.cover = coverFilename;
-          album.blurHash = hash;
-          // get domain color
-          const color = await getAverageColor(cover.data);
-          album.domainColor = color.hex;
-          await getRepository(Album).save(album);
+          if (!isExist) {
+            const cover = pics[0];
+            const mime = db[cover.format];
+            if (mime) {
+              const ext = mime.extensions[0];
+              const coverFilename = `${uuidv4()}.${ext}`;
+              await this.thumbnailService.generate(cover.data, coverFilename);
+              const hash = await encodeImageToBlurhash(cover.data);
+              album.cover = coverFilename;
+              album.blurHash = hash;
+              // get domain color
+              const color = await getAverageColor(cover.data);
+              album.domainColor = color.hex;
+              await getRepository(Album).save(album);
+            }
+          }
         }
       } catch (e) {
         this.logService.info({
@@ -263,9 +264,12 @@ export class TaskService {
   async newScanTask(
     libraryId: number,
     uid: string,
+    forceThumbnail: boolean,
     { onComplete }: { onComplete?: (library: MediaLibrary) => void },
   ): Promise<Task> {
-    const library = await getRepository(MediaLibrary).findOne(libraryId);
+    const library = await getRepository(MediaLibrary).findOne({
+      where: { id: libraryId },
+    });
     if (library === undefined) {
       // no library found
       throw new ServiceError(
@@ -296,7 +300,7 @@ export class TaskService {
       };
       this.tasks.push(task);
     }
-    this.scanProcess(library, uid, {
+    this.scanProcess(library, uid, forceThumbnail, {
       onAnalyzeComplete: (total) => {
         task.output.total = total;
       },
