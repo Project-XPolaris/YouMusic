@@ -16,6 +16,7 @@ import { User } from './user';
 import { Artist } from './artist';
 import { publicUid } from '../../vars';
 import { Tag } from './tag';
+import { Genre } from './genre';
 
 @Entity()
 export class MediaLibrary {
@@ -77,6 +78,9 @@ export class MediaLibrary {
       // remove albums
       const albumRepo = transactionalEntityManager.getRepository(Album);
       await albumRepo.delete({ library: library });
+      // remove genre
+      const genreRepo = transactionalEntityManager.getRepository(Genre);
+      await genreRepo.delete({ library: library });
       // remove library
       await libraryRepo.delete(id);
     });
