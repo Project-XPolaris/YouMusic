@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { PageFilter } from '../database/utils/type.filter';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -18,6 +18,7 @@ export type AlbumQueryFilter = {
   uid: string;
   search: string;
   tag: string;
+  random: boolean;
 } & PageFilter;
 
 @Injectable()
@@ -60,17 +61,25 @@ export class AlbumService {
         return 'album.id IN ' + subQuery;
       });
     }
+    if (filter.random) {
+      if (getConnection().options.type === 'sqlite') {
+        queryBuilder.orderBy('RANDOM()');
+      } else {
+        queryBuilder.orderBy('RAND()');
+      }
+    } else {
+      const order = {};
+      Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+        order[`album.${fieldName}`] = filter.order[fieldName];
+      });
+      queryBuilder.orderBy(order);
+    }
     if (filter.search.length > 0) {
       queryBuilder.andWhere('album.name like :search', {
         search: `%${filter.search}%`,
       });
     }
-    const order = {};
-    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`album.${fieldName}`] = filter.order[fieldName];
-    });
     queryBuilder = queryBuilder.leftJoinAndSelect('album.artist', 'artist');
-    queryBuilder.orderBy(order);
 
     return await queryBuilder.getManyAndCount();
   }
@@ -84,7 +93,6 @@ export class AlbumService {
       .leftJoinAndSelect('album.artist', 'artist')
       .leftJoinAndSelect('music.artist', 'musicArtist')
       .where('album.id = :id', { id });
-
     if (libraries.length > 0) {
       queryBuilder = queryBuilder.andWhere('album.libraryId in (:...lid)', {
         lid: libraries.map((it) => it.id),

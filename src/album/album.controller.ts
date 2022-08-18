@@ -36,6 +36,7 @@ export class AlbumController {
     @Query('order') order = '',
     @Query('search') search = '',
     @Query('tag') tag = '',
+    @Query('random') random = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
@@ -46,6 +47,7 @@ export class AlbumController {
       uid: req.uid,
       search,
       tag,
+      random: random === '1',
     });
     return {
       count,
