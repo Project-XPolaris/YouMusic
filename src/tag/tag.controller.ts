@@ -23,6 +23,7 @@ export class TagController {
     @Query('album') album = '',
     @Query('order') order = '',
     @Query('search') search = '',
+    @Query('random') random = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.tagService.findAll({
@@ -34,6 +35,7 @@ export class TagController {
       musicId: +music,
       search,
       albumId: +album,
+      random: random === '1',
     });
     return {
       count,

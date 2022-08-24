@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import {getConnection, getRepository} from 'typeorm';
 import { Artist } from '../database/entites/artist';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
@@ -16,6 +16,7 @@ export type ArtistFilter = PageFilter & {
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
+  random: boolean;
 };
 
 @Injectable()
@@ -27,11 +28,19 @@ export class ArtistService {
     const artistRepository = getRepository(Artist);
     let queryBuilder = artistRepository.createQueryBuilder('artist');
     queryBuilder = filterByPage<Artist>(filter, queryBuilder);
-    const order = {};
-    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`artist.${fieldName}`] = filter.order[fieldName];
-    });
-    queryBuilder.orderBy(order);
+    if (filter.random) {
+      if (getConnection().options.type === 'sqlite') {
+        queryBuilder.orderBy('RANDOM()');
+      } else {
+        queryBuilder.orderBy('RAND()');
+      }
+    } else {
+      const order = {};
+      Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+        order[`artist.${fieldName}`] = filter.order[fieldName];
+      });
+      queryBuilder.orderBy(order);
+    }
     if (filter.search.length > 0) {
       queryBuilder = queryBuilder.andWhere('artist.name like :search', {
         search: `%${filter.search}%`,
@@ -42,7 +51,7 @@ export class ArtistService {
         id: libraries.map((it) => it.id),
       });
     }
-    return await queryBuilder.orderBy(order).getManyAndCount();
+    return await queryBuilder.getManyAndCount();
   }
 
   async findOne(id: number, uid: string) {

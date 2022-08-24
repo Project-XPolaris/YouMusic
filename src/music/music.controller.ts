@@ -44,6 +44,7 @@ export class MusicController {
     @Query('path') path = '',
     @Query('tag') tag = '',
     @Query('pathSearch') pathSearch = '',
+    @Query('random') random = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -59,8 +60,8 @@ export class MusicController {
       path,
       tags: tag.split(','),
       pathSearch,
+      random: random === '1',
     });
-
     return {
       count,
       data: list.map((music) => new BaseMusicTemplate(music)),
@@ -133,6 +134,7 @@ export class MusicController {
     );
     return music;
   }
+
   @Post(':id/tags')
   async addTags(@Body() dto: AddMusicTags, @Param('id') id: string) {
     await this.musicService.addMusicTags(dto.names, +id);

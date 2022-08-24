@@ -1,6 +1,6 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import { getRepository, In } from 'typeorm';
+import {getConnection, getRepository, In} from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
@@ -35,6 +35,7 @@ export type MusicQueryFilter = {
   title: string;
   path: string;
   pathSearch: string;
+  random: boolean;
 } & PageFilter;
 
 @Injectable()
@@ -110,14 +111,22 @@ export class MusicService {
         .leftJoinAndSelect('music.tags', 'tag')
         .andWhere('tag.id in (:...tags)', { tags: filter.tags });
     }
-    const order = {};
-    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`music.${fieldName}`] = filter.order[fieldName];
-    });
+    if (filter.random) {
+      if (getConnection().options.type === 'sqlite') {
+        queryBuilder.orderBy('RANDOM()');
+      } else {
+        queryBuilder.orderBy('RAND()');
+      }
+    } else {
+      const order = {};
+      Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+        order[`music.${fieldName}`] = filter.order[fieldName];
+      });
+      queryBuilder.orderBy(order);
+    }
     queryBuilder
       .leftJoinAndSelect('music.album', 'album')
       .leftJoinAndSelect('music.artist', 'artist');
-    queryBuilder.orderBy(order);
     return queryBuilder.getManyAndCount();
   }
 

@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { BaseArtistTemplate } from '../template/artist';
@@ -17,7 +18,6 @@ import {
   UpdateArtistAvatarFromUrl,
   UpdateArtistDTO,
 } from './dto/update-artist.dto';
-import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 
 @Controller('artist')
 export class ArtistController {
@@ -29,6 +29,7 @@ export class ArtistController {
     @Query('pageSize') pageSize = 20,
     @Query('order') order = '',
     @Query('search') search = '',
+    @Query('random') random = '',
     @Req() req: Request & { uid: string },
   ) {
     const [data, count] = await this.artistService.findAll({
@@ -37,6 +38,7 @@ export class ArtistController {
       order: getOrderFromQueryString(order, {}),
       uid: req.uid,
       search,
+      random: random === '1',
     });
     return {
       count,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import {getConnection, getRepository} from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
@@ -11,6 +11,7 @@ export type TagQueryFilter = {
   uid: string;
   search: string;
   albumId: number;
+  random: boolean;
 } & PageFilter;
 
 @Injectable()
@@ -48,11 +49,19 @@ export class TagService {
         .leftJoinAndSelect('tag.music', 'music')
         .andWhere('music.albumId = :id', { id: filter.albumId });
     }
-    const order = {};
-    Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
-      order[`tag.${fieldName}`] = filter.order[fieldName];
-    });
-    queryBuilder.orderBy(order);
+    if (filter.random) {
+      if (getConnection().options.type === 'sqlite') {
+        queryBuilder.orderBy('RANDOM()');
+      } else {
+        queryBuilder.orderBy('RAND()');
+      }
+    } else {
+      const order = {};
+      Object.getOwnPropertyNames(filter.order).forEach((fieldName) => {
+        order[`tag.${fieldName}`] = filter.order[fieldName];
+      });
+      queryBuilder.orderBy(order);
+    }
     return queryBuilder.getManyAndCount();
   }
 
