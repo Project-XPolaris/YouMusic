@@ -36,6 +36,7 @@ export class AlbumController {
     @Query('order') order = '',
     @Query('search') search = '',
     @Query('tag') tag = '',
+    @Query('genre') genre = '',
     @Query('random') random = '',
     @Req() req: Request & { uid: string },
   ) {
@@ -48,6 +49,7 @@ export class AlbumController {
       search,
       tag,
       random: random === '1',
+      genre: genre.split(','),
     });
     return {
       count,
@@ -106,7 +108,6 @@ export class AlbumController {
     if (album === undefined) {
       throw new BadRequestException('Invalid album');
     }
-    console.log(album.cover);
     const data = await this.storageService.getCover(album.cover);
     if (data instanceof Readable) {
       // res.setHeader('Content-Type', 'image/jpeg');

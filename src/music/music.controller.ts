@@ -43,6 +43,7 @@ export class MusicController {
     @Query('name') title = '',
     @Query('path') path = '',
     @Query('tag') tag = '',
+    @Query('genre') genre = '',
     @Query('pathSearch') pathSearch = '',
     @Query('random') random = '',
     @Req() req: Request & { uid: string },
@@ -59,6 +60,7 @@ export class MusicController {
       title,
       path,
       tags: tag.split(','),
+      genre: genre.split(','),
       pathSearch,
       random: random === '1',
     });

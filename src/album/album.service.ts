@@ -18,6 +18,7 @@ export type AlbumQueryFilter = {
   uid: string;
   search: string;
   tag: string;
+  genre: string[];
   random: boolean;
 } & PageFilter;
 
@@ -57,6 +58,19 @@ export class AlbumService {
           .leftJoin('album.music', 'music')
           .leftJoin('music.tags', 'tags')
           .where('tags.id = :tag', { tag: filter.tag })
+          .getQuery();
+        return 'album.id IN ' + subQuery;
+      });
+    }
+    if (filter.genre.length > 0 && filter.genre[0] !== '') {
+      queryBuilder.where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('album.id')
+          .from(Album, 'album')
+          .leftJoin('album.music', 'music')
+          .leftJoin('music.genre', 'genre')
+          .where('genre.id in (:...genres)', { genres: filter.genre })
           .getQuery();
         return 'album.id IN ' + subQuery;
       });

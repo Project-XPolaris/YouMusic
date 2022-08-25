@@ -33,7 +33,7 @@ export class Genre {
     let genre = await repo
       .createQueryBuilder('genre')
       .where('genre.name = :name', { name })
-      .andWhere('genre.libraryId = id', { id: library.id })
+      .andWhere('genre.libraryId = :id', { id: library.id })
       .getOne();
     if (genre) {
       return genre;

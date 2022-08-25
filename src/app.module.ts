@@ -42,6 +42,7 @@ import { ConfigService } from '@nestjs/config';
 import { Oauth } from './database/entites/oauth';
 import { Tag } from './database/entites/tag';
 import { TagModule } from './tag/tag.module';
+import { GenreModule } from './genre/genre.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { TagModule } from './tag/tag.module';
     ExploreModule,
     MetaModule,
     TagModule,
+    GenreModule,
   ],
   controllers: [
     AppController,

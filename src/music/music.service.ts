@@ -1,6 +1,6 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import {getConnection, getRepository, In} from 'typeorm';
+import { getConnection, getRepository, In } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
@@ -29,6 +29,7 @@ export type MusicQueryFilter = {
   albumId: number;
   ids: string[];
   tags: string[];
+  genre: string[];
   order: { [key: string]: 'ASC' | 'DESC' };
   uid: string;
   search: string;
@@ -110,6 +111,11 @@ export class MusicService {
       queryBuilder
         .leftJoinAndSelect('music.tags', 'tag')
         .andWhere('tag.id in (:...tags)', { tags: filter.tags });
+    }
+    if (filter.genre.length > 0 && filter.genre[0] !== '') {
+      queryBuilder
+        .leftJoinAndSelect('music.genre', 'genre')
+        .andWhere('genre.id in (:...genres)', { genres: filter.genre });
     }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {
