@@ -43,6 +43,7 @@ import { Oauth } from './database/entites/oauth';
 import { Tag } from './database/entites/tag';
 import { TagModule } from './tag/tag.module';
 import { GenreModule } from './genre/genre.module';
+import { AppLoggerMiddleware } from './log.middleware';
 
 @Module({
   imports: [
@@ -127,5 +128,6 @@ export class AppModule implements NestModule, OnApplicationBootstrap {
 
   configure(consumer: MiddlewareConsumer): any {
     consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
   }
 }

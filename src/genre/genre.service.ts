@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import {getConnection, getRepository} from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
-import {Genre} from "../database/entites/genre";
+import { Genre } from '../database/entites/genre';
 
 export type GenreQueryFilter = {
   musicId: number;
@@ -27,9 +27,12 @@ export class GenreService {
       .take(filter.pageSize)
       .skip((filter.page - 1) * filter.pageSize);
     if (libraries.length > 0) {
-      queryBuilder.where('genre.libraryId in (:...lid)', {
-        lid: libraries.map((it) => it.id),
-      });
+      queryBuilder
+        .leftJoin('genre.music', 'music')
+        .groupBy('genre.id')
+        .andWhere('music.libraryId in (:...id)', {
+          id: libraries.map((it) => it.id),
+        });
     }
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
       queryBuilder.andWhere('genre.id IN (:...ids)', { ids: filter.ids });

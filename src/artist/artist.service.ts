@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import {getConnection, getRepository} from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { Artist } from '../database/entites/artist';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
@@ -47,9 +47,12 @@ export class ArtistService {
       });
     }
     if (libraries.length > 0) {
-      queryBuilder = queryBuilder.where('artist.libraryId in (:...id)', {
-        id: libraries.map((it) => it.id),
-      });
+      queryBuilder = queryBuilder
+        .leftJoin('artist.music', 'music')
+        .groupBy('artist.id')
+        .andWhere('music.libraryId in (:...id)', {
+          id: libraries.map((it) => it.id),
+        });
     }
     return await queryBuilder.getManyAndCount();
   }
@@ -96,7 +99,8 @@ export class ArtistService {
     const libraries = await MediaLibrary.getLibraryByUid(uid);
     const artist = await getRepository(Artist)
       .createQueryBuilder('artist')
-      .where('artist.libraryId in (:...lid)', {
+      .leftJoin('artist.music', 'music')
+      .where('music.libraryId in (:...lid)', {
         lid: libraries.map((it) => it.id),
       });
     return Boolean(artist);

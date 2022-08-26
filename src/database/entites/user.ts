@@ -12,6 +12,7 @@ import {
 import { MediaLibrary } from './library';
 import { SpotifyAuth } from './spotify';
 import { Oauth } from './oauth';
+import { Artist } from './artist';
 
 @Entity()
 export class User {
@@ -33,6 +34,7 @@ export class User {
 
   @OneToOne(() => SpotifyAuth, (auth) => auth.user, { nullable: true })
   spotifyAuth: SpotifyAuth;
+
   async createOrGet() {
     const repo = await getRepository(User);
     const count = await repo.count({ where: { uid: this.uid } });

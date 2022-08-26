@@ -5,7 +5,6 @@ import {
   getRepository,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -17,7 +16,6 @@ import { ApplicationConfig } from '../../config';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer';
-import { MediaLibrary } from './library';
 import { makeThumbnail } from '../../utils/image';
 
 @Entity()
@@ -45,11 +43,6 @@ export class Album {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ManyToOne(() => MediaLibrary, (library) => library.albums, {
-    onDelete: 'CASCADE',
-  })
-  library: MediaLibrary;
 
   /**
    * recycle album if music is empty

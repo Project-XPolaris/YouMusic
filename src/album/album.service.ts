@@ -33,9 +33,12 @@ export class AlbumService {
       .skip((filter.page - 1) * filter.pageSize)
       .take(filter.pageSize);
     if (libraries.length > 0) {
-      queryBuilder = queryBuilder.where('album.libraryId in (:...id)', {
-        id: libraries.map((it) => it.id),
-      });
+      queryBuilder = queryBuilder
+        .leftJoin('album.music', 'music')
+        .groupBy('album.id')
+        .andWhere('music.libraryId in (:...id)', {
+          id: libraries.map((it) => it.id),
+        });
     }
     if (filter.artistId > 0) {
       queryBuilder.where((qb) => {
@@ -45,6 +48,9 @@ export class AlbumService {
           .from(Artist, 'artist')
           .leftJoin('artist.album', 'album')
           .where('artist.id = :aid', { aid: filter.artistId })
+          .andWhere('music.libraryId in (:...lid)', {
+            lid: libraries.map((it) => it.id),
+          })
           .getQuery();
         return 'album.id IN ' + subQuery;
       });
@@ -58,6 +64,9 @@ export class AlbumService {
           .leftJoin('album.music', 'music')
           .leftJoin('music.tags', 'tags')
           .where('tags.id = :tag', { tag: filter.tag })
+          .andWhere('music.libraryId in (:...lid)', {
+            lid: libraries.map((it) => it.id),
+          })
           .getQuery();
         return 'album.id IN ' + subQuery;
       });
@@ -71,6 +80,9 @@ export class AlbumService {
           .leftJoin('album.music', 'music')
           .leftJoin('music.genre', 'genre')
           .where('genre.id in (:...genres)', { genres: filter.genre })
+          .andWhere('music.libraryId in (:...lid)', {
+            lid: libraries.map((it) => it.id),
+          })
           .getQuery();
         return 'album.id IN ' + subQuery;
       });
@@ -108,7 +120,7 @@ export class AlbumService {
       .leftJoinAndSelect('music.artist', 'musicArtist')
       .where('album.id = :id', { id });
     if (libraries.length > 0) {
-      queryBuilder = queryBuilder.andWhere('album.libraryId in (:...lid)', {
+      queryBuilder = queryBuilder.andWhere('music.libraryId in (:...lid)', {
         lid: libraries.map((it) => it.id),
       });
     }

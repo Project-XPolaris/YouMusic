@@ -13,14 +13,12 @@ export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   let album = await getRepository(Album)
     .createQueryBuilder('album')
     .where('album.name = :name', { name })
-    .andWhere('libraryId = :id', { id: library.id })
     .getOne();
   if (album) {
     return album;
   }
   album = new Album();
   album.name = name;
-  album.library = library;
   await getRepository(Album).save(album);
   return album;
 };
@@ -32,14 +30,12 @@ export const getOrCreateArtist = async (
   let artist = await getRepository(Artist)
     .createQueryBuilder('artist')
     .where('artist.name = :name', { name })
-    .andWhere('libraryId = :id', { id: library.id })
     .getOne();
   if (artist) {
     return artist;
   }
   artist = new Artist();
   artist.name = name;
-  artist.library = library;
   await getRepository(Artist).save(artist);
   return artist;
 };

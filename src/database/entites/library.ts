@@ -34,14 +34,6 @@ export class MediaLibrary {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Album, (album) => album.library)
-  albums: Album[];
-
-  @OneToMany(() => Artist, (artist) => artist.library)
-  artists: Artist[];
-  @OneToMany(() => Tag, (tag) => tag.library)
-  tags: Tag[];
-
   @ManyToMany(() => User, { onDelete: 'CASCADE' })
   @JoinTable()
   users: User[];
@@ -49,12 +41,6 @@ export class MediaLibrary {
   async delete() {
     for (const libraryMusic of this.music) {
       await Music.deleteMusic(libraryMusic.id);
-    }
-    for (const tag of this.tags) {
-      await getRepository(Tag).delete(tag.id);
-    }
-    for (const artist of this.artists) {
-      await getRepository(Artist).delete(artist.id);
     }
     const repo = await getRepository(MediaLibrary);
     await repo.delete(this.id);
@@ -69,18 +55,6 @@ export class MediaLibrary {
       // remove music
       const musicRepo = transactionalEntityManager.getRepository(Music);
       await musicRepo.delete({ library: library });
-      // remove tags
-      const tagRepo = transactionalEntityManager.getRepository(Tag);
-      await tagRepo.delete({ library: library });
-      // remove artists
-      const artistRepo = transactionalEntityManager.getRepository(Artist);
-      await artistRepo.delete({ library: library });
-      // remove albums
-      const albumRepo = transactionalEntityManager.getRepository(Album);
-      await albumRepo.delete({ library: library });
-      // remove genre
-      const genreRepo = transactionalEntityManager.getRepository(Genre);
-      await genreRepo.delete({ library: library });
       // remove library
       await libraryRepo.delete(id);
     });

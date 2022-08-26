@@ -28,14 +28,11 @@ export class Tag {
 
   @UpdateDateColumn()
   updatedAt: Date;
-  @ManyToOne(() => MediaLibrary, (library) => library.albums)
-  library: MediaLibrary;
   static async createOrGet(name: string, library: MediaLibrary) {
     const repo = await getRepository(Tag);
     let tag = await repo
       .createQueryBuilder('genre')
       .where('tag.name = :name', { name })
-      .andWhere('tag.libraryId = id', { id: library.id })
       .getOne();
     if (tag) {
       return tag;

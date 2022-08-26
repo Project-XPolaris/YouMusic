@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {getConnection, getRepository} from 'typeorm';
+import { getConnection, getRepository } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
@@ -25,10 +25,14 @@ export class TagService {
     queryBuilder
       .take(filter.pageSize)
       .skip((filter.page - 1) * filter.pageSize);
+    const libraryIds = libraries.map((it) => it.id);
     if (libraries.length > 0) {
-      queryBuilder.where('tag.libraryId in (:...lid)', {
-        lid: libraries.map((it) => it.id),
-      });
+      queryBuilder
+        .leftJoin('tag.music', 'music')
+        .groupBy('tag.id')
+        .andWhere('music.libraryId in (:...id)', {
+          id: libraryIds,
+        });
     }
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
       queryBuilder.andWhere('tag.id IN (:...ids)', { ids: filter.ids });
@@ -40,14 +44,10 @@ export class TagService {
     }
 
     if (filter.musicId > 0) {
-      queryBuilder
-        .leftJoinAndSelect('tag.music', 'music')
-        .andWhere('music.id = :id', { id: filter.musicId });
+      queryBuilder.andWhere('music.id = :id', { id: filter.musicId });
     }
     if (filter.albumId > 0) {
-      queryBuilder
-        .leftJoinAndSelect('tag.music', 'music')
-        .andWhere('music.albumId = :id', { id: filter.albumId });
+      queryBuilder.andWhere('music.albumId = :aid', { aid: filter.albumId });
     }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {
@@ -70,9 +70,11 @@ export class TagService {
     const tagRepository = getRepository(Tag);
     let query = tagRepository.createQueryBuilder('tag').whereInIds([id]);
     if (libraries.length > 0) {
-      query = query.andWhere('tag.libraryId in (:...lid)', {
-        lid: libraries.map((it) => it.id),
-      });
+      query = query
+        .leftJoin('tag.music', 'music')
+        .andWhere('music.libraryId in (:...lid)', {
+          lid: libraries.map((it) => it.id),
+        });
     }
     return await query.getOne();
   }
