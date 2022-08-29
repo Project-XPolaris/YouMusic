@@ -24,6 +24,7 @@ export class GenreController {
     @Query('order') order = '',
     @Query('search') search = '',
     @Query('random') random = '',
+    @Query('follow') follow = '0',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.genreService.findAll({
@@ -36,6 +37,7 @@ export class GenreController {
       search,
       albumId: +album,
       random: random === '1',
+      followUid: follow === '1' ? req.uid : undefined,
     });
     return {
       count,

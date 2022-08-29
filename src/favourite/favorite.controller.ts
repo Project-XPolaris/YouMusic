@@ -63,4 +63,24 @@ export class FavoriteController {
       success: true,
     };
   }
+  @Post('/genre/:id')
+  async addGenre(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.addGenreToFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
+  @Delete('/genre/:id')
+  async removeGenre(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.removeGenreFromFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
 }

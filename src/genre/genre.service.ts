@@ -13,6 +13,7 @@ export type GenreQueryFilter = {
   search: string;
   albumId: number;
   random: boolean;
+  followUid: string;
 } & PageFilter;
 
 @Injectable()
@@ -53,6 +54,11 @@ export class GenreService {
         .leftJoinAndSelect('genre.music', 'music')
         .andWhere('music.albumId = :id', { id: filter.albumId });
     }
+    if (filter.followUid && filter.followUid.length > 0) {
+      queryBuilder
+        .leftJoin('genre.follow', 'follow')
+        .andWhere('follow.uid = :uid', { uid: filter.uid });
+    }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
@@ -74,9 +80,11 @@ export class GenreService {
     const genreRepository = getRepository(Genre);
     let query = genreRepository.createQueryBuilder('genre').whereInIds([id]);
     if (libraries.length > 0) {
-      query = query.andWhere('genre.libraryId in (:...lid)', {
-        lid: libraries.map((it) => it.id),
-      });
+      query = query
+        .leftJoin('genre.music', 'music')
+        .andWhere('music.libraryId in (:...lid)', {
+          lid: libraries.map((it) => it.id),
+        });
     }
     return await query.getOne();
   }

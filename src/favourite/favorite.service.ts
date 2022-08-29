@@ -6,7 +6,9 @@ import { ArtistService } from '../artist/artist.service';
 import { AlbumService } from '../album/album.service';
 import { Album } from '../database/entites/album';
 import { TagService } from '../tag/tag.service';
-import {Tag} from "../database/entites/tag";
+import { Tag } from '../database/entites/tag';
+import { GenreService } from '../genre/genre.service';
+import { Genre } from '../database/entites/genre';
 
 @Injectable()
 export class FavoriteService {
@@ -14,7 +16,9 @@ export class FavoriteService {
     private artistService: ArtistService,
     private albumService: AlbumService,
     private tagService: TagService,
+    private genreService: GenreService,
   ) {}
+
   async addArtistToFavourite(artistId: number, uid: string): Promise<void> {
     const canAccess = await this.artistService.checkAccessible(artistId, uid);
     if (!canAccess) {
@@ -33,6 +37,7 @@ export class FavoriteService {
     await artistRepo.save(artist);
     return;
   }
+
   async removeArtistFromFavorite(artistId: number, uid: string): Promise<void> {
     const canAccess = await this.artistService.checkAccessible(artistId, uid);
     if (!canAccess) {
@@ -51,6 +56,7 @@ export class FavoriteService {
     await artistRepo.save(artist);
     return;
   }
+
   async addAlbumToFavourite(albumId: number, uid: string): Promise<void> {
     const useAlbum = await this.albumService.findOne(albumId, uid);
     if (!useAlbum) {
@@ -69,6 +75,7 @@ export class FavoriteService {
     await albumRepo.save(album);
     return;
   }
+
   async removeAlbumFromFavourite(albumId: number, uid: string): Promise<void> {
     const useAlbum = await this.albumService.findOne(albumId, uid);
     if (!useAlbum) {
@@ -87,6 +94,7 @@ export class FavoriteService {
     await albumRepo.save(album);
     return;
   }
+
   async addTagToFavourite(tagId: number, uid: string): Promise<void> {
     const useTag = await this.tagService.findOne(tagId, uid);
     if (!useTag) {
@@ -105,6 +113,7 @@ export class FavoriteService {
     await tagRepo.save(tag);
     return;
   }
+
   async removeTagFromFavourite(tagId: number, uid: string): Promise<void> {
     const useTag = await this.tagService.findOne(tagId, uid);
     if (!useTag) {
@@ -121,6 +130,44 @@ export class FavoriteService {
     });
     tag.follow = tag.follow.filter((it) => it.id !== user.id);
     await tagRepo.save(tag);
+    return;
+  }
+
+  async addGenreToFavourite(genreId: number, uid: string): Promise<void> {
+    const useGenre = await this.genreService.findOne(genreId, uid);
+    if (!useGenre) {
+      throw new Error('You can not access this genre');
+    }
+    const userRepo = await getRepository(User);
+    const user = await userRepo.findOne({
+      where: { uid },
+    });
+    const genreRepo = await getRepository(Genre);
+    const genre = await genreRepo.findOne({
+      where: { id: genreId },
+      relations: ['follow'],
+    });
+    genre.follow.push(user);
+    await genreRepo.save(genre);
+    return;
+  }
+
+  async removeGenreFromFavourite(genreId: number, uid: string): Promise<void> {
+    const useGenre = await this.genreService.findOne(genreId, uid);
+    if (!useGenre) {
+      throw new Error('You can not access this genre');
+    }
+    const userRepo = await getRepository(User);
+    const user = await userRepo.findOne({
+      where: { uid },
+    });
+    const genreRepo = await getRepository(Genre);
+    const genre = await genreRepo.findOne({
+      where: { id: genreId },
+      relations: ['follow'],
+    });
+    genre.follow = genre.follow.filter((it) => it.id !== user.id);
+    await genreRepo.save(genre);
     return;
   }
 }
