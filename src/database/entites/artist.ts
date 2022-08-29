@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   getRepository,
+  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Album } from './album';
 import { Music } from './music';
+import { User } from './user';
 
 @Entity()
 export class Artist {
@@ -24,6 +26,10 @@ export class Artist {
 
   @ManyToMany(() => Album, (album) => album.artist, { onDelete: 'CASCADE' })
   album: Album[];
+
+  @ManyToMany(() => User, (user) => user.followArtist,{ onDelete: 'CASCADE' })
+  @JoinTable()
+  follow: User[];
 
   @CreateDateColumn()
   createdAt: Date;

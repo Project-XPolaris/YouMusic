@@ -44,6 +44,7 @@ import { Tag } from './database/entites/tag';
 import { TagModule } from './tag/tag.module';
 import { GenreModule } from './genre/genre.module';
 import { AppLoggerMiddleware } from './log.middleware';
+import {FavoriteModule} from "./favourite/favorite.module";
 
 @Module({
   imports: [
@@ -103,6 +104,7 @@ import { AppLoggerMiddleware } from './log.middleware';
     MetaModule,
     TagModule,
     GenreModule,
+    FavoriteModule,
   ],
   controllers: [
     AppController,

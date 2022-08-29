@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Buffer } from 'buffer';
 import { makeThumbnail } from '../../utils/image';
+import { User } from './user';
 
 @Entity()
 export class Album {
@@ -37,6 +38,10 @@ export class Album {
   @ManyToMany(() => Artist, (artist) => artist.album, { onDelete: 'CASCADE' })
   @JoinTable()
   artist: Artist[];
+
+  @ManyToMany(() => User, (user) => user.followAlbum, { onDelete: 'CASCADE' })
+  @JoinTable()
+  follow: User[];
 
   @CreateDateColumn()
   createdAt: Date;
