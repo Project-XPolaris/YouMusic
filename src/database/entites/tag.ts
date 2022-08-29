@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   getRepository,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,7 @@ import {
 } from 'typeorm';
 import { Music } from './music';
 import { MediaLibrary } from './library';
+import { User } from './user';
 
 @Entity()
 export class Tag {
@@ -22,6 +24,10 @@ export class Tag {
     cascade: true,
   })
   music: Music[];
+
+  @ManyToMany(() => User, (user) => user.followTag, { onDelete: 'CASCADE' })
+  @JoinTable()
+  follow: User[];
 
   @CreateDateColumn()
   createdAt: Date;

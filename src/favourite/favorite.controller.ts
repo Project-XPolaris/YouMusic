@@ -1,4 +1,4 @@
-import { Controller, Param, Post, Req } from '@nestjs/common';
+import { Controller, Delete, Param, Post, Req } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 
 @Controller('favorite')
@@ -15,6 +15,16 @@ export class FavoriteController {
       success: true,
     };
   }
+  @Delete('/artist/:id')
+  async removeArtist(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.removeArtistFromFavorite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
   @Post('/album/:id')
   async addAlbum(
     @Param('id') id: string,
@@ -25,5 +35,32 @@ export class FavoriteController {
       success: true,
     };
   }
+  @Delete('/album/:id')
+  async removeAlbum(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.removeAlbumFromFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
 
+  @Post('/tag/:id')
+  async addTag(@Param('id') id: string, @Req() req: Request & { uid: string }) {
+    await this.favoriteService.addTagToFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
+  @Delete('/tag/:id')
+  async removeTag(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.removeTagFromFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
 }

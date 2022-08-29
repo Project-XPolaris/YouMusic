@@ -13,7 +13,8 @@ import { MediaLibrary } from './library';
 import { SpotifyAuth } from './spotify';
 import { Oauth } from './oauth';
 import { Artist } from './artist';
-import {Album} from "./album";
+import { Album } from './album';
+import { Tag } from './tag';
 
 @Entity()
 export class User {
@@ -38,6 +39,9 @@ export class User {
 
   @ManyToMany(() => Album, (album) => album.follow, { cascade: true })
   followAlbum: Album[];
+
+  @ManyToMany(() => Tag, (tag) => tag.follow, { cascade: true })
+  followTag: Tag[];
 
   @OneToOne(() => SpotifyAuth, (auth) => auth.user, { nullable: true })
   spotifyAuth: SpotifyAuth;

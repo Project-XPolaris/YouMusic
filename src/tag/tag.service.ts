@@ -12,6 +12,7 @@ export type TagQueryFilter = {
   search: string;
   albumId: number;
   random: boolean;
+  followUid: string;
 } & PageFilter;
 
 @Injectable()
@@ -48,6 +49,11 @@ export class TagService {
     }
     if (filter.albumId > 0) {
       queryBuilder.andWhere('music.albumId = :aid', { aid: filter.albumId });
+    }
+    if (filter.followUid && filter.followUid.length > 0) {
+      queryBuilder
+        .leftJoin('tag.follow', 'follow')
+        .andWhere('follow.uid = :uid', { uid: filter.uid });
     }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {
