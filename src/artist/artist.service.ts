@@ -17,6 +17,7 @@ export type ArtistFilter = PageFilter & {
   uid: string;
   search: string;
   random: boolean;
+  followUid: string;
 };
 
 @Injectable()
@@ -53,6 +54,11 @@ export class ArtistService {
         .andWhere('music.libraryId in (:...id)', {
           id: libraries.map((it) => it.id),
         });
+    }
+    if (filter.followUid && filter.followUid.length > 0) {
+      queryBuilder = queryBuilder
+        .leftJoin('artist.follow', 'follow')
+        .andWhere('follow.uid = :uid', { uid: filter.uid });
     }
     return await queryBuilder.getManyAndCount();
   }

@@ -20,6 +20,7 @@ export type AlbumQueryFilter = {
   tag: string;
   genre: string[];
   random: boolean;
+  followUid: string;
 } & PageFilter;
 
 @Injectable()
@@ -86,6 +87,11 @@ export class AlbumService {
           .getQuery();
         return 'album.id IN ' + subQuery;
       });
+    }
+    if (filter.followUid && filter.followUid.length > 0) {
+      queryBuilder
+        .leftJoinAndSelect('album.follow', 'follow')
+        .andWhere('follow.uid = :uid', { uid: filter.followUid });
     }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {

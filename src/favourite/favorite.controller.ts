@@ -25,4 +25,5 @@ export class FavoriteController {
       success: true,
     };
   }
+
 }
