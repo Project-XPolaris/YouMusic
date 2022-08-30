@@ -31,6 +31,7 @@ export class ArtistController {
     @Query('search') search = '',
     @Query('random') random = '',
     @Query('follow') follow = '0',
+    @Query('id') id = '0',
     @Req() req: Request & { uid: string },
   ) {
     const [data, count] = await this.artistService.findAll({
@@ -41,6 +42,7 @@ export class ArtistController {
       search,
       random: random === '1',
       followUid: follow === '1' ? req.uid : undefined,
+      id: +id,
     });
     return {
       count,

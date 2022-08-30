@@ -18,6 +18,7 @@ export type ArtistFilter = PageFilter & {
   search: string;
   random: boolean;
   followUid: string;
+  id: number;
 };
 
 @Injectable()
@@ -45,6 +46,11 @@ export class ArtistService {
     if (filter.search.length > 0) {
       queryBuilder = queryBuilder.andWhere('artist.name like :search', {
         search: `%${filter.search}%`,
+      });
+    }
+    if (filter.id > 0) {
+      queryBuilder = queryBuilder.andWhere('artist.id = :aid', {
+        aid: filter.id,
       });
     }
     if (libraries.length > 0) {

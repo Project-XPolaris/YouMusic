@@ -21,6 +21,7 @@ export type AlbumQueryFilter = {
   genre: string[];
   random: boolean;
   followUid: string;
+  id: number;
 } & PageFilter;
 
 @Injectable()
@@ -92,6 +93,9 @@ export class AlbumService {
       queryBuilder
         .leftJoinAndSelect('album.follow', 'follow')
         .andWhere('follow.uid = :uid', { uid: filter.followUid });
+    }
+    if (filter.id > 0) {
+      queryBuilder.andWhere('album.id = :aid', { aid: filter.id });
     }
     if (filter.random) {
       if (getConnection().options.type === 'sqlite') {

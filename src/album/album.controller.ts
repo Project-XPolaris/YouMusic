@@ -39,6 +39,7 @@ export class AlbumController {
     @Query('genre') genre = '',
     @Query('random') random = '',
     @Query('follow') follow = '0',
+    @Query('id') id = '0',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.albumService.findAll({
@@ -52,6 +53,7 @@ export class AlbumController {
       random: random === '1',
       genre: genre.split(','),
       followUid: follow === '1' ? req.uid : undefined,
+      id: +id,
     });
     return {
       count,
