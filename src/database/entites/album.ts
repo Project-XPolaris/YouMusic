@@ -32,7 +32,7 @@ export class Album {
   @Column({ nullable: true })
   cover?: string;
 
-  @OneToMany(() => Music, (music) => music.album, { onDelete: 'CASCADE' })
+  @OneToMany(() => Music, (music) => music.album)
   music: Music[];
 
   @ManyToMany(() => Artist, (artist) => artist.album, { onDelete: 'CASCADE' })

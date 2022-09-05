@@ -44,7 +44,9 @@ import { Tag } from './database/entites/tag';
 import { TagModule } from './tag/tag.module';
 import { GenreModule } from './genre/genre.module';
 import { AppLoggerMiddleware } from './log.middleware';
-import {FavoriteModule} from "./favourite/favorite.module";
+import { FavoriteModule } from './favourite/favorite.module';
+import { PlaylistModule } from './playlist/playlist.module';
+import { Playlist } from './database/entites/playlist';
 
 @Module({
   imports: [
@@ -65,6 +67,7 @@ import {FavoriteModule} from "./favourite/favorite.module";
           SpotifyAuth,
           Oauth,
           Tag,
+          Playlist,
         ];
         const datasource = configService.get('datasource.type');
         switch (datasource) {
@@ -105,6 +108,7 @@ import {FavoriteModule} from "./favourite/favorite.module";
     TagModule,
     GenreModule,
     FavoriteModule,
+    PlaylistModule,
   ],
   controllers: [
     AppController,

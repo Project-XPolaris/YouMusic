@@ -37,6 +37,7 @@ export type MusicQueryFilter = {
   path: string;
   pathSearch: string;
   random: boolean;
+  playlistIds: string[];
 } & PageFilter;
 
 @Injectable()
@@ -83,7 +84,18 @@ export class MusicService {
         return 'music.id IN ' + subQuery;
       });
     }
-
+    if (filter.playlistIds.length > 0 && filter.playlistIds[0] !== '') {
+      queryBuilder.andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('music.id')
+          .from(Music, 'music')
+          .leftJoin('music.playlist', 'playlist')
+          .where('playlist.id in (:...pid)', { pid: filter.playlistIds })
+          .getQuery();
+        return 'music.id IN ' + subQuery;
+      });
+    }
     if (filter.ids.length > 0 && filter.ids[0] !== '') {
       queryBuilder.andWhere('music.id IN (:...ids)', { ids: filter.ids });
     }

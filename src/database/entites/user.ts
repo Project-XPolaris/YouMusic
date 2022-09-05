@@ -15,7 +15,8 @@ import { Oauth } from './oauth';
 import { Artist } from './artist';
 import { Album } from './album';
 import { Tag } from './tag';
-import {Genre} from "./genre";
+import { Genre } from './genre';
+import { Playlist } from './playlist';
 
 @Entity()
 export class User {
@@ -46,6 +47,12 @@ export class User {
 
   @ManyToMany(() => Genre, (genre) => genre.follow, { cascade: true })
   followGenre: Genre[];
+
+  @ManyToMany(() => Playlist, (playlist) => playlist.follow, { cascade: true })
+  followPlaylist: Playlist[];
+
+  @OneToMany(() => Playlist, (playlist) => playlist.owner)
+  ownPlaylist: Playlist[];
 
   @OneToOne(() => SpotifyAuth, (auth) => auth.user, { nullable: true })
   spotifyAuth: SpotifyAuth;

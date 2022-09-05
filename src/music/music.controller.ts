@@ -46,6 +46,7 @@ export class MusicController {
     @Query('genre') genre = '',
     @Query('pathSearch') pathSearch = '',
     @Query('random') random = '',
+    @Query('playlist') playlist = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -63,6 +64,7 @@ export class MusicController {
       genre: genre.split(','),
       pathSearch,
       random: random === '1',
+      playlistIds: playlist.split(','),
     });
     return {
       count,
