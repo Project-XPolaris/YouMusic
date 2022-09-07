@@ -62,6 +62,35 @@ export class LogService implements OnModuleInit {
       })
       .subscribe();
   }
+  public error({
+    content,
+    extra,
+    scope,
+  }: {
+    content: string;
+    extra?: any;
+    scope?: string;
+  }) {
+    if (!extra) {
+      Logger.error(`[${scope}] ${content}`);
+    } else {
+      Logger.error(`[${scope}] ${content}`, extra);
+    }
+    if (!this.enableLog) {
+      return;
+    }
+    this.logRPCService
+      .writeLog({
+        application: this.getName(),
+        instance: this.instanceId,
+        scope: scope ?? 'Global',
+        extra: JSON.stringify(extra ?? {}),
+        message: content,
+        level: 1,
+        time: Date.now(),
+      })
+      .subscribe();
+  }
   async onModuleInit() {
     this.logRPCService = this.client.getService<LogRPCService>('LogService');
   }
