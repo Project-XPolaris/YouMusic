@@ -37,7 +37,7 @@ export class AlbumService {
     if (libraries.length > 0) {
       queryBuilder = queryBuilder
         .leftJoin('album.music', 'music')
-        .groupBy('album.id')
+        // .groupBy('album.id')
         .andWhere('music.libraryId in (:...id)', {
           id: libraries.map((it) => it.id),
         });

@@ -12,7 +12,6 @@ export interface StoragePaths {
 }
 
 @Injectable()
-@Global()
 export class StorageService {
   engine: StorageEngine;
   storagePaths: StoragePaths;
