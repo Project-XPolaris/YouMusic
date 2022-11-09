@@ -7,7 +7,7 @@ import { IAudioMetadata } from 'music-metadata';
 import { v4 as uuidv4 } from 'uuid';
 import { ApplicationConfig } from '../config';
 import * as path from 'path';
-import Jimp from 'jimp';
+import Jimp = require('jimp');
 
 export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   let album = await getRepository(Album)

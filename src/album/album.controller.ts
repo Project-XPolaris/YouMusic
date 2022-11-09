@@ -14,7 +14,6 @@ import {
 import { AlbumService } from './album.service';
 import { BaseAlbumTemplate } from '../template/album';
 import { getOrderFromQueryString } from '../utils/query';
-import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { StorageService } from '../storage/storage.service';
@@ -73,7 +72,7 @@ export class AlbumController {
     return new BaseAlbumTemplate(album);
   }
 
-  @Patch(':id')
+  @Post(':id')
   async update(
     @Param('id') id: string,
     @Req() req: Request & { uid: string },
@@ -114,7 +113,6 @@ export class AlbumController {
     }
     const data = await this.storageService.getCover(album.cover);
     if (data instanceof Readable) {
-      // res.setHeader('Content-Type', 'image/jpeg');
       data.pipe(res);
     }
   }

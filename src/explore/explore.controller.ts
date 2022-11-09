@@ -17,6 +17,7 @@ export class ExploreController {
     return {
       path: readPath,
       sep: path.sep,
+      backPath: path.dirname(readPath),
       files: files.map((diren) => ({
         name: diren.name,
         path: diren.path,

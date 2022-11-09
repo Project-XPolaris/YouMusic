@@ -7,17 +7,18 @@ import { StorageModule } from '../storage/storage.module';
 import { StorageService } from '../storage/storage.service';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
 import { LogModule } from '../log/log.module';
+import { LogService } from '../log/log.service';
 
 @Module({
   controllers: [MusicController],
-  providers: [MusicService, StorageService],
+  providers: [MusicService],
   imports: [
+    LogModule,
     HttpModule,
     MetaModule,
     ThumbnailModule,
     StorageModule,
     ConfigModule,
-    LogModule,
   ],
 })
 export class MusicModule {}

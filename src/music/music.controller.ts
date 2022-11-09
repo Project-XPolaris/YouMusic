@@ -20,7 +20,6 @@ import {
 } from './dto/update-music.dto';
 import { BaseMusicTemplate } from '../template/music';
 import { getOrderFromQueryString } from '../utils/query';
-import { Patch } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MetaService } from '../meta/meta.service';
 
@@ -47,6 +46,9 @@ export class MusicController {
     @Query('pathSearch') pathSearch = '',
     @Query('random') random = '',
     @Query('playlist') playlist = '',
+    @Query('albumSearch') albumSearch = '',
+    @Query('artistSearch') artistSearch = '',
+    @Query('withTag') withTags = '',
     @Req() req: Request & { uid: string },
   ) {
     const [list, count] = await this.musicService.findAll({
@@ -65,6 +67,9 @@ export class MusicController {
       pathSearch,
       random: random === '1',
       playlistIds: playlist.split(','),
+      albumSearch,
+      artistSearch,
+      withTags: withTags == '1',
     });
     return {
       count,
@@ -89,7 +94,7 @@ export class MusicController {
     return await this.musicService.remove(+id);
   }
 
-  @Patch(':id/file')
+  @Post(':id/file')
   async updateMusicFile(
     @Param('id') id: number,
     @Req() req: Request & { uid: string },
@@ -140,8 +145,12 @@ export class MusicController {
   }
 
   @Post(':id/tags')
-  async addTags(@Body() dto: AddMusicTags, @Param('id') id: string) {
-    await this.musicService.addMusicTags(dto.names, +id);
+  async addTags(
+    @Body() dto: AddMusicTags,
+    @Param('id') id: string,
+    @Query('replace') replace = '',
+  ) {
+    await this.musicService.addMusicTags(dto.names, +id, replace === '1');
     return {
       success: true,
     };

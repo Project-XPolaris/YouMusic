@@ -23,6 +23,10 @@ import { getImageFromContentType } from '../utils/image';
 import { ThumbnailService } from '../thumbnail/thumbnail.service';
 import { Tag } from '../database/entites/tag';
 import { StorageService } from '../storage/storage.service';
+import { LogService } from '../log/log.service';
+import { encodeImageToBlurhash } from '../utils/blurhash';
+import * as db from 'mime-db';
+import { getAverageColor } from 'fast-average-color-node';
 
 export type MusicQueryFilter = {
   artistId: number;
@@ -38,6 +42,9 @@ export type MusicQueryFilter = {
   pathSearch: string;
   random: boolean;
   playlistIds: string[];
+  albumSearch: string;
+  artistSearch: string;
+  withTags: boolean;
 } & PageFilter;
 
 @Injectable()
@@ -46,6 +53,7 @@ export class MusicService {
     private httpService: HttpService,
     private thumbnailService: ThumbnailService,
     private storageService: StorageService,
+    private logService: LogService,
   ) {}
 
   async findAll(filter: MusicQueryFilter) {
@@ -104,6 +112,16 @@ export class MusicService {
         search: `%${filter.search}%`,
       });
     }
+    if (filter.albumSearch.length > 0) {
+      queryBuilder.andWhere('music.title like :title', {
+        title: `%${filter.title}%`,
+      });
+    }
+    if (filter.artistSearch.length > 0) {
+      queryBuilder.andWhere('artist.name like :title', {
+        title: `%${filter.artistSearch}%`,
+      });
+    }
     if (filter.pathSearch.length > 0) {
       queryBuilder.andWhere('music.path like :search', {
         search: `%${filter.pathSearch}%`,
@@ -145,6 +163,9 @@ export class MusicService {
     queryBuilder
       .leftJoinAndSelect('music.album', 'album')
       .leftJoinAndSelect('music.artist', 'artist');
+    if (filter.withTags) {
+      queryBuilder.leftJoinAndSelect('music.tags', 'tag');
+    }
     return queryBuilder.getManyAndCount();
   }
 
@@ -166,9 +187,14 @@ export class MusicService {
 
   async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
     const repo = await getRepository(Music);
+    const queryMusicStartTime = Date.now();
     const music = await repo.findOne({
       where: { id },
       relations: ['album', 'library'],
+    });
+    const queryMusicEndTime = Date.now();
+    this.logService.info({
+      content: `query music time: ${queryMusicEndTime - queryMusicStartTime}ms`,
     });
     if (music === undefined || music === null) {
       throw new Error('music not exist');
@@ -178,6 +204,7 @@ export class MusicService {
       tags['title'] = dto.title;
       music.title = dto.title;
     }
+    const updateArtistStartTime = Date.now();
     const artists: Artist[] = [];
     if (dto.artist) {
       for (const artistName of dto.artist) {
@@ -188,16 +215,49 @@ export class MusicService {
 
       tags['artist'] = dto.artist.join(';');
     }
+    const updateArtistEndTime = Date.now();
+    this.logService.info({
+      content: `update artist time: ${
+        updateArtistEndTime - updateArtistStartTime
+      }ms`,
+    });
     let prevAlbum: Album;
     if (dto.album) {
       if (music.album) {
         prevAlbum = music.album;
       }
+      const updateAlbumStartTime = Date.now();
       music.album = await getOrCreateAlbum(dto.album, music.library);
+      const updateAlbumEndTime = Date.now();
+      this.logService.info({
+        content: `update album time: ${
+          updateAlbumEndTime - updateAlbumStartTime
+        }`,
+      });
+
       // generate cover
       if (music.album.cover === null || music.album.cover.length === 0) {
-        const meta = await mm.parseFile(music.path);
-        music.album.cover = await saveMusicCoverFile(meta);
+        let isExist = false;
+        if (music.album?.cover) {
+          isExist = await this.storageService.existCover(music.album.cover);
+        }
+        if (!isExist) {
+          const meta = await mm.parseFile(music.path);
+          const cover = meta.common.picture[0];
+          const mime = db[cover.format];
+          if (mime) {
+            const ext = mime.extensions[0];
+            const coverFilename = `${uuidv4()}.${ext}`;
+            await this.thumbnailService.generate(cover.data, coverFilename);
+            const hash = await encodeImageToBlurhash(cover.data);
+            music.album.cover = coverFilename;
+            music.album.blurHash = hash;
+            // get domain color
+            const color = await getAverageColor(cover.data);
+            music.album.domainColor = color.hex;
+            await getRepository(Album).save(music.album);
+          }
+        }
         await getRepository(Album).save(music.album);
       }
       tags['album'] = dto.album;
@@ -225,14 +285,35 @@ export class MusicService {
     if (dto.disc) {
       tags['partOfSet'] = dto.disc;
     }
+    const updateMusicStartTime = Date.now();
     const file = await fs.promises.readFile(music.path);
     const buf = await id3Promise.update(tags, file);
     await fs.promises.writeFile(music.path, buf);
+    const updateMusicEndTime = Date.now();
+    this.logService.info({
+      content: `update music time: ${
+        updateMusicEndTime - updateMusicStartTime
+      }`,
+    });
     await getRepository(Music).save(music);
     // recycle old album
     if (prevAlbum) {
+      const refreshArtistStartTime = Date.now();
       await prevAlbum.refreshArtist();
+      const refreshArtistEndTime = Date.now();
+      this.logService.info({
+        content: `refresh artist time: ${
+          refreshArtistEndTime - refreshArtistStartTime
+        }`,
+      });
+      const refreshGenreStartTime = Date.now();
       await Album.recycle(prevAlbum.id);
+      const refreshGenreEndTime = Date.now();
+      this.logService.info({
+        content: `refresh genre time: ${
+          refreshGenreEndTime - refreshGenreStartTime
+        }`,
+      });
     }
     if (music.album) {
       await music.album.refreshArtist();
@@ -265,18 +346,12 @@ export class MusicService {
     const file = await fs.promises.readFile(music.path);
     const buf = await id3Promise.update(tags, file);
     await fs.promises.writeFile(music.path, buf);
-
-    if (
-      music.album &&
-      (music.album.cover === undefined ||
-        music.album.cover === null ||
-        music.album.music.length === 1)
-    ) {
+    if (music.album) {
       // save album cover
       const coverFilename = `${uuidv4()}.jpg`;
       await this.thumbnailService.generate(
-        file.buffer as any,
-        path.join(ApplicationConfig.coverDir, coverFilename),
+        coverfile.buffer as any,
+        coverFilename,
       );
       music.album.cover = coverFilename;
       await getRepository(Album).save(music.album);
@@ -342,7 +417,7 @@ export class MusicService {
     return music.save();
   }
 
-  async addMusicTags(names: string[], musicId: number) {
+  async addMusicTags(names: string[], musicId: number, replace: boolean) {
     const music = await getRepository(Music).findOne({
       where: { id: musicId },
       relations: ['library', 'tags'],
@@ -367,7 +442,11 @@ export class MusicService {
       );
       tags.push(...newTags);
     }
-    music.tags = [...music.tags, ...tags];
+    if (replace) {
+      music.tags = tags;
+    } else {
+      music.tags = [...music.tags, ...tags];
+    }
     await getRepository(Music).save(music);
   }
 }

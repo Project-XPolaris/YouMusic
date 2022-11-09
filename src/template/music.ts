@@ -3,6 +3,7 @@ import { Music } from '../database/entites/music';
 import { BaseAlbumTemplate } from './album';
 import { BaseArtistTemplate } from './artist';
 import * as path from 'path';
+import { TagTemplate } from './tag';
 
 export class BaseMusicTemplate {
   id: number;
@@ -14,6 +15,7 @@ export class BaseMusicTemplate {
   year?: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
+  tag?: TagTemplate[];
   filename: string;
   lrc: string;
   lossless: boolean;
@@ -21,6 +23,7 @@ export class BaseMusicTemplate {
   size: number;
   sampleRate: number;
   ext: string;
+
   constructor(music: Music) {
     this.id = music.id;
     this.title = music.title;
@@ -40,6 +43,9 @@ export class BaseMusicTemplate {
       this.artist = music.artist.map(
         (artist) => new BaseArtistTemplate(artist),
       );
+    }
+    if (music.tags) {
+      this.tag = music.tags.map((tag) => new TagTemplate(tag));
     }
     if (music.year) {
       this.year = music.year;

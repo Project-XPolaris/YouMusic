@@ -16,7 +16,7 @@ export type PlaylistFilter = {
 } & PageFilter;
 @Injectable()
 export class PlaylistService {
-  constructor(private musicService: MusicService) {}
+  constructor() {}
   async getPlaylistList(filter: PlaylistFilter) {
     const repository = await getRepository(Playlist);
     const query = repository

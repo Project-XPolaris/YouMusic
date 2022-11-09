@@ -42,6 +42,7 @@ specifiers:
   body-parser: ^1.19.0
   class-validator: ^0.13.1
   crypto-js: ^4.0.0
+  dateformat: ^5.0.3
   dayjs: ^1.10.4
   eslint: ^7.12.1
   eslint-config-prettier: ^6.15.0
@@ -109,6 +110,7 @@ dependencies:
   body-parser: 1.20.0
   class-validator: 0.13.2
   crypto-js: 4.1.1
+  dateformat: 5.0.3
   dayjs: 1.11.4
   express: 4.18.1
   fast-average-color-node: 2.4.0
@@ -4420,6 +4422,11 @@ packages:
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
     dev: true
+
+  /dateformat/5.0.3:
+    resolution: {integrity: sha512-Kvr6HmPXUMerlLcLF+Pwq3K7apHpYmGDVqrxcDasBg86UcKeTSNWbEzU8bwdXnxnR44FtMhJAxI4Bov6Y/KUfA==}
+    engines: {node: '>=12.20'}
+    dev: false
 
   /dayjs/1.11.4:
     resolution: {integrity: sha512-Zj/lPM5hOvQ1Bf7uAvewDaUcsJoI6JmNqmHhHl3nyumwe0XHwt8sWdOVAPACJzCebL8gQCi+K49w7iKWnGwX9g==}
