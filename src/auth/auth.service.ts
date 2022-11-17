@@ -5,8 +5,10 @@ import { YouAuthService } from '../youauth/youauth.service';
 import { getRepository } from 'typeorm';
 import { Oauth } from '../database/entites/oauth';
 import { User } from '../database/entites/user';
-import { v4, v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { decode, JwtPayload } from 'jsonwebtoken';
+import { GenerateTokenResult } from '../youauth/client';
+
 @Injectable()
 export class AuthService {
   client: YouPlusClient;
@@ -64,11 +66,27 @@ export class AuthService {
     code: string,
   ): Promise<{ oauth: Oauth; username: string }> {
     const authResponse = await this.YouAuthService.generateToken(code);
-    if (!authResponse.data) {
+    if (!authResponse.access_token) {
       return;
     }
+    return await this.linkYouAuthAccount(authResponse);
+  }
+  async generateYouAuthPasswordToken(
+    username: string,
+    password: string,
+  ): Promise<{ oauth: Oauth; username: string }> {
+    const authResponse = await this.YouAuthService.generateTokenByPassword(
+      username,
+      password,
+    );
+    if (!authResponse.access_token) {
+      return;
+    }
+    return await this.linkYouAuthAccount(authResponse);
+  }
+  async linkYouAuthAccount(authResponse: GenerateTokenResult) {
     const userResponse = await this.YouAuthService.getCurrentUser(
-      authResponse.data.accessToken,
+      authResponse.access_token,
     );
     const oauthRepo = await getRepository(Oauth);
     // find exist
@@ -91,8 +109,8 @@ export class AuthService {
     }
     let oauthRec = new Oauth();
     oauthRec.uid = String(userResponse.data.id);
-    oauthRec.accessToken = authResponse.data.accessToken;
-    oauthRec.refreshToken = authResponse.data.refreshToken;
+    oauthRec.accessToken = authResponse.access_token;
+    oauthRec.refreshToken = authResponse.refresh_token;
     oauthRec.provider = 'youauth';
     oauthRec.user = user;
 
@@ -104,11 +122,11 @@ export class AuthService {
   }
   async getCurrentUser(accessCode: string) {
     const authResponse = await this.YouAuthService.generateToken(accessCode);
-    if (!authResponse.data) {
+    if (!authResponse.access_token) {
       return;
     }
     const userResponse = await this.YouAuthService.getCurrentUser(
-      authResponse.data.accessToken,
+      authResponse.refresh_token,
     );
     return userResponse.data;
   }

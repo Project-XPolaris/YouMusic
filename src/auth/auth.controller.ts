@@ -50,4 +50,21 @@ export class AuthController {
       },
     };
   }
+  @Post(`/oauth/youauth/password`)
+  async generateYouAuthTokenByPassword(
+    @Body('username') username: string,
+    @Body('password') password: string,
+  ) {
+    const data = await this.authService.generateYouAuthPasswordToken(
+      username,
+      password,
+    );
+    return {
+      success: true,
+      data: {
+        accessToken: data.oauth.accessToken,
+        username: data.username,
+      },
+    };
+  }
 }

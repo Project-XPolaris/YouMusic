@@ -1,13 +1,8 @@
 import axios from 'axios';
 
 export interface GenerateTokenResult {
-  success: boolean;
-  err?: string;
-  code?: string;
-  data?: {
-    accessToken: string;
-    refreshToken: string;
-  };
+  access_token: string;
+  refresh_token: string;
 }
 
 export interface GetCurrentUserResponse {
@@ -32,11 +27,26 @@ export class YouAuthClient {
   }
 
   public async generateToken(authCode: string): Promise<GenerateTokenResult> {
-    const response = await axios.post(`${this.apiUrl}/oauth/token`, {
-      appId: this.appid,
-      secret: this.secret,
+    const response = await axios.post(`${this.apiUrl}/token`, {
       code: authCode,
+      grant_type: 'authorization_code',
     });
+    return response.data;
+  }
+  public async generateTokenByPassword(
+    username: string,
+    password: string,
+  ): Promise<GenerateTokenResult> {
+    const response = await axios(`${this.apiUrl}/token`, {
+      method: 'post',
+      data: {
+        username,
+        password,
+        grant_type: 'password',
+        client_id: this.appid,
+      },
+    });
+    console.log(response.data);
     return response.data;
   }
   public async getCurrentUser(token: string): Promise<GetCurrentUserResponse> {

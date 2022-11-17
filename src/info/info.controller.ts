@@ -10,7 +10,7 @@ export class InfoController {
     const oauthConfig = this.configService.get('oauth');
     const oauthEnabled = Boolean(oauthConfig);
     const oauthUrl = new URL(oauthConfig.url);
-    oauthUrl.searchParams.set('appid', oauthConfig.appid);
+    oauthUrl.searchParams.set('client_id', oauthConfig.appid);
     oauthUrl.pathname = path.join(oauthUrl.pathname, '/login');
     const authObj = this.configService.get('auth');
     const auths = [];
@@ -40,6 +40,13 @@ export class InfoController {
             name: 'Anonymous',
             type: 'anonymous',
             url: '',
+          });
+          break;
+        case 'youauthpassword':
+          auths.push({
+            name: 'YouAuthPassword',
+            type: 'base',
+            url: '/oauth/youauth/password',
           });
       }
     });
