@@ -50,6 +50,7 @@ export class InfoController {
           });
       }
     });
+
     return {
       success: true,
       name: 'YouMusic Service',

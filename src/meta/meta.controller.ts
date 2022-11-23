@@ -9,8 +9,12 @@ export class MetaController {
   async SearchAlbum(
     @Query('key') key: string,
     @Query('artist') artist?: string,
+    @Query('source') source?: string,
   ) {
-    return await this.metaService.searchAlbum(key, { artist });
+    return {
+      success: true,
+      data: await this.metaService.searchAlbum(key, { artist }),
+    };
   }
   @Get('search/artist')
   async SearchArtist(@Query() key: string) {
@@ -31,6 +35,17 @@ export class MetaController {
     @Query('mbId') mbId?: string,
     @Query('nemId') nemId?: string,
   ) {
-    return await this.metaService.getAlbumDetail({ mbId, nemId });
+    try {
+      const data = await this.metaService.getAlbumDetail({ mbId, nemId });
+      return {
+        success: true,
+        data: data,
+      };
+    } catch (e) {
+      return {
+        success: false,
+        error: e.message,
+      };
+    }
   }
 }

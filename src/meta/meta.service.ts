@@ -30,28 +30,40 @@ export class MetaService {
 
   async searchAlbum(
     key: string,
-    { artist }: { artist?: string },
+    { artist, source }: { artist?: string; source?: string },
   ): Promise<SearchAlbumEntity[]> {
-    const neteaseResult = await this.neteaseMusicService.search(key, {
-      type: SearchType.album,
-      artist,
-    });
-    const neteaseMusicResult = neteaseResult.albums.map((it) => ({
-      id: it.id.toString(),
-      name: it.name,
-      cover: it.picUrl,
-      artists: it.artist?.name,
-      source: 'NeteaseMusic',
-    }));
-    const mbResult = await mbApi.searchRelease({ query: key, artist: artist });
-    const mbMusicResult: SearchAlbumEntity[] = mbResult.releases.map((it) => ({
-      id: it.id,
-      name: it.title,
-      artists: it['artist-credit'].map((artist) => artist.name).join('/'),
-      source: 'MusicBrain',
-      releaseDate: it.date,
-    }));
-    return [...mbMusicResult, ...neteaseMusicResult];
+    const result: SearchAlbumEntity[] = [];
+    if (source === undefined || source === 'NeteaseMusic') {
+      const neteaseResult = await this.neteaseMusicService.search(key, {
+        type: SearchType.album,
+        artist,
+      });
+      const neteaseMusicResult = neteaseResult.albums.map((it) => ({
+        id: it.id.toString(),
+        name: it.name,
+        cover: it.picUrl,
+        artists: it.artist?.name,
+        source: 'NeteaseMusic',
+      }));
+      result.push(...neteaseMusicResult);
+    }
+    if (source === undefined || source === 'MusicBrainz') {
+      const mbResult = await mbApi.searchRelease({
+        query: key,
+        artist: artist,
+      });
+      const mbMusicResult: SearchAlbumEntity[] = mbResult.releases.map(
+        (it) => ({
+          id: it.id,
+          name: it.title,
+          artists: it['artist-credit'].map((artist) => artist.name).join('/'),
+          source: 'MusicBrain',
+          releaseDate: it.date,
+        }),
+      );
+      result.push(...mbMusicResult);
+    }
+    return result;
   }
   async getAlbumDetail(ids: {
     mbId?: string;
@@ -129,11 +141,8 @@ export class MetaService {
     searchMusic: SearchMusicEntity,
   ): Promise<string> {
     if (searchMusic.source === 'NeteaseMusic') {
-      const {
-        lyric,
-      }: { lyric: string } = await this.neteaseMusicService.getLyric(
-        searchMusic.id,
-      );
+      const { lyric }: { lyric: string } =
+        await this.neteaseMusicService.getLyric(searchMusic.id);
       return lyric;
     } else {
       throw new Error('target source unsupport get lyric');
