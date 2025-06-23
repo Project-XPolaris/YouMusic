@@ -71,7 +71,7 @@ export class PlaylistService {
     id,
     uid,
   }: {
-    id: string;
+    id: number;
     uid: string;
   }): Promise<Playlist> {
     const repository = await getRepository(Playlist);
@@ -96,7 +96,7 @@ export class PlaylistService {
   }: {
     musicIds: string[];
     uid: string;
-    playlistId: string;
+    playlistId: number;
   }) {
     const repository = await getRepository(Playlist);
     const playlist = await repository.findOne({
@@ -131,7 +131,7 @@ export class PlaylistService {
     await repository.save(playlist);
     return playlist;
   }
-  async getPlaylistById(id: string) {
+  async getPlaylistById(id: number) {
     const repository = await getRepository(Playlist);
     const playlist = await repository.findOne({
       where: { id },

@@ -54,7 +54,7 @@ export class PlaylistController {
   @Delete('/:id')
   async delete(@Param('id') id: number, @Req() req: Request & { uid: string }) {
     const playlist = await this.playlistService.deletePlaylist({
-      id: id.toString(),
+      id: id,
       uid: req.uid,
     });
     return new PlaylistTemplate(playlist);
@@ -68,7 +68,7 @@ export class PlaylistController {
     const playlist = await this.playlistService.addMusicToPlaylist({
       musicIds: body.musicIds,
       uid: req.uid,
-      playlistId: id.toString(),
+      playlistId: id,
     });
     return new PlaylistTemplate(playlist);
   }
