@@ -1,14 +1,9 @@
-const sharp = require('sharp');
+import Jimp = require('jimp');
 const { encode } = require('blurhash');
 
-export const encodeImageToBlurhash = (buffer): Promise<string> =>
-  new Promise((resolve, reject) => {
-    sharp(buffer)
-      .raw()
-      .ensureAlpha()
-      .resize(32, 32, { fit: 'inside' })
-      .toBuffer((err, buffer, { width, height }) => {
-        if (err) return reject(err);
-        resolve(encode(new Uint8ClampedArray(buffer), width, height, 4, 4));
-      });
-  });
+export const encodeImageToBlurhash = async (buffer): Promise<string> => {
+  const image = await Jimp.read(buffer);
+  image.resize(32, 32, Jimp.RESIZE_BEZIER);
+  const { data, width, height } = image.bitmap;
+  return encode(new Uint8ClampedArray(data), width, height, 4, 4);
+};
