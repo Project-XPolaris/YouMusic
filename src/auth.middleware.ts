@@ -3,6 +3,7 @@ import { NextFunction } from 'express';
 import { User } from './database/entites/user';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth/auth.service';
+import { DataSource } from 'typeorm';
 
 /**
  * 认证中间件
@@ -14,6 +15,7 @@ export class AuthMiddleware implements NestMiddleware {
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
+    private dataSource: DataSource
   ) {}
 
 
@@ -68,7 +70,7 @@ export class AuthMiddleware implements NestMiddleware {
   private async save(uid: string) {
     const user = new User();
     user.uid = uid;
-    await user.createOrGet();
+    await user.createOrGet(this.dataSource);
   }
 
   /**

@@ -2,7 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  getRepository,
+  DataSource,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -33,8 +33,8 @@ export class Genre {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  static async createOrGet(name: string, library: MediaLibrary) {
-    const repo = await getRepository(Genre);
+  static async createOrGet(name: string, library: MediaLibrary,dataSource:DataSource) {
+    const repo = await dataSource.getRepository(Genre);
     let genre = await repo
       .createQueryBuilder('genre')
       .where('genre.name = :name', { name })
@@ -44,7 +44,7 @@ export class Genre {
     }
     genre = new Genre();
     genre.name = name;
-    genre = await getRepository(Genre).save(genre);
+    genre = await dataSource.getRepository(Genre).save(genre);
     return genre;
   }
 }

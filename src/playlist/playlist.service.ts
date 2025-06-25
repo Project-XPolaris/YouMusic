@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Playlist } from '../database/entites/playlist';
-import { getConnection, getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { User } from '../database/entites/user';
 import { Music } from '../database/entites/music';
-import { MusicService } from '../music/music.service';
 import { MediaLibrary } from '../database/entites/library';
 import { PageFilter } from '../database/utils/type.filter';
 
@@ -14,11 +13,16 @@ export type PlaylistFilter = {
   random: boolean;
   order: { [key: string]: 'ASC' | 'DESC' };
 } & PageFilter;
+
+
 @Injectable()
 export class PlaylistService {
-  constructor() {}
+  constructor(
+    private dataSource: DataSource
+  ) {}
+
   async getPlaylistList(filter: PlaylistFilter) {
-    const repository = await getRepository(Playlist);
+    const repository = this.dataSource.getRepository(Playlist);
     const query = repository
       .createQueryBuilder('playlist')
       .leftJoinAndSelect('playlist.owner', 'owner')
@@ -28,7 +32,7 @@ export class PlaylistService {
       })
       .orderBy('playlist.name', 'ASC');
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         query.orderBy('RANDOM()');
       } else {
         query.orderBy('RAND()');
@@ -43,6 +47,7 @@ export class PlaylistService {
     query.take(filter.pageSize).skip((filter.page - 1) * filter.pageSize);
     return query.getManyAndCount();
   }
+
   async createPlaylist({
     name,
     uid,
@@ -50,11 +55,11 @@ export class PlaylistService {
     name: string;
     uid: string;
   }): Promise<Playlist> {
-    const repository = await getRepository(Playlist);
+    const repository = this.dataSource.getRepository(Playlist);
     const playlist = new Playlist();
     playlist.name = name;
     // get user
-    const user = await getRepository(User).findOne({ where: { uid } });
+    const user = await this.dataSource.getRepository(User).findOne({ where: { uid } });
     // check if playlist already exists
     const existingPlaylist = await repository.findOne({
       where: { name, owner: user },
@@ -67,6 +72,7 @@ export class PlaylistService {
     await repository.save(playlist);
     return playlist;
   }
+
   async deletePlaylist({
     id,
     uid,
@@ -74,7 +80,7 @@ export class PlaylistService {
     id: number;
     uid: string;
   }): Promise<Playlist> {
-    const repository = await getRepository(Playlist);
+    const repository = this.dataSource.getRepository(Playlist);
     const playlist = await repository.findOne({
       where: { id },
       relations: ['owner'],
@@ -98,7 +104,7 @@ export class PlaylistService {
     uid: string;
     playlistId: number;
   }) {
-    const repository = await getRepository(Playlist);
+    const repository = this.dataSource.getRepository(Playlist);
     const playlist = await repository.findOne({
       where: { id: playlistId },
       relations: ['music', 'owner'],
@@ -109,11 +115,11 @@ export class PlaylistService {
     if (playlist.owner.uid !== uid) {
       throw new Error('you are not the owner of this playlist');
     }
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
     if (libraries.length === 0) {
       throw new Error('you have no library');
     }
-    const musicRepository = await getRepository(Music);
+    const musicRepository = this.dataSource.getRepository(Music);
     const music = await musicRepository
       .createQueryBuilder('music')
       .leftJoin('music.library', 'library', 'library.id = music.libraryId')
@@ -131,8 +137,9 @@ export class PlaylistService {
     await repository.save(playlist);
     return playlist;
   }
+
   async getPlaylistById(id: number) {
-    const repository = await getRepository(Playlist);
+    const repository = this.dataSource.getRepository(Playlist);
     const playlist = await repository.findOne({
       where: { id },
       relations: ['music', 'owner', 'music.album', 'music.artist'],

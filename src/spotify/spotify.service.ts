@@ -1,9 +1,9 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { getConnection, getRepository } from 'typeorm';
 import { SpotifyAuth } from '../database/entites/spotify';
 import dayjs = require('dayjs');
 import { stringToBase64 } from '../utils/string';
+import { DataSource } from 'typeorm';
 
 export interface SpotifyTokenResult {
   access_token: string;
@@ -18,6 +18,7 @@ export class SpotifyService {
   constructor(
     private configService: ConfigService,
     private http: HttpService,
+    private dataSource: DataSource
   ) {}
   async refreshToken(code: string, uid: string) {
     try {
@@ -41,7 +42,7 @@ export class SpotifyService {
           },
         })
         .toPromise();
-      let authRec = await getRepository(SpotifyAuth).findOne({
+      let authRec = await this.dataSource.getRepository(SpotifyAuth).findOne({
         where: { uid },
       });
       if (authRec === undefined) {
@@ -52,7 +53,7 @@ export class SpotifyService {
       authRec.scope = response.data.scope;
       authRec.accessToken = response.data.access_token;
       authRec.exp = response.data.expires_in;
-      await getRepository(SpotifyAuth).save(authRec);
+      await this.dataSource.getRepository(SpotifyAuth).save(authRec);
     } catch (e) {
       console.log(e);
     }
@@ -77,7 +78,7 @@ export class SpotifyService {
         },
       })
       .toPromise();
-    let authRec = await getRepository(SpotifyAuth).findOne({ where: { uid } });
+    let authRec = await this.dataSource.getRepository(SpotifyAuth).findOne({ where: { uid } });
     if (authRec === undefined) {
       authRec = new SpotifyAuth();
     }
@@ -86,11 +87,11 @@ export class SpotifyService {
     authRec.scope = response.data.scope;
     authRec.accessToken = response.data.access_token;
     authRec.exp = response.data.expires_in;
-    await getRepository(SpotifyAuth).save(authRec);
+    await this.dataSource.getRepository(SpotifyAuth).save(authRec);
     return response.data.access_token;
   }
   async getUserAccessToken(uid: string) {
-    const auth = await getRepository(SpotifyAuth).findOne({
+    const auth = await this.dataSource.getRepository(SpotifyAuth).findOne({
       where: { uid },
     });
     if (auth === undefined) {
@@ -108,7 +109,7 @@ export class SpotifyService {
     return auth.accessToken;
   }
   async unlink(uid: string): Promise<void> {
-    await getConnection()
+    await this.dataSource.getRepository(SpotifyAuth)
       .createQueryBuilder()
       .delete()
       .from(SpotifyAuth)

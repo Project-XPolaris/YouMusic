@@ -1,8 +1,8 @@
 import {
   Column,
   CreateDateColumn,
+  DataSource,
   Entity,
-  getRepository,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -85,8 +85,8 @@ export class Music {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  static deleteMusic = async (id: string | number) => {
-    const repository = await getRepository(Music);
+  static deleteMusic = async (id: string | number,dataSource:DataSource) => {
+    const repository = await dataSource.getRepository(Music);
     const music = await repository.findOne({
       where: { id: +id },
       relations: ['album', 'artist', 'tags'],
@@ -99,10 +99,10 @@ export class Music {
     await repository.save(music);
     await repository.delete(music.id);
     if (music?.album?.id) {
-      await Album.recycle(music.album.id);
+      await Album.recycle(music.album.id,dataSource);
     }
     for (const musicArtist of music?.artist ?? []) {
-      await Artist.recycleIfEmpty(musicArtist.id);
+      await Artist.recycleIfEmpty(musicArtist.id,dataSource);
     }
   };
   writeMusicFileCover = async (mime: string, imageBuf: Buffer) => {
@@ -134,7 +134,7 @@ export class Music {
     await fs.promises.writeFile(this.path, buf);
   };
 
-  async save() {
-    return await getRepository(Music).save(this);
+  async save(dataSource:DataSource) {
+    return await dataSource.getRepository(Music).save(this);
   }
 }

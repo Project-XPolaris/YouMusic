@@ -1,8 +1,8 @@
 import {
   Column,
   CreateDateColumn,
+  DataSource,
   Entity,
-  getRepository,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -53,8 +53,8 @@ export class Album {
    * recycle album if music is empty
    * @param id album id
    */
-  static async recycle(id: string | number): Promise<boolean> {
-    const repository = await getRepository(Album);
+  static async recycle(id: string | number,dataSource:DataSource): Promise<boolean> {
+    const repository = await dataSource.getRepository(Album);
     const album = await repository.findOne({
       where: { id: +id },
       relations: ['music'],
@@ -64,17 +64,17 @@ export class Album {
       return true;
     }
     if (album.music.length === 0) {
-      await album.delete();
+      await album.delete(dataSource);
       return true;
     }
     return false;
   }
 
-  async delete() {
-    const repository = await getRepository(Album);
+  async delete(dataSource:DataSource) {
+    const repository = await dataSource.getRepository(Album);
     await repository.delete(this.id);
     if (this.cover !== null) {
-      const artistRepo = await getRepository(Artist);
+      const artistRepo = await dataSource.getRepository(Artist);
       const artistAvatarUsage = await artistRepo.count({
         where: { avatar: this.cover },
       });
@@ -110,13 +110,13 @@ export class Album {
     this.cover = coverFilename;
   }
 
-  async refreshArtist() {
-    const musicList = await getRepository(Artist)
+  async refreshArtist(dataSource:DataSource) {
+    const musicList = await dataSource.getRepository(Artist)
       .createQueryBuilder('artist')
       .leftJoinAndSelect('artist.music', 'music')
       .where('music.albumId = :id', { id: this.id })
       .getMany();
     this.artist = musicList;
-    await getRepository(Album).save(this);
+    await dataSource.getRepository(Album).save(this);
   }
 }

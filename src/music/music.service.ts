@@ -1,6 +1,6 @@
 import { HttpService, Injectable } from '@nestjs/common';
 import { UpdateMusicDto } from './dto/update-music.dto';
-import { getConnection, getRepository, In } from 'typeorm';
+import { In, DataSource } from 'typeorm';
 import { Music } from 'src/database/entites/music';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
@@ -54,11 +54,12 @@ export class MusicService {
     private thumbnailService: ThumbnailService,
     private storageService: StorageService,
     private logService: LogService,
+    private dataSource: DataSource,
   ) {}
 
   async findAll(filter: MusicQueryFilter) {
-    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
-    const musicRepository = getRepository(Music);
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid, this.dataSource);
+    const musicRepository = this.dataSource.getRepository(Music);
     const queryBuilder = musicRepository.createQueryBuilder('music');
     queryBuilder
       .take(filter.pageSize)
@@ -148,7 +149,7 @@ export class MusicService {
         .andWhere('genre.id in (:...genres)', { genres: filter.genre });
     }
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
       } else {
         queryBuilder.orderBy('RAND()');
@@ -170,8 +171,8 @@ export class MusicService {
   }
 
   async findOne(id: number, uid: string) {
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const musicRepository = getRepository(Music);
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    const musicRepository = this.dataSource.getRepository(Music);
     let query = musicRepository.createQueryBuilder('music').whereInIds([id]);
     if (libraries.length > 0) {
       query = query.andWhere('music.libraryId in (:...lid)', {
@@ -182,11 +183,11 @@ export class MusicService {
   }
 
   async remove(id: number) {
-    return await Music.deleteMusic(id);
+    return await Music.deleteMusic(id, this.dataSource);
   }
 
   async updateMusicFile(id: number, uid: string, dto: UpdateMusicDto) {
-    const repo = await getRepository(Music);
+    const repo = this.dataSource.getRepository(Music);
     const queryMusicStartTime = Date.now();
     const music = await repo.findOne({
       where: { id },
@@ -208,7 +209,7 @@ export class MusicService {
     const artists: Artist[] = [];
     if (dto.artist) {
       for (const artistName of dto.artist) {
-        const artist = await getOrCreateArtist(artistName, music.library);
+        const artist = await getOrCreateArtist(artistName, music.library, this.dataSource);
         artists.push(artist);
       }
       music.artist = artists;
@@ -227,7 +228,7 @@ export class MusicService {
         prevAlbum = music.album;
       }
       const updateAlbumStartTime = Date.now();
-      music.album = await getOrCreateAlbum(dto.album, music.library);
+      music.album = await getOrCreateAlbum(dto.album, music.library, this.dataSource);
       const updateAlbumEndTime = Date.now();
       this.logService.info({
         content: `update album time: ${
@@ -255,10 +256,10 @@ export class MusicService {
             // get domain color
             const color = await getAverageColor(cover.data);
             music.album.domainColor = color.hex;
-            await getRepository(Album).save(music.album);
+            await this.dataSource.getRepository(Album).save(music.album);
           }
         }
-        await getRepository(Album).save(music.album);
+        await this.dataSource.getRepository(Album).save(music.album);
       }
       tags['album'] = dto.album;
     }
@@ -275,7 +276,7 @@ export class MusicService {
     if (dto.genre) {
       const genres: Genre[] = [];
       for (const genreName of dto.genre) {
-        const genre = await Genre.createOrGet(genreName, music.library);
+        const genre = await Genre.createOrGet(genreName, music.library, this.dataSource);
         genres.push(genre);
       }
       music.genre = genres;
@@ -295,11 +296,11 @@ export class MusicService {
         updateMusicEndTime - updateMusicStartTime
       }`,
     });
-    await getRepository(Music).save(music);
+    await this.dataSource.getRepository(Music).save(music);
     // recycle old album
     if (prevAlbum) {
       const refreshArtistStartTime = Date.now();
-      await prevAlbum.refreshArtist();
+      await prevAlbum.refreshArtist(this.dataSource);
       const refreshArtistEndTime = Date.now();
       this.logService.info({
         content: `refresh artist time: ${
@@ -307,7 +308,7 @@ export class MusicService {
         }`,
       });
       const refreshGenreStartTime = Date.now();
-      await Album.recycle(prevAlbum.id);
+      await Album.recycle(prevAlbum.id, this.dataSource);
       const refreshGenreEndTime = Date.now();
       this.logService.info({
         content: `refresh genre time: ${
@@ -316,7 +317,7 @@ export class MusicService {
       });
     }
     if (music.album) {
-      await music.album.refreshArtist();
+      await music.album.refreshArtist(this.dataSource);
     }
     if (dto.coverUrl) {
       await this.setMusicCoverFromUrl(music.id, dto.coverUrl);
@@ -324,7 +325,7 @@ export class MusicService {
   }
 
   async updateMusicCover(id: number, coverfile: any) {
-    const music = await getRepository(Music).findOne({
+    const music = await this.dataSource.getRepository(Music).findOne({
       where: { id },
       relations: ['album', 'album.music'],
     });
@@ -354,7 +355,7 @@ export class MusicService {
         coverFilename,
       );
       music.album.cover = coverFilename;
-      await getRepository(Album).save(music.album);
+      await this.dataSource.getRepository(Album).save(music.album);
     }
   }
 
@@ -372,7 +373,7 @@ export class MusicService {
     if (!ext) {
       return;
     }
-    const music = await getRepository(Music).findOne({
+    const music = await this.dataSource.getRepository(Music).findOne({
       where: { id: musicId },
       relations: ['album'],
     });
@@ -382,7 +383,7 @@ export class MusicService {
       const savePath = Path.join(ApplicationConfig.coverDir, saveFilename);
       await fs.promises.writeFile(savePath, imageBuf);
       music.album.cover = saveFilename;
-      await getRepository(Album).save(music.album);
+      await this.dataSource.getRepository(Album).save(music.album);
     }
     const tags = {
       image: {
@@ -414,15 +415,15 @@ export class MusicService {
     );
     await fs.promises.writeFile(lrcFilePath, content);
     music.lyric = lrcFilePath;
-    return music.save();
+    return music.save(this.dataSource);
   }
 
   async addMusicTags(names: string[], musicId: number, replace: boolean) {
-    const music = await getRepository(Music).findOne({
+    const music = await this.dataSource.getRepository(Music).findOne({
       where: { id: musicId },
       relations: ['library', 'tags'],
     });
-    const tags = await getRepository(Tag).find({
+    const tags = await this.dataSource.getRepository(Tag).find({
       where: {
         name: In(names),
       },
@@ -432,7 +433,7 @@ export class MusicService {
       return tags.find((tag) => tag.name === name) === undefined;
     });
     if (notExistTags.length !== 0) {
-      const newTags = await getRepository(Tag).save(
+      const newTags = await this.dataSource.getRepository(Tag).save(
         notExistTags.map((name) => {
           return {
             name,
@@ -447,6 +448,6 @@ export class MusicService {
     } else {
       music.tags = [...music.tags, ...tags];
     }
-    await getRepository(Music).save(music);
+    await this.dataSource.getRepository(Music).save(music);
   }
 }

@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { MediaLibrary } from '../database/entites/library';
-import { getRepository } from 'typeorm';
 import { Music } from '../database/entites/music';
+import { DataSource } from 'typeorm';
 
 interface ScannerOption {
   extension: string[];
@@ -36,8 +36,8 @@ export const scanFile = async (
   }
   return result;
 };
-export const syncLibrary = async (library: MediaLibrary) => {
-  const libraryRepo = await getRepository(MediaLibrary);
+export const syncLibrary = async (library: MediaLibrary,dataSource:DataSource) => {
+  const libraryRepo = await dataSource.getRepository(MediaLibrary);
   const syncLibrary = await libraryRepo.findOne({
     where: { id: library.id },
     relations: ['music'],
@@ -49,7 +49,7 @@ export const syncLibrary = async (library: MediaLibrary) => {
     try {
       await fs.promises.stat(music.path);
     } catch (e) {
-      Music.deleteMusic(music.id);
+      Music.deleteMusic(music.id,dataSource);
     }
   }
 };

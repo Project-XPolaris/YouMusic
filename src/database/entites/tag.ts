@@ -2,12 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  getRepository,
   JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  DataSource,
 } from 'typeorm';
 import { Music } from './music';
 import { MediaLibrary } from './library';
@@ -34,8 +34,8 @@ export class Tag {
 
   @UpdateDateColumn()
   updatedAt: Date;
-  static async createOrGet(name: string, library: MediaLibrary) {
-    const repo = await getRepository(Tag);
+  static async createOrGet(name: string, library: MediaLibrary,dataSource:DataSource) {
+    const repo = await dataSource.getRepository(Tag);
     let tag = await repo
       .createQueryBuilder('genre')
       .where('tag.name = :name', { name })
@@ -45,17 +45,7 @@ export class Tag {
     }
     tag = new Tag();
     tag.name = name;
-    tag = await getRepository(Tag).save(tag);
+    tag = await dataSource.getRepository(Tag).save(tag);
     return tag;
   }
-  // static async recycleEmptyMusicTag() {
-  //   const tags = await getRepository(Tag).find({
-  //     relations: ['music'],
-  //   });
-  //   for (const tag of tags) {
-  //     if (tag.music.length === 0) {
-  //       await tag.recycle();
-  //     }
-  //   }
-  // }
 }

@@ -1,4 +1,3 @@
-import { getRepository } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { Artist } from '../database/entites/artist';
 import { Music } from '../database/entites/music';
@@ -8,9 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { ApplicationConfig } from '../config';
 import * as path from 'path';
 import Jimp = require('jimp');
+import { DataSource } from 'typeorm';
 
-export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
-  let album = await getRepository(Album)
+export const getOrCreateAlbum = async (name: string, library: MediaLibrary, dataSource: DataSource) => {
+  let album = await dataSource.getRepository(Album)
     .createQueryBuilder('album')
     .where('album.name = :name', { name })
     .getOne();
@@ -19,15 +19,16 @@ export const getOrCreateAlbum = async (name: string, library: MediaLibrary) => {
   }
   album = new Album();
   album.name = name;
-  await getRepository(Album).save(album);
+  await dataSource.getRepository(Album).save(album);
   return album;
 };
 
 export const getOrCreateArtist = async (
   name: string,
   library: MediaLibrary,
+  dataSource: DataSource,
 ) => {
-  let artist = await getRepository(Artist)
+  let artist = await dataSource.getRepository(Artist)
     .createQueryBuilder('artist')
     .where('artist.name = :name', { name })
     .getOne();
@@ -36,7 +37,7 @@ export const getOrCreateArtist = async (
   }
   artist = new Artist();
   artist.name = name;
-  await getRepository(Artist).save(artist);
+  await dataSource.getRepository(Artist).save(artist);
   return artist;
 };
 
@@ -53,6 +54,7 @@ export const getOrCreateMusic = async ({
   bitrate,
   size,
   lossless,
+  dataSource,
 }: {
   title: string;
   musicFilePath: string;
@@ -66,8 +68,9 @@ export const getOrCreateMusic = async ({
   bitrate?: number;
   size?: number;
   lossless?: boolean;
+  dataSource: DataSource;
 }) => {
-  let music = await getRepository(Music)
+  let music = await dataSource.getRepository(Music)
     .createQueryBuilder('music')
     .where('music.path = :path', {
       path: musicFilePath,
@@ -91,24 +94,24 @@ export const getOrCreateMusic = async ({
   music.lossless = lossless;
   music.size = size;
   music.bitrate = bitrate;
-  await getRepository(Music).save(music);
+  await dataSource.getRepository(Music).save(music);
   return music;
 };
 
-export const addArtistsToMusic = async (music: Music, ...artists: Artist[]) => {
+export const addArtistsToMusic = async (music: Music, dataSource: DataSource, ...artists: Artist[]) => {
   music.artist = artists;
-  await getRepository(Music).save(music);
+  await dataSource.getRepository(Music).save(music);
 };
 
-export const addMusicToAlbum = async (album: Album, ...music: Music[]) => {
+export const addMusicToAlbum = async (album: Album, dataSource: DataSource, ...music: Music[]) => {
   for (const saveMusic of music) {
     saveMusic.album = album;
-    await getRepository(Music).save(saveMusic);
+    await dataSource.getRepository(Music).save(saveMusic);
   }
 };
 
-export const saveAlbumCover = async (albumId: number, coverPath: string) => {
-  await getRepository(Album)
+export const saveAlbumCover = async (albumId: number, coverPath: string, dataSource: DataSource) => {
+  await dataSource.getRepository(Album)
     .createQueryBuilder('album')
     .update()
     .set({
@@ -118,8 +121,8 @@ export const saveAlbumCover = async (albumId: number, coverPath: string) => {
     .execute();
 };
 
-export const saveArtist = async (artist: Artist) => {
-  await getRepository(Artist).save(artist);
+export const saveArtist = async (artist: Artist, dataSource: DataSource) => {
+  await dataSource.getRepository(Artist).save(artist);
 };
 
 export const saveMusicCoverFile = async (

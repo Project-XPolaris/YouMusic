@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLibraryDto } from './dto/create-library.dto';
-import { getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
 import { MediaLibrary } from '../database/entites/library';
@@ -17,9 +17,11 @@ export class LibraryService {
   constructor(
     private configService: ConfigService,
     private youPlusService: YouPlusService,
+    private dataSource: DataSource,
   ) {}
+
   async create(createLibraryDto: CreateLibraryDto, uid: string, token: string) {
-    const repo = getRepository(MediaLibrary);
+    const repo = this.dataSource.getRepository(MediaLibrary);
     const newLibrary = new MediaLibrary();
     newLibrary.path = createLibraryDto.libraryPath;
     if (this.configService.get('youplus.enablePath')) {
@@ -30,7 +32,7 @@ export class LibraryService {
       newLibrary.path = result.path;
     }
 
-    const userRepo = await getRepository(User);
+    const userRepo = this.dataSource.getRepository(User);
     const user: User = await userRepo.findOne({ where: { uid } });
     if (!user) {
       throw new Error(`userid = ${uid} not exist`);
@@ -41,7 +43,7 @@ export class LibraryService {
   }
 
   async findAll(filter: LibraryQueryFilter, uid: string) {
-    const libraryRepository = getRepository(MediaLibrary);
+    const libraryRepository = this.dataSource.getRepository(MediaLibrary);
     let queryBuilder = libraryRepository.createQueryBuilder('library');
     queryBuilder = filterByPage<MediaLibrary>(filter, queryBuilder);
     queryBuilder = queryBuilder
@@ -51,18 +53,18 @@ export class LibraryService {
   }
 
   async findOne(id: number) {
-    const libraryRepository = getRepository(MediaLibrary);
+    const libraryRepository = this.dataSource.getRepository(MediaLibrary);
     return await libraryRepository.findOne({
       where: { id },
     });
   }
 
   async remove(id: number) {
-    await MediaLibrary.deleteById(id);
+    await MediaLibrary.deleteById(id, this.dataSource);
   }
 
   async checkAccessible(libraryId: number, uid: string) {
-    const repo = await getRepository(MediaLibrary);
+    const repo = this.dataSource.getRepository(MediaLibrary);
     const count = await repo
       .createQueryBuilder('library')
       .leftJoin('library.users', 'users')

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getConnection, getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
@@ -18,11 +18,11 @@ export type GenreQueryFilter = {
 
 @Injectable()
 export class GenreService {
-  constructor() {}
+  constructor(private dataSource: DataSource) {}
 
   async findAll(filter: GenreQueryFilter) {
-    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
-    const genreRepository = getRepository(Genre);
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid, this.dataSource);
+    const genreRepository = this.dataSource.getRepository(Genre);
     const queryBuilder = genreRepository.createQueryBuilder('genre');
     queryBuilder
       .take(filter.pageSize)
@@ -60,7 +60,7 @@ export class GenreService {
         .andWhere('follow.uid = :uid', { uid: filter.uid });
     }
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
       } else {
         queryBuilder.orderBy('RAND()');
@@ -76,8 +76,8 @@ export class GenreService {
   }
 
   async findOne(id: number, uid: string) {
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const genreRepository = getRepository(Genre);
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    const genreRepository = this.dataSource.getRepository(Genre);
     let query = genreRepository.createQueryBuilder('genre').whereInIds([id]);
     if (libraries.length > 0) {
       query = query

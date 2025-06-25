@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { YouPlusClient } from '../youplus/client';
 import { YouAuthService } from '../youauth/youauth.service';
-import { getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Oauth } from '../database/entites/oauth';
 import { User } from '../database/entites/user';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,6 +21,7 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private YouAuthService: YouAuthService,
+    private dataSource: DataSource
   ) {
     const authUrl = configService.get('youplus.url');
     this.client = new YouPlusClient(authUrl);
@@ -66,7 +67,7 @@ export class AuthService {
    * @returns 如果验证成功，返回用户信息；否则返回undefined
    */
   async checkAuth(token: string): Promise<User | undefined> {
-    const oauthRepo = getRepository(Oauth);
+    const oauthRepo =  this.dataSource.getRepository(Oauth);
     const oauth = await oauthRepo.findOne({
       relations: ['user'],
       where: {
@@ -144,7 +145,7 @@ export class AuthService {
     const userResponse = await this.YouAuthService.getCurrentUser(
       authResponse.access_token,
     );
-    const oauthRepo = await getRepository(Oauth);
+    const oauthRepo = await  this.dataSource.getRepository(Oauth);
     // 查找已存在的OAuth记录
     const existOauth = await oauthRepo.findOne({
       relations: ['user'],
@@ -158,7 +159,7 @@ export class AuthService {
       user = existOauth.user;
     } else {
       // 创建新用户
-      const userRepo = await getRepository(User);
+      const userRepo = await  this.dataSource.getRepository(User);
       const newUser = new User();
       newUser.uid = uuidv4();
       user = await userRepo.save(newUser);
@@ -216,7 +217,7 @@ export class AuthService {
     const creationPromise = (async () => {
       try {
         // 查找已存在的用户
-        const userRepo = await getRepository(User);
+        const userRepo = await  this.dataSource.getRepository(User);
         const user = await userRepo.findOne({
           where: {
             uid: userId,
@@ -232,7 +233,7 @@ export class AuthService {
         const savedUser = await userRepo.save(newUser);
 
         // 保存 token
-        const oauthRepo = await getRepository(Oauth);
+        const oauthRepo = await  this.dataSource.getRepository(Oauth);
         const oauth = new Oauth();
         oauth.uid = userId;
         oauth.accessToken = token;

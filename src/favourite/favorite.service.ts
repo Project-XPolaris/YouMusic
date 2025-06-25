@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Artist } from '../database/entites/artist';
 import { User } from '../database/entites/user';
 import { ArtistService } from '../artist/artist.service';
@@ -17,6 +17,7 @@ export class FavoriteService {
     private albumService: AlbumService,
     private tagService: TagService,
     private genreService: GenreService,
+    private dataSource: DataSource
   ) {}
 
   async addArtistToFavourite(artistId: number, uid: string): Promise<void> {
@@ -24,11 +25,11 @@ export class FavoriteService {
     if (!canAccess) {
       throw new Error('You can not access this artist');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const artistRepo = await getRepository(Artist);
+    const artistRepo = await this.dataSource.getRepository(Artist);
     const artist = await artistRepo.findOne({
       where: { id: artistId },
       relations: ['follow'],
@@ -43,11 +44,11 @@ export class FavoriteService {
     if (!canAccess) {
       throw new Error('You can not access this artist');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const artistRepo = await getRepository(Artist);
+    const artistRepo = await this.dataSource.getRepository(Artist);
     const artist = await artistRepo.findOne({
       where: { id: artistId },
       relations: ['follow'],
@@ -62,11 +63,11 @@ export class FavoriteService {
     if (!useAlbum) {
       throw new Error('You can not access this album');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const albumRepo = await getRepository(Album);
+    const albumRepo = await this.dataSource.getRepository(Album);
     const album = await albumRepo.findOne({
       where: { id: albumId },
       relations: ['follow'],
@@ -81,11 +82,11 @@ export class FavoriteService {
     if (!useAlbum) {
       throw new Error('You can not access this album');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const albumRepo = await getRepository(Album);
+    const albumRepo = await this.dataSource.getRepository(Album);
     const album = await albumRepo.findOne({
       where: { id: albumId },
       relations: ['follow'],
@@ -100,11 +101,11 @@ export class FavoriteService {
     if (!useTag) {
       throw new Error('You can not access this tag');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const tagRepo = await getRepository(Tag);
+    const tagRepo = await this.dataSource.getRepository(Tag);
     const tag = await tagRepo.findOne({
       where: { id: tagId },
       relations: ['follow'],
@@ -119,11 +120,11 @@ export class FavoriteService {
     if (!useTag) {
       throw new Error('You can not access this tag');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const tagRepo = await getRepository(Tag);
+    const tagRepo = await this.dataSource.getRepository(Tag);
     const tag = await tagRepo.findOne({
       where: { id: tagId },
       relations: ['follow'],
@@ -138,11 +139,11 @@ export class FavoriteService {
     if (!useGenre) {
       throw new Error('You can not access this genre');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const genreRepo = await getRepository(Genre);
+    const genreRepo = await this.dataSource.getRepository(Genre);
     const genre = await genreRepo.findOne({
       where: { id: genreId },
       relations: ['follow'],
@@ -157,11 +158,11 @@ export class FavoriteService {
     if (!useGenre) {
       throw new Error('You can not access this genre');
     }
-    const userRepo = await getRepository(User);
+    const userRepo = await this.dataSource.getRepository(User);
     const user = await userRepo.findOne({
       where: { uid },
     });
-    const genreRepo = await getRepository(Genre);
+    const genreRepo = await this.dataSource.getRepository(Genre);
     const genre = await genreRepo.findOne({
       where: { id: genreId },
       relations: ['follow'],

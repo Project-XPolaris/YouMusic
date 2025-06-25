@@ -8,7 +8,7 @@ import { ApplicationConfig } from '../config';
 import { saveAlbumCover } from '../services/music';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
-import { getRepository } from 'typeorm';
+import { DataSource} from 'typeorm';
 import { LogService } from '../log/log.service';
 import { StorageService } from '../storage/storage.service';
 
@@ -24,6 +24,7 @@ export class ThumbnailService {
     private engine: ThumbnailGenerator,
     private loggerService: LogService,
     private storageService: StorageService,
+    private dataSource: DataSource
   ) {}
   async generate(buffer: Buffer, output: string): Promise<void> {
     if (buffer.length > 1024 * 500) {
@@ -45,7 +46,7 @@ export class ThumbnailService {
       try {
         const { id3, albumId } = item;
         const pics = id3.common.picture;
-        const album = await getRepository(Album).findOne({
+        const album = await this.dataSource.getRepository(Album).findOne({
           where: { id: albumId },
         });
         if (pics && pics.length > 0 && album && !album.cover) {
@@ -63,7 +64,7 @@ export class ThumbnailService {
           // calculate running time
           const start = new Date();
           await this.generate(cover.data, imageFileNamePath);
-          await saveAlbumCover(album.id, coverFilename);
+          await saveAlbumCover(album.id, coverFilename, this.dataSource);
           const end = new Date();
           const time = end.getTime() - start.getTime();
           this.loggerService.info({

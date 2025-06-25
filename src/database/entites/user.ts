@@ -1,8 +1,8 @@
 import {
   Column,
   CreateDateColumn,
+  DataSource,
   Entity,
-  getRepository,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -57,8 +57,8 @@ export class User {
   @OneToOne(() => SpotifyAuth, (auth) => auth.user, { nullable: true })
   spotifyAuth: SpotifyAuth;
 
-  async createOrGet() {
-    const repo = await getRepository(User);
+  async createOrGet(dataSource: DataSource) {
+    const repo = await dataSource.getRepository(User);
     const count = await repo.count({ where: { uid: this.uid } });
     if (count === 0) {
       await repo.save(this);

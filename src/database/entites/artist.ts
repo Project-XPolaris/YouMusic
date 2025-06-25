@@ -1,8 +1,8 @@
 import {
   Column,
   CreateDateColumn,
+  DataSource,
   Entity,
-  getRepository,
   JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
@@ -37,19 +37,19 @@ export class Artist {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  static async recycleEmptyMusicArtist() {
-    const artists = await getRepository(Artist).find({
+  static async recycleEmptyMusicArtist(dataSource:DataSource) {
+    const artists = await dataSource.getRepository(Artist).find({
       relations: ['music', 'album'],
     });
     for (const artist of artists) {
       if (artist.music.length === 0) {
-        await artist.recycle();
+        await artist.recycle(dataSource);
       }
     }
   }
 
-  static async recycleIfEmpty(id: string | number): Promise<boolean> {
-    const repository = await getRepository(Artist);
+  static async recycleIfEmpty(id: string | number,dataSource:DataSource): Promise<boolean> {
+    const repository = await dataSource.getRepository(Artist);
     const artist = await repository.findOne({
       where: { id: +id },
       relations: ['music'],
@@ -59,14 +59,14 @@ export class Artist {
       return true;
     }
     if (artist.music.length === 0) {
-      await artist.recycle();
+      await artist.recycle(dataSource);
       return true;
     }
     return false;
   }
 
-  async recycle() {
-    const repository = await getRepository<Artist>(Artist);
+  async recycle(dataSource:DataSource) {
+    const repository = await dataSource.getRepository(Artist);
     const artist = await repository.findOne({
       where: { id: this.id },
       relations: ['music'],
@@ -74,6 +74,6 @@ export class Artist {
     artist.music = [];
     artist.album = [];
     await repository.save(artist);
-    await getRepository(Artist).delete(this.id);
+    await repository.delete(this.id);
   }
 }

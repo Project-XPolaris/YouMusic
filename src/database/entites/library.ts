@@ -1,9 +1,8 @@
 import {
   Column,
   CreateDateColumn,
+  DataSource,
   Entity,
-  getConnection,
-  getRepository,
   JoinTable,
   ManyToMany,
   OneToMany,
@@ -38,15 +37,15 @@ export class MediaLibrary {
   @JoinTable()
   users: User[];
 
-  async delete() {
+  async delete(dataSource:DataSource) {
     for (const libraryMusic of this.music) {
-      await Music.deleteMusic(libraryMusic.id);
+      await Music.deleteMusic(libraryMusic.id,dataSource);
     }
-    const repo = await getRepository(MediaLibrary);
+    const repo = await dataSource.getRepository(MediaLibrary);
     await repo.delete(this.id);
   }
-  static async deleteById(id: number | string): Promise<boolean> {
-    await getConnection().transaction(async (transactionalEntityManager) => {
+  static async deleteById(id: number | string,dataSource:DataSource): Promise<boolean> {
+    await dataSource.transaction(async (transactionalEntityManager) => {
       const libraryRepo =
         transactionalEntityManager.getRepository(MediaLibrary);
       const library = await libraryRepo.findOne({
@@ -60,8 +59,8 @@ export class MediaLibrary {
     });
     return true;
   }
-  static async getLibraryByUid(uid: string) {
-    const libraryRepository = getRepository(MediaLibrary);
+  static async getLibraryByUid(uid: string,dataSource:DataSource) {
+    const libraryRepository = dataSource.getRepository(MediaLibrary);
     let queryBuilder = libraryRepository.createQueryBuilder('library');
     queryBuilder = queryBuilder
       .leftJoin('library.users', 'users')

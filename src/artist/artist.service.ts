@@ -1,5 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { getConnection, getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Artist } from '../database/entites/artist';
 import { PageFilter } from '../database/utils/type.filter';
 import { filterByPage } from '../database/utils/page.filter';
@@ -23,15 +23,15 @@ export type ArtistFilter = PageFilter & {
 
 @Injectable()
 export class ArtistService {
-  constructor(private httpService: HttpService) {}
+  constructor(private httpService: HttpService, private dataSource: DataSource) {}
 
   async findAll(filter: ArtistFilter) {
-    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
-    const artistRepository = getRepository(Artist);
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid, this.dataSource);
+    const artistRepository = this.dataSource.getRepository(Artist);
     let queryBuilder = artistRepository.createQueryBuilder('artist');
     queryBuilder = filterByPage<Artist>(filter, queryBuilder);
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
       } else {
         queryBuilder.orderBy('RAND()');
@@ -70,8 +70,8 @@ export class ArtistService {
   }
 
   async findOne(id: number, uid: string) {
-    const artistRepository = getRepository(Artist);
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
+    const artistRepository = this.dataSource.getRepository(Artist);
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
     return await artistRepository
       .createQueryBuilder('artist')
       // .leftJoin('artist.library', 'library')
@@ -83,7 +83,7 @@ export class ArtistService {
   }
 
   async updateArtistAvatarFromUrl(id: number, url: string) {
-    const artist = await getRepository(Artist).findOne({
+    const artist = await this.dataSource.getRepository(Artist).findOne({
       where: { id },
     });
     if (!artist) {
@@ -104,12 +104,12 @@ export class ArtistService {
       );
     }
     artist.avatar = saveFilename;
-    return await getRepository(Artist).save(artist);
+    return await this.dataSource.getRepository(Artist).save(artist);
   }
 
   async checkAccessible(id: number, uid: string): Promise<boolean> {
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const artist = await getRepository(Artist)
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    const artist = await this.dataSource.getRepository(Artist)
       .createQueryBuilder('artist')
       .leftJoin('artist.music', 'music')
       .where('music.libraryId in (:...lid)', {
@@ -119,7 +119,7 @@ export class ArtistService {
   }
 
   async updateArtist(id: number, data: UpdateArtistDTO) {
-    let artist = await getRepository(Artist).findOne({
+    let artist = await this.dataSource.getRepository(Artist).findOne({
       where: { id },
       relations: ['music', 'music.artist'],
     });
@@ -135,7 +135,7 @@ export class ArtistService {
         });
       }
     }
-    artist = await getRepository(Artist).save(artist);
+    artist = await this.dataSource.getRepository(Artist).save(artist);
     return artist;
   }
 }

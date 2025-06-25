@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { SpotifyAuth } from '../database/entites/spotify';
 export interface AccountInfo {
   uid: string;
@@ -7,12 +7,13 @@ export interface AccountInfo {
 }
 @Injectable()
 export class AccountService {
+  constructor(private dataSource: DataSource) {}
   async getAccountInfo(uid: string): Promise<AccountInfo> {
     const info: AccountInfo = {
       uid,
       spotifyLogin: false,
     };
-    const spotifyAuth = await getRepository(SpotifyAuth).findOne({
+    const spotifyAuth = await this.dataSource.getRepository(SpotifyAuth).findOne({
       where: { uid },
     });
     if (spotifyAuth) {

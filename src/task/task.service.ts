@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MediaLibrary } from '../database/entites/library';
 import { scanFile } from '../services/scan';
-import { getRepository } from 'typeorm';
 import * as mm from 'music-metadata';
 import { Album } from '../database/entites/album';
 import {
@@ -24,6 +23,7 @@ import * as db from 'mime-db';
 import { encodeImageToBlurhash } from '../utils/blurhash';
 import { getAverageColor } from 'fast-average-color-node';
 import { StorageService } from '../storage/storage.service';
+import { DataSource } from 'typeorm';
 
 export enum TaskStatus {
   Running = 'Running',
@@ -57,6 +57,7 @@ export class TaskService {
     private thumbnailService: ThumbnailService,
     private logService: LogService,
     private storageService: StorageService,
+    private dataSource: DataSource
   ) {}
   private async scanProcess(
     library: MediaLibrary,
@@ -80,7 +81,7 @@ export class TaskService {
     });
     onAnalyzeComplete(result.length);
     // find out updated file
-    let musics = await getRepository(Music)
+    let musics = await this.dataSource.getRepository(Music)
       .createQueryBuilder('music')
       .where('music.libraryId = :libraryId', {
         libraryId: library.id,
@@ -117,7 +118,7 @@ export class TaskService {
     // remove music that file is not exist
     const removeNotExistStart = Date.now();
     for (const music of musics) {
-      await Music.deleteMusic(music.id);
+      await Music.deleteMusic(music.id,this.dataSource);
     }
     const removeNotExistEnd = Date.now();
     this.logService.info({
@@ -143,7 +144,7 @@ export class TaskService {
         });
         let album: Album = undefined;
         if (musicID3.common.album) {
-          album = await getOrCreateAlbum(musicID3.common.album, library);
+          album = await getOrCreateAlbum(musicID3.common.album, library, this.dataSource);
           updatedAlbums = [
             ...updatedAlbums.filter((it) => it.id !== album.id),
             album,
@@ -161,7 +162,7 @@ export class TaskService {
         rawArtists = uniq(rawArtists);
         const artists: Array<Artist> = [];
         for (const rawArtist of rawArtists) {
-          const artist = await getOrCreateArtist(rawArtist, library);
+          const artist = await getOrCreateArtist(rawArtist, library, this.dataSource);
           artists.push(artist);
         }
         // get title
@@ -183,7 +184,7 @@ export class TaskService {
         if (v1) {
           const genreTag = v1.find((it) => it.id === 'genre');
           if (genreTag) {
-            const genre = await Genre.createOrGet(genreTag.value, library);
+            const genre = await Genre.createOrGet(genreTag.value, library,this.dataSource);
             genres.push(genre);
           }
         }
@@ -202,6 +203,7 @@ export class TaskService {
           bitrate: musicID3.format.bitrate,
           sampleRate: musicID3.format.sampleRate,
           size: fileStat?.size,
+          dataSource: this.dataSource,
         });
         music.artist = artists;
         music.genre = genres;
@@ -216,7 +218,7 @@ export class TaskService {
         } catch (err) {
           // without lrc
         }
-        await getRepository(Music).save(music);
+        await this.dataSource.getRepository(Music).save(music);
         // refresh album artist
         const saveMusicEnd = Date.now();
         this.logService.info({
@@ -244,7 +246,7 @@ export class TaskService {
               // get domain color
               const color = await getAverageColor(cover.data);
               album.domainColor = color.hex;
-              await getRepository(Album).save(album);
+              await this.dataSource.getRepository(Album).save(album);
             }
           }
         }
@@ -256,7 +258,7 @@ export class TaskService {
     }
     // update album artist
     for (const updatedAlbum of updatedAlbums) {
-      await updatedAlbum.refreshArtist();
+      await updatedAlbum.refreshArtist(this.dataSource);
     }
     return result;
   }
@@ -267,7 +269,7 @@ export class TaskService {
     forceThumbnail: boolean,
     { onComplete }: { onComplete?: (library: MediaLibrary) => void },
   ): Promise<Task> {
-    const library = await getRepository(MediaLibrary).findOne({
+    const library = await this.dataSource.getRepository(MediaLibrary).findOne({
       where: { id: libraryId },
     });
     if (library === undefined) {

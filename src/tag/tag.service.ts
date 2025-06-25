@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getConnection, getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { PageFilter } from '../database/utils/type.filter';
 import { MediaLibrary } from '../database/entites/library';
 import { Tag } from '../database/entites/tag';
@@ -17,11 +17,13 @@ export type TagQueryFilter = {
 
 @Injectable()
 export class TagService {
-  constructor() {}
+  constructor(
+    private dataSource: DataSource
+  ) {}
 
   async findAll(filter: TagQueryFilter) {
-    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
-    const musicRepository = getRepository(Tag);
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid,this.dataSource);
+    const musicRepository = this.dataSource.getRepository(Tag);
     const queryBuilder = musicRepository.createQueryBuilder('tag');
     queryBuilder
       .take(filter.pageSize)
@@ -56,7 +58,7 @@ export class TagService {
         .andWhere('follow.uid = :uid', { uid: filter.uid });
     }
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
       } else {
         queryBuilder.orderBy('RAND()');
@@ -72,8 +74,8 @@ export class TagService {
   }
 
   async findOne(id: number, uid: string) {
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const tagRepository = getRepository(Tag);
+    const libraries = await MediaLibrary.getLibraryByUid(uid,this.dataSource);
+    const tagRepository = this.dataSource.getRepository(Tag);
     let query = tagRepository.createQueryBuilder('tag').whereInIds([id]);
     if (libraries.length > 0) {
       query = query

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getConnection, getRepository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Album } from '../database/entites/album';
 import { PageFilter } from '../database/utils/type.filter';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -26,10 +26,11 @@ export type AlbumQueryFilter = {
 
 @Injectable()
 export class AlbumService {
-  constructor(private thumbnailService: ThumbnailService) {}
+  constructor(private thumbnailService: ThumbnailService, private dataSource: DataSource) {}
+
   async findAll(filter: AlbumQueryFilter) {
-    const libraries = await MediaLibrary.getLibraryByUid(filter.uid);
-    const albumRepository = getRepository(Album);
+    const libraries = await MediaLibrary.getLibraryByUid(filter.uid, this.dataSource);
+    const albumRepository = this.dataSource.getRepository(Album);
     let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder = queryBuilder
       .skip((filter.page - 1) * filter.pageSize)
@@ -98,7 +99,7 @@ export class AlbumService {
       queryBuilder.andWhere('album.id = :aid', { aid: filter.id });
     }
     if (filter.random) {
-      if (getConnection().options.type === 'sqlite') {
+      if (this.dataSource.options.type === 'sqlite') {
         queryBuilder.orderBy('RANDOM()');
       } else {
         queryBuilder.orderBy('RAND()');
@@ -121,8 +122,8 @@ export class AlbumService {
   }
 
   async findOne(id: number, uid: string) {
-    const libraries = await MediaLibrary.getLibraryByUid(uid);
-    const albumRepository = getRepository(Album);
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    const albumRepository = this.dataSource.getRepository(Album);
     let queryBuilder = albumRepository.createQueryBuilder('album');
     queryBuilder
       .leftJoinAndSelect('album.music', 'music')
@@ -138,7 +139,7 @@ export class AlbumService {
   }
 
   async updateAlbum(id: number, data: UpdateAlbumDto) {
-    let album = await getRepository(Album).findOne({
+    let album = await this.dataSource.getRepository(Album).findOne({
       where: { id },
       relations: ['music'],
     });
@@ -153,12 +154,12 @@ export class AlbumService {
         await fs.promises.writeFile(music.path, buf);
       }
     }
-    album = await getRepository(Album).save(album);
+    album = await this.dataSource.getRepository(Album).save(album);
     return album;
   }
 
   async updateCoverFromFile(id: number, file: any) {
-    let album = await getRepository(Album).findOne({
+    let album = await this.dataSource.getRepository(Album).findOne({
       where: { id },
       relations: ['music'],
     });
@@ -175,7 +176,7 @@ export class AlbumService {
     for (const music of album.music) {
       await music.writeMusicFileCover(mime, file.buffer);
     }
-    album = await getRepository(Album).save(album);
+    album = await this.dataSource.getRepository(Album).save(album);
     return album;
   }
 }
