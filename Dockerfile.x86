@@ -1,4 +1,4 @@
-FROM node:18.20.4 AS builder
+FROM --platform=linux/amd64 node:18.20.4 AS builder
 WORKDIR /app
 
 # 安装 pnpm 并安装依赖
@@ -10,7 +10,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:18.20.4 AS runtime
+FROM --platform=linux/amd64 node:18.20.4 AS runtime
 WORKDIR /app
 
 # 安装 pnpm，仅复制运行所需文件
@@ -23,14 +23,18 @@ COPY --from=builder /app/tsconfig.build.json ./
 COPY --from=builder /app/ulist.json ./
 COPY --from=builder /app/youplus.json ./
 
-# 生产依赖安装（sqlite3 已在 dependencies 中）
+ENV NODE_ENV=production
+
+# 生产依赖安装
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       python3 make g++ libvips; \
     rm -rf /var/lib/apt/lists/*; \
     pnpm install --prod --frozen-lockfile; \
-    npm_config_platform=linux npm_config_arch=arm64 pnpm rebuild sharp --verbose || true
+    pnpm rebuild sharp --verbose || true
 
 EXPOSE 3001
 CMD ["pnpm", "start:prod"]
+
+

@@ -58,6 +58,7 @@
     "music-metadata": "^7.5.0",
     "musicbrainz-api": "^0.8.0",
     "mysql": "^2.18.1",
+    "nacos": "^2.6.0",
     "nestjs-s3": "^1.0.1",
     "node-id3": "^0.2.2",
     "reflect-metadata": "^0.1.13",
