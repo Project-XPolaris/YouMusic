@@ -5,7 +5,7 @@ Description=YouMusic core service
 [Service]
 StartLimitInterval=5
 StartLimitBurst=10
-ExecStart=npm run start
+ExecStart=node dist/main
 WorkingDirectory=YMWorkDir
 Restart=always
 RestartSec=120

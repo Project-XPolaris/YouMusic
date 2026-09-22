@@ -27,14 +27,18 @@ export class ThumbnailService {
     private dataSource: DataSource
   ) {}
   async generate(buffer: Buffer, output: string): Promise<void> {
+    // Always store by basename under storage.paths.covers.
+    // Callers historically passed either a bare filename or an absolute
+    // ApplicationConfig.coverDir path — absolute paths used to escape into
+    // /data/covers while GET /cover reads from /data/youmusic/storage/covers.
+    const key = path.basename(output);
     if (buffer.length > 1024 * 500) {
-      // 500kb
-      await this.storageService.uploadCover(output, buffer);
-      // fs.writeFileSync(output, buffer);
+      // 500kb — skip resize
+      await this.storageService.uploadCover(key, buffer);
       return;
     }
     const outputBuffer: Buffer = await this.engine.generate(buffer);
-    await this.storageService.uploadCover(output, outputBuffer);
+    await this.storageService.uploadCover(key, outputBuffer);
   }
   async generateMusicCover(
     list: Array<{

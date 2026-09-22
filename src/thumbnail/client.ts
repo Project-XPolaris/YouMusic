@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ThumbnailGenerator } from './thumbnail.service';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import * as path from 'path';
 
 export class ThumbnailClient implements ThumbnailGenerator {

@@ -57,4 +57,22 @@ export class YouPlusClient {
     });
     return response.data;
   }
+
+  public async getRealPathInternal(
+    target: string,
+    internalToken: string,
+  ): Promise<{ path: string }> {
+    const response = await axios.get(
+      `${this.apiUrl}/internal/path/realpath`,
+      {
+        headers: {
+          'X-Internal-Token': internalToken,
+        },
+        params: {
+          target,
+        },
+      },
+    );
+    return response.data;
+  }
 }

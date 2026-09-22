@@ -5,19 +5,20 @@ import {
   DataSource,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Music } from './music';
 import { MediaLibrary } from './library';
 import { User } from './user';
+import { isDuplicateKeyError } from '../../utils/db-error';
 
 @Entity()
 export class Genre {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+
+  @Column({ unique: true })
   name: string;
 
   @ManyToMany(() => Music, (music) => music.genre, { onDelete: 'CASCADE' })
@@ -33,18 +34,39 @@ export class Genre {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  static async createOrGet(name: string, library: MediaLibrary,dataSource:DataSource) {
-    const repo = await dataSource.getRepository(Genre);
+  static async createOrGet(
+    name: string,
+    _library: MediaLibrary,
+    dataSource: DataSource,
+  ) {
+    const trimmed = (name || '').trim();
+    if (!trimmed) {
+      throw new Error('genre name is empty');
+    }
+    const repo = dataSource.getRepository(Genre);
     let genre = await repo
       .createQueryBuilder('genre')
-      .where('genre.name = :name', { name })
+      .where('genre.name = :name', { name: trimmed })
       .getOne();
     if (genre) {
       return genre;
     }
     genre = new Genre();
-    genre.name = name;
-    genre = await dataSource.getRepository(Genre).save(genre);
-    return genre;
+    genre.name = trimmed;
+    try {
+      return await repo.save(genre);
+    } catch (err) {
+      if (!isDuplicateKeyError(err)) {
+        throw err;
+      }
+      genre = await repo
+        .createQueryBuilder('genre')
+        .where('genre.name = :name', { name: trimmed })
+        .getOne();
+      if (!genre) {
+        throw err;
+      }
+      return genre;
+    }
   }
 }

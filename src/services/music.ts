@@ -8,27 +8,98 @@ import { ApplicationConfig } from '../config';
 import * as path from 'path';
 import Jimp = require('jimp');
 import { DataSource } from 'typeorm';
+import { buildAlbumIdentity } from './album-identity';
+import { isDuplicateKeyError } from '../utils/db-error';
 
-export const getOrCreateAlbum = async (name: string, library: MediaLibrary, dataSource: DataSource) => {
-  let album = await dataSource.getRepository(Album)
-    .createQueryBuilder('album')
-    .where('album.name = :name', { name })
-    .getOne();
+export type GetOrCreateAlbumInput = {
+  name?: string;
+  albumArtist?: string;
+  musicbrainzAlbumId?: string;
+  filePath: string;
+  library: MediaLibrary;
+  dataSource: DataSource;
+};
+
+/**
+ * Find-or-create by (libraryId, identityKey). See album-identity.ts.
+ * Concurrent-safe via unique index + duplicate-key retry.
+ */
+export const getOrCreateAlbum = async ({
+  name,
+  albumArtist,
+  musicbrainzAlbumId,
+  filePath,
+  library,
+  dataSource,
+}: GetOrCreateAlbumInput) => {
+  const identity = buildAlbumIdentity({
+    albumName: name,
+    albumArtist,
+    musicbrainzAlbumId,
+    filePath,
+  });
+  const repo = dataSource.getRepository(Album);
+
+  let album = await repo.findOne({
+    where: {
+      libraryId: library.id,
+      identityKey: identity.identityKey,
+    },
+  });
   if (album) {
+    let dirty = false;
+    if (!album.name && identity.displayName) {
+      album.name = identity.displayName;
+      dirty = true;
+    }
+    if (!album.albumArtist && identity.albumArtist) {
+      album.albumArtist = identity.albumArtist;
+      dirty = true;
+    }
+    if (!album.rootPath && identity.rootPath) {
+      album.rootPath = identity.rootPath;
+      dirty = true;
+    }
+    if (dirty) {
+      await repo.save(album);
+    }
     return album;
   }
+
   album = new Album();
-  album.name = name;
-  await dataSource.getRepository(Album).save(album);
-  return album;
+  album.name = identity.displayName;
+  album.albumArtist = identity.albumArtist || undefined;
+  album.identityKey = identity.identityKey;
+  album.rootPath = identity.rootPath;
+  album.library = library;
+  album.libraryId = library.id;
+  try {
+    await repo.save(album);
+    return album;
+  } catch (err) {
+    if (!isDuplicateKeyError(err)) {
+      throw err;
+    }
+    album = await repo.findOne({
+      where: {
+        libraryId: library.id,
+        identityKey: identity.identityKey,
+      },
+    });
+    if (!album) {
+      throw err;
+    }
+    return album;
+  }
 };
 
 export const getOrCreateArtist = async (
   name: string,
-  library: MediaLibrary,
+  _library: MediaLibrary,
   dataSource: DataSource,
 ) => {
-  let artist = await dataSource.getRepository(Artist)
+  const repo = dataSource.getRepository(Artist);
+  let artist = await repo
     .createQueryBuilder('artist')
     .where('artist.name = :name', { name })
     .getOne();
@@ -37,8 +108,22 @@ export const getOrCreateArtist = async (
   }
   artist = new Artist();
   artist.name = name;
-  await dataSource.getRepository(Artist).save(artist);
-  return artist;
+  try {
+    await repo.save(artist);
+    return artist;
+  } catch (err) {
+    if (!isDuplicateKeyError(err)) {
+      throw err;
+    }
+    artist = await repo
+      .createQueryBuilder('artist')
+      .where('artist.name = :name', { name })
+      .getOne();
+    if (!artist) {
+      throw err;
+    }
+    return artist;
+  }
 };
 
 export const getOrCreateMusic = async ({
@@ -79,8 +164,12 @@ export const getOrCreateMusic = async ({
       libraryId: library.id,
     })
     .getOne();
-  if (music === undefined) {
+  if (music === undefined || music === null) {
     music = new Music();
+  }
+  // 确保title不为null或undefined
+  if (!title || title.trim() === '') {
+    title = path.basename(musicFilePath).replace(path.extname(musicFilePath), '') || 'Unknown Title';
   }
   music.title = title;
   music.path = musicFilePath;

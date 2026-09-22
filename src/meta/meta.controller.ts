@@ -21,8 +21,22 @@ export class MetaController {
     return await this.metaService.searchArtist(key);
   }
   @Get('search/music')
-  async SearchLyric(@Query() key: string) {
-    return await this.metaService.searchMusic(key);
+  async SearchLyric(
+    @Query('key') key: string,
+    @Query('artist') artist?: string,
+    @Query('album') album?: string,
+    @Query('sources') sources?: string,
+  ) {
+    return await this.metaService.searchMusic(key, {
+      artist,
+      album,
+      sources: sources
+        ? sources
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : undefined,
+    });
   }
   @Post('lyric')
   async getLyricFromSearchMusic(@Body() searchMusic: SearchMusicEntity) {

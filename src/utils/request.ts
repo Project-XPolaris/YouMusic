@@ -1,17 +1,18 @@
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { Buffer } from 'buffer';
+import { firstValueFrom } from 'rxjs';
 
 export const getArrayBufferFromUrl = async (
   service: HttpService,
   url,
 ): Promise<{ response; buf: Buffer }> => {
-  const response = await service
-    .request({
+  const response = await firstValueFrom(
+    service.request({
       url,
       method: 'GET',
       responseType: 'arraybuffer',
-    })
-    .toPromise();
+    }),
+  );
   const buf = Buffer.from(response.data, 'binary');
   return {
     response,

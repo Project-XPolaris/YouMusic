@@ -9,6 +9,8 @@ import { TagService } from '../tag/tag.service';
 import { Tag } from '../database/entites/tag';
 import { GenreService } from '../genre/genre.service';
 import { Genre } from '../database/entites/genre';
+import { Music } from '../database/entites/music';
+import { MediaLibrary } from '../database/entites/library';
 
 @Injectable()
 export class FavoriteService {
@@ -170,5 +172,51 @@ export class FavoriteService {
     genre.follow = genre.follow.filter((it) => it.id !== user.id);
     await genreRepo.save(genre);
     return;
+  }
+
+  async addMusicToFavourite(musicId: number, uid: string): Promise<void> {
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    if (libraries.length === 0) {
+      throw new Error('you have no library');
+    }
+    const musicRepo = this.dataSource.getRepository(Music);
+    const music = await musicRepo.findOne({
+      where: { id: musicId },
+      relations: ['follow'],
+    });
+    if (!music || !libraries.some((l) => l.id === music.libraryId)) {
+      throw new Error('You can not access this music');
+    }
+    const userRepo = this.dataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { uid } });
+    if (!user) {
+      throw new Error('user not found');
+    }
+    if (!music.follow.some((it) => it.id === user.id)) {
+      music.follow.push(user);
+      await musicRepo.save(music);
+    }
+  }
+
+  async removeMusicFromFavourite(musicId: number, uid: string): Promise<void> {
+    const libraries = await MediaLibrary.getLibraryByUid(uid, this.dataSource);
+    if (libraries.length === 0) {
+      throw new Error('you have no library');
+    }
+    const musicRepo = this.dataSource.getRepository(Music);
+    const music = await musicRepo.findOne({
+      where: { id: musicId },
+      relations: ['follow'],
+    });
+    if (!music || !libraries.some((l) => l.id === music.libraryId)) {
+      throw new Error('You can not access this music');
+    }
+    const userRepo = this.dataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { uid } });
+    if (!user) {
+      throw new Error('user not found');
+    }
+    music.follow = music.follow.filter((it) => it.id !== user.id);
+    await musicRepo.save(music);
   }
 }

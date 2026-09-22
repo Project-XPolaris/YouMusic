@@ -6,6 +6,8 @@ import {
   SearchType,
   lyric,
   album,
+  artist_detail,
+  artist_desc,
 } from 'NeteaseCloudMusicApi';
 import { createHash } from 'crypto';
 
@@ -41,8 +43,47 @@ export class NeteasemusicService {
   async getAlbumWithId(id): Promise<any> {
     return album({ id });
   }
-  async getLyric(id: string): Promise<any> {
+  async getLyric(id: string): Promise<string> {
     const response = await lyric({ id });
-    return response.body.lrc as string;
+    const lrc = response.body?.lrc as string | { lyric?: string } | undefined;
+    if (!lrc) return '';
+    if (typeof lrc === 'string') return lrc;
+    return lrc.lyric || '';
+  }
+
+  async getArtistDetail(id: string | number): Promise<{
+    name?: string;
+    briefDesc?: string;
+    alias?: string[];
+    picUrl?: string;
+    transNames?: string[];
+  } | null> {
+    try {
+      const response = await artist_detail({ id });
+      const artist = (response.body as any)?.data?.artist;
+      return artist || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getArtistDesc(id: string | number): Promise<string> {
+    try {
+      const response = await artist_desc({ id });
+      const body = response.body as any;
+      const brief = String(body?.briefDesc || '').trim();
+      if (brief) return brief;
+      const intro = body?.introduction;
+      if (Array.isArray(intro)) {
+        return intro
+          .map((it: any) => [it?.ti, it?.txt].filter(Boolean).join('\n'))
+          .filter(Boolean)
+          .join('\n\n')
+          .trim();
+      }
+      return String(body?.introduction || '').trim();
+    } catch {
+      return '';
+    }
   }
 }

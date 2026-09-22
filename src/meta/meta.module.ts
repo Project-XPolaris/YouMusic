@@ -3,10 +3,11 @@ import { MetaService } from './meta.service';
 import { MetaController } from './meta.controller';
 import { NeteasemusicService } from '../neteasemusic/neteasemusic.service';
 import { HttpModule } from '@nestjs/axios';
+import { LrclibService } from '../lrclib/lrclib.service';
 
 @Module({
   controllers: [MetaController],
-  providers: [MetaService, NeteasemusicService],
+  providers: [MetaService, NeteasemusicService, LrclibService],
   exports: [MetaService],
   imports: [HttpModule],
 })

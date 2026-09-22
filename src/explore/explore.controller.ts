@@ -16,8 +16,8 @@ export class ExploreController {
     );
     return {
       path: readPath,
-      sep: path.sep,
-      backPath: path.dirname(readPath),
+      sep: '/',
+      backPath: readPath === '/' ? '/' : path.posix.dirname(readPath),
       files: files.map((diren) => ({
         name: diren.name,
         path: diren.path,

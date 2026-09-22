@@ -8,7 +8,7 @@ export class TaskController {
   async getTaskList() {
     return {
       success: true,
-      tasks: this.taskService.tasks,
+      data: this.taskService.getTasks(),
     };
   }
 }

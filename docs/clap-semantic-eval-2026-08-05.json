@@ -1,0 +1,1093 @@
+{
+  "meta": {
+    "generated_at": "2026-08-05 18:07:23",
+    "model": "laion/clap-htsat-fused",
+    "covered": 224,
+    "total": 224,
+    "health": {
+      "status": "ok",
+      "model": "laion/clap-htsat-fused",
+      "loaded": true,
+      "device": "cpu",
+      "dim": 512,
+      "source": "/Users/duzhengheng/ProjectXPolaris/PolarisOS/backend/audio-embed-service/models",
+      "sample_rate": 48000,
+      "multi_crops": 3,
+      "offline": true
+    },
+    "classic_inventory": [
+      {
+        "id": 158,
+        "title": "Black Dog"
+      },
+      {
+        "id": 189,
+        "title": "Rock And Roll"
+      },
+      {
+        "id": 193,
+        "title": "Rock And Roll (Sunset Sound Mix)"
+      },
+      {
+        "id": 198,
+        "title": "Stairway To Heaven"
+      },
+      {
+        "id": 207,
+        "title": "Whole lotta love"
+      },
+      {
+        "id": 209,
+        "title": "Whole Lotta Love (Remaster)"
+      },
+      {
+        "id": 210,
+        "title": "In My Life (Remastered)"
+      },
+      {
+        "id": 212,
+        "title": "Knockin' On Heaven's Door"
+      },
+      {
+        "id": 213,
+        "title": "Smoke on the Water"
+      },
+      {
+        "id": 214,
+        "title": "Highway Star"
+      },
+      {
+        "id": 215,
+        "title": "Yesterday"
+      },
+      {
+        "id": 216,
+        "title": "Blowing in the Wind"
+      },
+      {
+        "id": 217,
+        "title": "Champagne Supernova"
+      },
+      {
+        "id": 219,
+        "title": "Wonderwall"
+      },
+      {
+        "id": 220,
+        "title": "Don't Look Back In Anger"
+      },
+      {
+        "id": 221,
+        "title": "Stand by Me"
+      },
+      {
+        "id": 222,
+        "title": "Songbird"
+      },
+      {
+        "id": 223,
+        "title": "High and Dry"
+      },
+      {
+        "id": 224,
+        "title": "Creep"
+      }
+    ]
+  },
+  "summary": {
+    "full_library": {
+      "n": 7,
+      "recall_at_1": 0.286,
+      "recall_at_5": 0.857,
+      "recall_at_10": 0.857,
+      "recall_at_20": 0.857,
+      "rewrite_rate": 1.0,
+      "mean_latency_sec": 0.859,
+      "mean_top1_score": 0.437
+    },
+    "closed_subset": {
+      "n": 5,
+      "inventory_size": 19,
+      "recall_at_1": 0.6,
+      "recall_at_3": 0.8
+    }
+  },
+  "full_library_cases": [
+    {
+      "id": "britpop_en",
+      "query": "oasis britpop anthem acoustic male vocal",
+      "expect_any": [
+        "Wonderwall",
+        "Champagne Supernova",
+        "Look Back in Anger",
+        "Songbird",
+        "Stand by Me"
+      ],
+      "notes": "Britpop / Oasis 家族",
+      "rewrote": true,
+      "rewrittenQuery": "Oasis britpop anthem acoustic male vocal ballad",
+      "elapsed_sec": 1.79,
+      "count": 20,
+      "best_rank": 4,
+      "hit_ranks": [
+        4,
+        9,
+        12,
+        13
+      ],
+      "recall_at_1": 0,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.5212,
+      "score_top5_mean": 0.4402,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.5212,
+          "title": "Black Mountain Side",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.428,
+          "title": "High and Dry",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.4239,
+          "title": "Creep",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.4144,
+          "title": "Songbird",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.4136,
+          "title": "In My Life (Remastered)",
+          "artists": [
+            "The Beatles"
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.4135,
+          "title": "Stairway To Heaven",
+          "artists": []
+        },
+        {
+          "rank": 7,
+          "score": 0.4108,
+          "title": "Tangerine (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 8,
+          "score": 0.4048,
+          "title": "Knockin' On Heaven's Door",
+          "artists": [
+            "Bob Dylan"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.3814,
+          "title": "Wonderwall",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 10,
+          "score": 0.3695,
+          "title": "Babe I'm Gonna Leave You",
+          "artists": []
+        }
+      ]
+    },
+    {
+      "id": "hard_rock_zh",
+      "query": "硬摇滚吉他riff重金属",
+      "expect_any": [
+        "Smoke on the Water",
+        "Highway Star",
+        "Black Dog",
+        "Whole Lotta Love",
+        "Whole lotta love",
+        "Rock And Roll",
+        "Immigrant"
+      ],
+      "notes": "硬摇滚 / riff",
+      "rewrote": true,
+      "rewrittenQuery": "heavy rock guitar riff, metal",
+      "elapsed_sec": 0.832,
+      "count": 20,
+      "best_rank": 1,
+      "hit_ranks": [
+        1,
+        3,
+        12
+      ],
+      "recall_at_1": 1,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.4235,
+      "score_top5_mean": 0.4047,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.4235,
+          "title": "Rock And Roll (Sunset Sound Mix)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.415,
+          "title": "Achilles Last Stand1",
+          "artists": []
+        },
+        {
+          "rank": 3,
+          "score": 0.4081,
+          "title": "Rock And Roll",
+          "artists": []
+        },
+        {
+          "rank": 4,
+          "score": 0.3896,
+          "title": "Good Times Bad Times",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.3874,
+          "title": "Stand by Me",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.3792,
+          "title": "Since I've Been Loving You (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 7,
+          "score": 0.3771,
+          "title": "Misty Mountain Hop (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 8,
+          "score": 0.3761,
+          "title": "Hot Dog (Rough Mix)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.3733,
+          "title": "In the Evening (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 10,
+          "score": 0.3711,
+          "title": "Carouselambra (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "folk_dylan",
+      "query": "folk protest acoustic guitar dylan",
+      "expect_any": [
+        "Blowin",
+        "Blowing",
+        "Knockin"
+      ],
+      "notes": "民谣 / Dylan",
+      "rewrote": true,
+      "rewrittenQuery": "acoustic folk protest guitar dylan",
+      "elapsed_sec": 0.754,
+      "count": 20,
+      "best_rank": 4,
+      "hit_ranks": [
+        4,
+        19
+      ],
+      "recall_at_1": 0,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.5572,
+      "score_top5_mean": 0.4934,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.5572,
+          "title": "Black Mountain Side",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.4962,
+          "title": "Tangerine (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 3,
+          "score": 0.4854,
+          "title": "High and Dry",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.4662,
+          "title": "Knockin' On Heaven's Door",
+          "artists": [
+            "Bob Dylan"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.4622,
+          "title": "Babe I'm Gonna Leave You",
+          "artists": []
+        },
+        {
+          "rank": 6,
+          "score": 0.445,
+          "title": "Going to California (2012 Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.4439,
+          "title": "Bron-Yr-Aur (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.437,
+          "title": "Wonderwall",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.4355,
+          "title": "Stairway To Heaven",
+          "artists": []
+        },
+        {
+          "rank": 10,
+          "score": 0.425,
+          "title": "Songbird",
+          "artists": [
+            "Oasis"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "radiohead_alt",
+      "query": "radiohead depressive alternative rock",
+      "expect_any": [
+        "Creep",
+        "High and Dry"
+      ],
+      "notes": "Radiohead / 另类忧郁摇滚",
+      "rewrote": true,
+      "rewrittenQuery": "Radiohead melancholic alternative rock",
+      "elapsed_sec": 0.643,
+      "count": 20,
+      "best_rank": null,
+      "hit_ranks": [],
+      "recall_at_1": 0,
+      "recall_at_5": 0,
+      "recall_at_10": 0,
+      "recall_at_20": 0,
+      "score_top1": 0.3232,
+      "score_top5_mean": 0.3137,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.3232,
+          "title": "Stand by Me",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.3209,
+          "title": "05",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.3187,
+          "title": "04",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.3071,
+          "title": "02",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.2988,
+          "title": "Good Times Bad Times",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.2842,
+          "title": "Achilles Last Stand1",
+          "artists": []
+        },
+        {
+          "rank": 7,
+          "score": 0.2795,
+          "title": "03",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.2733,
+          "title": "06",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.2718,
+          "title": "極上巨乳癒し店後編・製品版",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 10,
+          "score": 0.2708,
+          "title": "放課後　誰もいないトイレで",
+          "artists": [
+            "小石川うに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beatles_ballad",
+      "query": "beatles soft ballad yesterday",
+      "expect_any": [
+        "Yesterday",
+        "In My Life"
+      ],
+      "notes": "Beatles 软歌",
+      "rewrote": true,
+      "rewrittenQuery": "The Beatles, soft ballad, yesterday",
+      "elapsed_sec": 0.617,
+      "count": 20,
+      "best_rank": 2,
+      "hit_ranks": [
+        2
+      ],
+      "recall_at_1": 0,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.4764,
+      "score_top5_mean": 0.4266,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.4764,
+          "title": "Creep",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.4759,
+          "title": "In My Life (Remastered)",
+          "artists": [
+            "The Beatles"
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.4026,
+          "title": "Stairway To Heaven",
+          "artists": []
+        },
+        {
+          "rank": 4,
+          "score": 0.3998,
+          "title": "High and Dry",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.3784,
+          "title": "Blot (I'm Gonna Crawl) [Rough Mix]",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.3768,
+          "title": "All My Love (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.3729,
+          "title": "The Hook (All My Love) [Rough Mix]",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.3722,
+          "title": "お仕置き2",
+          "artists": [
+            "小石川うに"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.3716,
+          "title": "I'm Gonna Crawl (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 10,
+          "score": 0.3709,
+          "title": "後日談",
+          "artists": [
+            "小石川うに"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "melancholy_uk_zh",
+      "query": "忧郁的英伦吉他慢歌",
+      "expect_any": [
+        "High and Dry",
+        "Creep",
+        "Wonderwall",
+        "Look Back in Anger",
+        "Songbird",
+        "Yesterday",
+        "In My Life"
+      ],
+      "notes": "忧郁英伦吉他情绪",
+      "rewrote": true,
+      "rewrittenQuery": "melancholy british guitar slow song",
+      "elapsed_sec": 0.66,
+      "count": 20,
+      "best_rank": 5,
+      "hit_ranks": [
+        5,
+        10,
+        12,
+        16,
+        17
+      ],
+      "recall_at_1": 0,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.4807,
+      "score_top5_mean": 0.456,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.4807,
+          "title": "Going to California (2012 Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.475,
+          "title": "Black Mountain Side",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.4647,
+          "title": "Tangerine (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 4,
+          "score": 0.4473,
+          "title": "Bron-Yr-Aur (Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.4122,
+          "title": "High and Dry",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.3627,
+          "title": "Knockin' On Heaven's Door",
+          "artists": [
+            "Bob Dylan"
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.3577,
+          "title": "Blowing in the Wind",
+          "artists": [
+            "Bob Dylan"
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.3487,
+          "title": "Stairway To Heaven",
+          "artists": []
+        },
+        {
+          "rank": 9,
+          "score": 0.3206,
+          "title": "Babe I'm Gonna Leave You",
+          "artists": []
+        },
+        {
+          "rank": 10,
+          "score": 0.3144,
+          "title": "Creep",
+          "artists": [
+            "Radiohead"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "calm_night",
+      "query": "calm night drive soft melancholic",
+      "expect_any": [
+        "High and Dry",
+        "Creep",
+        "Yesterday",
+        "In My Life",
+        "Blowin",
+        "Blowing",
+        "Knockin",
+        "Rain Song",
+        "Tangerine"
+      ],
+      "notes": "安静忧郁氛围（较宽）",
+      "rewrote": true,
+      "rewrittenQuery": "Calm night drive soft melancholic acoustic folk",
+      "elapsed_sec": 0.718,
+      "count": 20,
+      "best_rank": 1,
+      "hit_ranks": [
+        1,
+        2,
+        3,
+        12,
+        13,
+        14
+      ],
+      "recall_at_1": 1,
+      "recall_at_5": 1,
+      "recall_at_10": 1,
+      "recall_at_20": 1,
+      "score_top1": 0.2742,
+      "score_top5_mean": 0.2594,
+      "top10": [
+        {
+          "rank": 1,
+          "score": 0.2742,
+          "title": "The Rain Song",
+          "artists": []
+        },
+        {
+          "rank": 2,
+          "score": 0.2677,
+          "title": "Knockin' On Heaven's Door",
+          "artists": [
+            "Bob Dylan"
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.2567,
+          "title": "High and Dry",
+          "artists": [
+            "Radiohead"
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.2532,
+          "title": "Black Mountain Side",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.2454,
+          "title": "The Battle of Evermore (Remaster)",
+          "artists": []
+        },
+        {
+          "rank": 6,
+          "score": 0.239,
+          "title": "Songbird",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.2337,
+          "title": "Boogie with Stu (2012 Remaster)",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.2302,
+          "title": "Blot (I'm Gonna Crawl) [Rough Mix]",
+          "artists": [
+            "Led Zeppelin"
+          ]
+        },
+        {
+          "rank": 9,
+          "score": 0.2279,
+          "title": "Wonderwall",
+          "artists": [
+            "Oasis"
+          ]
+        },
+        {
+          "rank": 10,
+          "score": 0.2248,
+          "title": "飢点耳クンニ＆ミミラチオ",
+          "artists": [
+            "小石川うに"
+          ]
+        }
+      ]
+    }
+  ],
+  "closed_subset_cases": [
+    {
+      "query": "energetic britpop rock stadium anthem",
+      "notes": "Britpop",
+      "expect_any": [
+        "Wonderwall",
+        "Champagne",
+        "Look Back",
+        "Songbird",
+        "Stand by Me"
+      ],
+      "best_rank": 4,
+      "recall_at_1": 0,
+      "recall_at_3": 0,
+      "top5": [
+        {
+          "score": 0.417,
+          "title": "Whole Lotta Love (Remaster)"
+        },
+        {
+          "score": 0.409,
+          "title": "Whole lotta love"
+        },
+        {
+          "score": 0.389,
+          "title": "Black Dog"
+        },
+        {
+          "score": 0.372,
+          "title": "Don't Look Back In Anger"
+        },
+        {
+          "score": 0.365,
+          "title": "Wonderwall"
+        }
+      ]
+    },
+    {
+      "query": "Heavy rock guitar riff hard rock",
+      "notes": "Hard rock",
+      "expect_any": [
+        "Smoke on the Water",
+        "Highway Star",
+        "Black Dog",
+        "Whole Lotta Love",
+        "Whole lotta love",
+        "Rock And Roll"
+      ],
+      "best_rank": 1,
+      "recall_at_1": 1,
+      "recall_at_3": 1,
+      "top5": [
+        {
+          "score": 0.39,
+          "title": "Rock And Roll (Sunset Sound Mix)"
+        },
+        {
+          "score": 0.39,
+          "title": "Rock And Roll"
+        },
+        {
+          "score": 0.386,
+          "title": "Stand by Me"
+        },
+        {
+          "score": 0.371,
+          "title": "Black Dog"
+        },
+        {
+          "score": 0.362,
+          "title": "Smoke on the Water"
+        }
+      ]
+    },
+    {
+      "query": "intimate strummed acoustic folk ballad",
+      "notes": "Folk/ballad",
+      "expect_any": [
+        "Blowin",
+        "Blowing",
+        "Knockin",
+        "Yesterday",
+        "In My Life"
+      ],
+      "best_rank": 1,
+      "recall_at_1": 1,
+      "recall_at_3": 1,
+      "top5": [
+        {
+          "score": 0.544,
+          "title": "Knockin' On Heaven's Door"
+        },
+        {
+          "score": 0.538,
+          "title": "High and Dry"
+        },
+        {
+          "score": 0.496,
+          "title": "Blowing in the Wind"
+        },
+        {
+          "score": 0.437,
+          "title": "Creep"
+        },
+        {
+          "score": 0.433,
+          "title": "In My Life (Remastered)"
+        }
+      ]
+    },
+    {
+      "query": "melancholy alternative rock",
+      "notes": "Alt/Radiohead",
+      "expect_any": [
+        "Creep",
+        "High and Dry"
+      ],
+      "best_rank": 2,
+      "recall_at_1": 0,
+      "recall_at_3": 1,
+      "top5": [
+        {
+          "score": 0.342,
+          "title": "Knockin' On Heaven's Door"
+        },
+        {
+          "score": 0.336,
+          "title": "Creep"
+        },
+        {
+          "score": 0.33,
+          "title": "High and Dry"
+        },
+        {
+          "score": 0.328,
+          "title": "In My Life (Remastered)"
+        },
+        {
+          "score": 0.308,
+          "title": "Songbird"
+        }
+      ]
+    },
+    {
+      "query": "soft gentle pop ballad",
+      "notes": "Soft ballad",
+      "expect_any": [
+        "Yesterday",
+        "In My Life",
+        "High and Dry",
+        "Creep"
+      ],
+      "best_rank": 1,
+      "recall_at_1": 1,
+      "recall_at_3": 1,
+      "top5": [
+        {
+          "score": 0.352,
+          "title": "High and Dry"
+        },
+        {
+          "score": 0.336,
+          "title": "Creep"
+        },
+        {
+          "score": 0.321,
+          "title": "In My Life (Remastered)"
+        },
+        {
+          "score": 0.303,
+          "title": "Blowing in the Wind"
+        },
+        {
+          "score": 0.282,
+          "title": "Knockin' On Heaven's Door"
+        }
+      ]
+    }
+  ],
+  "similar_creep": {
+    "anchor_id": 224,
+    "anchor": "Creep",
+    "top": [
+      {
+        "rank": 1,
+        "score": 0.9083,
+        "title": "In My Life (Remastered)",
+        "artists": [
+          "The Beatles"
+        ]
+      },
+      {
+        "rank": 2,
+        "score": 0.8957,
+        "title": "I'm Gonna Crawl (Remaster)",
+        "artists": [
+          "Led Zeppelin"
+        ]
+      },
+      {
+        "rank": 3,
+        "score": 0.8853,
+        "title": "High and Dry",
+        "artists": [
+          "Radiohead"
+        ]
+      },
+      {
+        "rank": 4,
+        "score": 0.8445,
+        "title": "The Rain Song",
+        "artists": []
+      },
+      {
+        "rank": 5,
+        "score": 0.8322,
+        "title": "I Can't Quit You Baby",
+        "artists": []
+      },
+      {
+        "rank": 6,
+        "score": 0.813,
+        "title": "Stairway To Heaven",
+        "artists": []
+      },
+      {
+        "rank": 7,
+        "score": 0.8125,
+        "title": "You Shook Me",
+        "artists": [
+          "Led Zeppelin"
+        ]
+      },
+      {
+        "rank": 8,
+        "score": 0.8115,
+        "title": "The Lemon Song",
+        "artists": []
+      }
+    ]
+  }
+}

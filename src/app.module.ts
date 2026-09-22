@@ -1,10 +1,6 @@
-import {
-  HttpModule,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, OnApplicationBootstrap } from '@nestjs/common';
+
+import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,7 +13,7 @@ import { AlbumModule } from './album/album.module';
 import { FileController } from './file/file.controller';
 import { LibraryModule } from './library/library.module';
 import { MediaLibrary } from './database/entites/library';
-import { ConfigModule } from '@nestjs/config/dist/config.module';
+import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { AuthMiddleware } from './auth.middleware';
 import { User } from './database/entites/user';
@@ -47,10 +43,17 @@ import { AppLoggerMiddleware } from './log.middleware';
 import { FavoriteModule } from './favourite/favorite.module';
 import { PlaylistModule } from './playlist/playlist.module';
 import { Playlist } from './database/entites/playlist';
+import { SyncLog } from './database/entites/sync-log';
+import { MusicEmbedding } from './database/entites/music-embedding';
+import { LlmTemplate } from './database/entites/llm-template';
+import { AudioEmbedModule } from './audioembed/audioembed.module';
+import { LlmModule } from './llm/llm.module';
+import { MeilisearchModule } from './meilisearch/meilisearch.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [configuration],
     }),
     TypeOrmModule.forRootAsync({
@@ -68,6 +71,9 @@ import { Playlist } from './database/entites/playlist';
           Oauth,
           Tag,
           Playlist,
+          SyncLog,
+          MusicEmbedding,
+          LlmTemplate,
         ];
         const datasource = configService.get('datasource.type');
         switch (datasource) {
@@ -109,6 +115,9 @@ import { Playlist } from './database/entites/playlist';
     GenreModule,
     FavoriteModule,
     PlaylistModule,
+    LlmModule,
+    AudioEmbedModule,
+    MeilisearchModule,
   ],
   controllers: [
     AppController,

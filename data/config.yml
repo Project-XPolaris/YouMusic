@@ -5,6 +5,8 @@ storage:
   root: "./data/storage"
 youplus:
   url: "http://localhost:8999"
+  enablePath: true
+  internal_token: "youplus-youauth-internal"
   rpc: "localhost:50055"
   entity:
     name: "youmusiccore"
@@ -34,3 +36,13 @@ auth:
     enable: true
 thumbnail:
   engine: "default"
+nacos:
+  enable: false
+  server: "127.0.0.1:8848"
+  namespaceId: ""
+  username: "nacos"
+  password: "nacos"
+  group: "DEFAULT_GROUP"
+  serviceName: "youmusic-service"
+  # 如果需要指定注册IP，可设置。留空则使用本机IP。
+  serviceIp: ""

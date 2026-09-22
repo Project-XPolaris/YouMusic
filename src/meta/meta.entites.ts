@@ -17,6 +17,10 @@ export interface SearchMusicEntity {
   id: string;
   name: string;
   artists: { name: string }[];
+  albumName?: string;
+  duration?: number;
+  /** True when provider exposes synced/timed lyrics. */
+  hasSynced?: boolean;
 }
 
 export interface AlbumMeta {
@@ -25,4 +29,6 @@ export interface AlbumMeta {
   name?: string;
   cover?: string;
   artist?: string;
+  year?: number;
+  description?: string;
 }

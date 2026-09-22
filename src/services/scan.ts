@@ -7,6 +7,33 @@ import { DataSource } from 'typeorm';
 interface ScannerOption {
   extension: string[];
 }
+
+interface MetaJsonData {
+  id?: string;
+  title?: string;
+  release_date?: string;
+  script?: string;
+  actors?: string[];
+  art?: string;
+  maker?: string;
+  tags?: string[];
+  cover?: string;
+}
+
+export const readMetaJson = async (dirPath: string): Promise<MetaJsonData | null> => {
+  try {
+    const metaJsonPath = path.join(dirPath, 'meta.json');
+    const stat = await fs.promises.stat(metaJsonPath);
+    if (stat.isFile()) {
+      const content = await fs.promises.readFile(metaJsonPath, 'utf-8');
+      return JSON.parse(content) as MetaJsonData;
+    }
+  } catch (e) {
+    // meta.json 不存在或读取失败，返回 null
+  }
+  return null;
+};
+
 export const scanFile = async (
   filePath: string,
   option: ScannerOption = { extension: ['.mp3', '.wav', '.flac'] },

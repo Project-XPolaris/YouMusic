@@ -17,6 +17,7 @@ import { Album } from './album';
 import { Tag } from './tag';
 import { Genre } from './genre';
 import { Playlist } from './playlist';
+import { Music } from './music';
 
 @Entity()
 export class User {
@@ -50,6 +51,9 @@ export class User {
 
   @ManyToMany(() => Playlist, (playlist) => playlist.follow, { cascade: true })
   followPlaylist: Playlist[];
+
+  @ManyToMany(() => Music, (music) => music.follow, { cascade: true })
+  followMusic: Music[];
 
   @OneToMany(() => Playlist, (playlist) => playlist.owner)
   ownPlaylist: Playlist[];

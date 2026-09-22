@@ -30,7 +30,11 @@ export class AuthMiddleware implements NestMiddleware {
       
       // 检查是否启用认证
       if (this.configService.get('auth.enable')) {
-        const rawAuth = req.headers.authorization;
+        const queryToken =
+          typeof req.query?.token === 'string' ? req.query.token : undefined;
+        const rawAuth =
+          req.headers.authorization ||
+          (queryToken ? `Bearer ${queryToken}` : undefined);
         req.token = rawAuth;
         
         // 如果没有认证信息，设置默认用户ID
@@ -38,7 +42,7 @@ export class AuthMiddleware implements NestMiddleware {
           req.uid = '-1';
         } else {
           // 处理Bearer token
-          const tokenString = rawAuth.replace('Bearer ', '');
+          const tokenString = String(rawAuth).replace(/^Bearer\s+/i, '');
           try {
             // 验证token并获取用户ID
             const { uid } = await this.authService.check(tokenString);
@@ -84,6 +88,13 @@ export class AuthMiddleware implements NestMiddleware {
     res: Response,
     next: NextFunction,
   ) {
+    const url = String((req as any).originalUrl || (req as any).url || '').split(
+      '?',
+    )[0];
+    if (url.startsWith('/internal/')) {
+      next();
+      return;
+    }
     this.auth()(req, res, next);
   }
 }

@@ -3,14 +3,17 @@ import {
   CreateDateColumn,
   DataSource,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Artist } from './artist';
 import { Music } from './music';
+import { MediaLibrary } from './library';
 import * as path from 'path';
 import { ApplicationConfig } from '../../config';
 import * as fs from 'fs';
@@ -20,17 +23,61 @@ import { makeThumbnail } from '../../utils/image';
 import { User } from './user';
 
 @Entity()
+@Index('IDX_album_library_identity', ['libraryId', 'identityKey'], {
+  unique: true,
+})
 export class Album {
   @PrimaryGeneratedColumn()
   id: number;
+
+  /** Display title — not unique (same name, different artists/folders OK). */
   @Column()
   name: string;
+
+  /** Album Artist for display / filtering (may be empty). */
+  @Column({ nullable: true })
+  albumArtist?: string;
+
+  /**
+   * Stable identity within a library (see album-identity.ts).
+   * Unique together with libraryId. Nullable only for legacy rows pending backfill.
+   */
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  identityKey?: string;
+
+  /** Album root directory (physical path used at scan time). */
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  rootPath?: string;
+
+  @ManyToOne(() => MediaLibrary, { nullable: true, onDelete: 'CASCADE' })
+  library?: MediaLibrary;
+
+  @Column({ nullable: true })
+  libraryId?: number;
+
   @Column({ nullable: true })
   blurHash: string;
   @Column({ nullable: true })
   domainColor: string;
   @Column({ nullable: true })
   cover?: string;
+
+  /** Release year (album-level). */
+  @Column({ nullable: true })
+  year?: number;
+
+  /** Album description / introduction. */
+  @Column({ type: 'text', nullable: true })
+  description?: string;
+
+  @Column({ nullable: true })
+  neteaseId?: string;
+
+  @Column({ nullable: true })
+  mbid?: string;
+
+  @Column({ type: 'datetime', nullable: true })
+  scrapedAt?: Date;
 
   @OneToMany(() => Music, (music) => music.album)
   music: Music[];
@@ -53,14 +100,16 @@ export class Album {
    * recycle album if music is empty
    * @param id album id
    */
-  static async recycle(id: string | number,dataSource:DataSource): Promise<boolean> {
+  static async recycle(
+    id: string | number,
+    dataSource: DataSource,
+  ): Promise<boolean> {
     const repository = await dataSource.getRepository(Album);
     const album = await repository.findOne({
       where: { id: +id },
       relations: ['music'],
     });
     if (album === undefined) {
-      // no album
       return true;
     }
     if (album.music.length === 0) {
@@ -70,7 +119,7 @@ export class Album {
     return false;
   }
 
-  async delete(dataSource:DataSource) {
+  async delete(dataSource: DataSource) {
     const repository = await dataSource.getRepository(Album);
     await repository.delete(this.id);
     if (this.cover !== null) {
@@ -110,8 +159,9 @@ export class Album {
     this.cover = coverFilename;
   }
 
-  async refreshArtist(dataSource:DataSource) {
-    const musicList = await dataSource.getRepository(Artist)
+  async refreshArtist(dataSource: DataSource) {
+    const musicList = await dataSource
+      .getRepository(Artist)
       .createQueryBuilder('artist')
       .leftJoinAndSelect('artist.music', 'music')
       .where('music.albumId = :id', { id: this.id })

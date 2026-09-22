@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import * as WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import { v4 } from 'uuid';
 import { MediaLibrary } from '../database/entites/library';
+
 export type NotificationEvent =
   | 'Register'
   | 'RefreshSpotifyAuth'
   | 'LibraryScanComplete';
+
 interface NotificationClient {
   client: WebSocket;
   id: string;
 }
+
 @Injectable()
 export class NotificationService {
-  wss: WebSocket.Server;
+  wss: WebSocketServer;
   clients: Array<NotificationClient> = [];
+
   private static sendEvent(
     ws: WebSocket,
     event: NotificationEvent,
@@ -26,8 +30,9 @@ export class NotificationService {
       }),
     );
   }
+
   constructor() {
-    this.wss = new WebSocket.Server({
+    this.wss = new WebSocketServer({
       port: 3010,
     });
     this.wss.on('connection', (ws) => {
@@ -49,6 +54,7 @@ export class NotificationService {
       }
     }
   }
+
   async scanCompleteEvent(id: string, library: MediaLibrary) {
     for (const client of this.clients) {
       if (client.id === id) {

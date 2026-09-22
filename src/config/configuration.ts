@@ -1,13 +1,19 @@
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
-import { join, normalize } from 'path';
+import { isAbsolute, join, normalize } from 'path';
 
-const YAML_CONFIG_FILENAME =
-  process.env.YAML_CONFIG_FILENAME || '../../data/config.yml';
+const resolveConfigPath = (): string => {
+  const fromEnv =
+    process.env.YOUMUSIC_CONFIG_PATH || process.env.YAML_CONFIG_FILENAME;
+  if (fromEnv) {
+    return isAbsolute(fromEnv) ? fromEnv : join(process.cwd(), fromEnv);
+  }
+  // dist/config -> ../../data/local_dev_config.yml
+  return join(__dirname, '../../data/local_dev_config.yml');
+};
 
 export default () => {
-  console.log(normalize(__dirname + YAML_CONFIG_FILENAME));
-  return yaml.load(
-    fs.readFileSync(join(__dirname, YAML_CONFIG_FILENAME), 'utf8'),
-  ) as Record<string, any>;
+  const configPath = normalize(resolveConfigPath());
+  console.log(`[youmusic] load config: ${configPath}`);
+  return yaml.load(fs.readFileSync(configPath, 'utf8')) as Record<string, any>;
 };

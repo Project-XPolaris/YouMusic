@@ -16,10 +16,29 @@ import { User } from './user';
 export class Artist {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+  @Column({ unique: true })
   name: string;
   @Column({ nullable: true })
   avatar: string;
+
+  /** Artist biography / introduction text. */
+  @Column({ type: 'text', nullable: true })
+  bio?: string;
+
+  @Column({ nullable: true })
+  neteaseId?: string;
+
+  @Column({ nullable: true })
+  deezerId?: string;
+
+  @Column({ nullable: true })
+  mbid?: string;
+
+  @Column({ nullable: true })
+  country?: string;
+
+  @Column({ type: 'datetime', nullable: true })
+  scrapedAt?: Date;
 
   @ManyToMany(() => Music, (music) => music.artist, { onDelete: 'CASCADE' })
   music: Music[];

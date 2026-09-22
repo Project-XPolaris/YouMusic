@@ -18,6 +18,7 @@ import NodeID3, { Promise as id3Promise } from 'node-id3';
 import { Buffer } from 'buffer';
 import { Tag } from './tag';
 import { Playlist } from './playlist';
+import { User } from './user';
 
 @Entity()
 export class Music {
@@ -37,6 +38,8 @@ export class Music {
   disc: number;
   @Column({ nullable: true })
   lyric: string;
+  @Column({ nullable: true })
+  vocalType: string;
   @Column({ nullable: true })
   lastModify: Date;
   @Column()
@@ -61,6 +64,9 @@ export class Music {
 
   @ManyToOne(() => MediaLibrary, (library) => library.music)
   library: MediaLibrary;
+
+  @Column({ nullable: true })
+  libraryId: number;
   @ManyToMany(() => Genre, (genre) => genre.music, {
     cascade: true,
   })
@@ -78,6 +84,10 @@ export class Music {
   })
   @JoinTable()
   tags: Tag[];
+
+  @ManyToMany(() => User, (user) => user.followMusic, { onDelete: 'CASCADE' })
+  @JoinTable()
+  follow: User[];
 
   @CreateDateColumn()
   createdAt: Date;

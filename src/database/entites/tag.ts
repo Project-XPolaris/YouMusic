@@ -4,7 +4,6 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   DataSource,
@@ -12,12 +11,15 @@ import {
 import { Music } from './music';
 import { MediaLibrary } from './library';
 import { User } from './user';
+import { isDuplicateKeyError } from '../../utils/db-error';
 
 @Entity()
 export class Tag {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column()
+
+  /** Tag names are unique — same label is the same tag. */
+  @Column({ unique: true })
   name: string;
 
   @ManyToMany(() => Music, (music) => music.tags, {
@@ -34,18 +36,40 @@ export class Tag {
 
   @UpdateDateColumn()
   updatedAt: Date;
-  static async createOrGet(name: string, library: MediaLibrary,dataSource:DataSource) {
-    const repo = await dataSource.getRepository(Tag);
+
+  static async createOrGet(
+    name: string,
+    _library: MediaLibrary,
+    dataSource: DataSource,
+  ) {
+    const trimmed = (name || '').trim();
+    if (!trimmed) {
+      throw new Error('tag name is empty');
+    }
+    const repo = dataSource.getRepository(Tag);
     let tag = await repo
-      .createQueryBuilder('genre')
-      .where('tag.name = :name', { name })
+      .createQueryBuilder('tag')
+      .where('tag.name = :name', { name: trimmed })
       .getOne();
     if (tag) {
       return tag;
     }
     tag = new Tag();
-    tag.name = name;
-    tag = await dataSource.getRepository(Tag).save(tag);
-    return tag;
+    tag.name = trimmed;
+    try {
+      return await repo.save(tag);
+    } catch (err) {
+      if (!isDuplicateKeyError(err)) {
+        throw err;
+      }
+      tag = await repo
+        .createQueryBuilder('tag')
+        .where('tag.name = :name', { name: trimmed })
+        .getOne();
+      if (!tag) {
+        throw err;
+      }
+      return tag;
+    }
   }
 }

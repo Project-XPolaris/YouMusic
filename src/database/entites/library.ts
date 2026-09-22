@@ -24,6 +24,10 @@ export class MediaLibrary {
   @Column()
   path: string;
 
+  /** When false, skip auto/global CLAP embedding for this library. */
+  @Column({ default: true })
+  clapScan: boolean;
+
   @OneToMany(() => Music, (music) => music.library)
   music: Music[];
 

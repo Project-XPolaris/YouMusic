@@ -83,4 +83,26 @@ export class FavoriteController {
       success: true,
     };
   }
+
+  @Post('/music/:id')
+  async addMusic(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.addMusicToFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
+
+  @Delete('/music/:id')
+  async removeMusic(
+    @Param('id') id: string,
+    @Req() req: Request & { uid: string },
+  ) {
+    await this.favoriteService.removeMusicFromFavourite(+id, req.uid);
+    return {
+      success: true,
+    };
+  }
 }

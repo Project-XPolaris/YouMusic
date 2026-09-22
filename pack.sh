@@ -3,6 +3,7 @@ rm -rf ./app-output
 mkdir app-output
 cp -r ./dist ./app-output/dist
 cp ./package.json ./app-output
+cp ./pnpm-lock.yaml ./app-output
 cp ./service_template ./app-output
 cp ./install-service.sh ./app-output
 cp ./uninstall-service.sh ./app-output

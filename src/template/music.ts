@@ -4,6 +4,7 @@ import { BaseAlbumTemplate } from './album';
 import { BaseArtistTemplate } from './artist';
 import * as path from 'path';
 import { TagTemplate } from './tag';
+import { GenreTemplate } from './genre';
 
 export class BaseMusicTemplate {
   id: number;
@@ -15,16 +16,21 @@ export class BaseMusicTemplate {
   year?: number;
   album: BaseAlbumTemplate;
   artist: BaseArtistTemplate[];
+  genre?: GenreTemplate[];
   tag?: TagTemplate[];
   filename: string;
+  path?: string;
   lrc: string;
   lossless: boolean;
   bitrate: number;
   size: number;
   sampleRate: number;
   ext: string;
+  /** Whether this track has a CLAP audio embedding */
+  clap: boolean;
+  vocalType?: string;
 
-  constructor(music: Music) {
+  constructor(music: Music, clap = false) {
     this.id = music.id;
     this.title = music.title;
     this.createdAt = formatDate(music.createdAt);
@@ -32,6 +38,7 @@ export class BaseMusicTemplate {
     this.duration = music.duration;
     this.track = music.track;
     this.filename = path.basename(music.path);
+    this.path = music.path;
     this.ext = path.extname(music.path).replace('.', '');
     if (music.lyric) {
       this.lrc = `/file/lrc/${music.id}`;
@@ -43,6 +50,9 @@ export class BaseMusicTemplate {
       this.artist = music.artist.map(
         (artist) => new BaseArtistTemplate(artist),
       );
+    }
+    if (music.genre?.length) {
+      this.genre = music.genre.map((g) => new GenreTemplate(g));
     }
     if (music.tags) {
       this.tag = music.tags.map((tag) => new TagTemplate(tag));
@@ -60,5 +70,19 @@ export class BaseMusicTemplate {
     if (music.size) {
       this.size = music.size;
     }
+    if (music.vocalType) {
+      this.vocalType = music.vocalType;
+    }
+    this.clap = clap;
   }
+}
+
+export function applyClapFlags(
+  items: BaseMusicTemplate[],
+  clapIds: Set<number>,
+) {
+  for (const it of items) {
+    it.clap = clapIds.has(it.id);
+  }
+  return items;
 }
