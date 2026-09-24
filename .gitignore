@@ -41,3 +41,5 @@ lerna-debug.log*
 data/covers/
 data/storage/
 .vscode/
+# Local NAS configs (contain credentials)
+data/
