@@ -27,7 +27,7 @@
 |----|-----|
 | YouMusic | Lima VM `:7900`，`audioembed.enable=true` |
 | audio-embed | macOS host `0.0.0.0:8613`，本地 snapshot offline |
-| 路径映射 | `/data` → `polaris-os/lima/data` |
+| 路径映射 | `/data` → `polaris-os/lima/data`（**2026-10 已改回 `dev/lima/data`**，此处为评测当时的路径） |
 | 认证 | YouAuth `root` Bearer token |
 | 音频编码 | 中段附近 **3 窗平均**，约 10s/窗 |
 
